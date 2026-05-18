@@ -1,0 +1,90 @@
+name: bemunair
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: bemunair_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: bemunair_db
+      MYSQL_USER: bemunair
+      MYSQL_PASSWORD: bemunair_password
+    ports:
+      - "3308:3306"
+    volumes:
+      - bemunair_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "bemunair", "-pbemunair_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bemunair_net
+
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: bemunair_server
+    env_file:
+      - ../server/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bemunair_net
+    develop:
+      watch:
+        - path: ../server
+          action: sync+restart
+          target: /app
+          ignore:
+            - vendor/
+            - bin/
+            - tmp/
+        - path: ../server/go.mod
+          action: rebuild
+        - path: ../server/go.sum
+          action: rebuild
+
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    container_name: bemunair_client
+    env_file:
+      - ../client/.env
+    depends_on:
+      - server
+    networks:
+      - bemunair_net
+    develop:
+      watch:
+        - path: ../client/src
+          action: sync
+          target: /app/src
+        - path: ../client/static
+          action: sync
+          target: /app/static
+        - path: ../client/package.json
+          action: rebuild
+
+  nginx:
+    image: nginx:alpine
+    container_name: bemunair_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - client
+      - server
+    networks:
+      - bemunair_net
+
+networks:
+  bemunair_net:
+    driver: bridge
+
+volumes:
+  bemunair_mysql_data:

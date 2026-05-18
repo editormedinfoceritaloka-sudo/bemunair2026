@@ -1,0 +1,58 @@
+# Binary hasil build
+/bin/
+/dist/
+/build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output Go
+*.test
+*.out
+
+# Dependency vendor (opsional)
+vendor/
+
+# Environment
+.env
+.env.*
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Coverage
+coverage.out
+coverage.html
+
+# Air (hot reload)
+tmp/
+.air/
+
+# Generated files
+*.pid
+
+# Database lokal
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+docker-compose.override.yml
+
+# Cache
+.cache/
+
+# Go workspace
+go.work.sum
