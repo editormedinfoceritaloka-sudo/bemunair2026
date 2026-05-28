@@ -69,11 +69,35 @@ services:
         - path: ../client/package.json
           action: rebuild
 
+  wa-engine:
+    build:
+      context: ../wa-engine
+      dockerfile: Dockerfile
+    container_name: bemunair_wa_engine
+    env_file:
+      - ../wa-engine/.env
+    volumes:
+      - wa_auth_data:/app/auth_info_baileys
+    depends_on:
+      - server
+    networks:
+      - bemunair_net
+    restart: unless-stopped
+    develop:
+      watch:
+        - path: ../wa-engine/src
+          action: sync+restart
+          target: /app/src
+        - path: ../wa-engine/package.json
+          action: rebuild
+        - path: ../wa-engine/pnpm-lock.yaml
+          action: rebuild
+
   nginx:
     image: nginx:alpine
     container_name: bemunair_nginx
     ports:
-      - "80:80"
+      - "8081:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -88,3 +112,4 @@ networks:
 
 volumes:
   bemunair_mysql_data:
+  wa_auth_data:

@@ -1,0 +1,5 @@
+node_modules
+.modules.yaml
+auth_info_baileys
+*.log
+.env
