@@ -13,6 +13,12 @@ services:
       - "3308:3306"
     volumes:
       - bemunair_mysql_data:/var/lib/mysql
+      - ../server/database/migrations/001_create_users_table.sql:/docker-entrypoint-initdb.d/001_create_users_table.sql:ro
+      - ../server/database/migrations/002_create_content_submissions_table.sql:/docker-entrypoint-initdb.d/002_create_content_submissions_table.sql:ro
+      - ../server/database/migrations/003_create_letter_submissions_table.sql:/docker-entrypoint-initdb.d/003_create_letter_submissions_table.sql:ro
+      - ../server/database/migrations/004_create_medinfo_pj_queues_table.sql:/docker-entrypoint-initdb.d/004_create_medinfo_pj_queues_table.sql:ro
+      - ../server/database/migrations/005_create_letter_templates_table.sql:/docker-entrypoint-initdb.d/005_create_letter_templates_table.sql:ro
+      - ../server/database/seeders/001_seed_users_and_queue.sql:/docker-entrypoint-initdb.d/006_seed_users_and_queue.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "bemunair", "-pbemunair_password"]
       interval: 5s
@@ -31,17 +37,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ../docs/api:/docs/api:ro
     networks:
       - bemunair_net
     develop:
       watch:
         - path: ../server
-          action: sync+restart
-          target: /app
+          action: rebuild
           ignore:
             - vendor/
             - bin/
             - tmp/
+            - main
         - path: ../server/go.mod
           action: rebuild
         - path: ../server/go.sum
@@ -61,11 +69,9 @@ services:
     develop:
       watch:
         - path: ../client/src
-          action: sync
-          target: /app/src
+          action: rebuild
         - path: ../client/static
-          action: sync
-          target: /app/static
+          action: rebuild
         - path: ../client/package.json
           action: rebuild
 
@@ -76,8 +82,10 @@ services:
     container_name: bemunair_wa_engine
     env_file:
       - ../wa-engine/.env
+    ports:
+      - "3001:3001"
     volumes:
-      - wa_auth_data:/app/auth_info_baileys
+      - wa_auth_data:/app/sessions
     depends_on:
       - server
     networks:

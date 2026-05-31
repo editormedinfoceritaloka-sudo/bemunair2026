@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS letter_submissions (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  submitter_id BIGINT UNSIGNED NOT NULL,
+  ministry VARCHAR(100) NOT NULL,
+  letter_type VARCHAR(100) NOT NULL,
+  subject VARCHAR(200) NOT NULL,
+  body TEXT NULL,
+  deadline DATETIME NOT NULL,
+  assigned_pj_id BIGINT UNSIGNED NULL,
+  status ENUM('PENDING','IN_REVIEW','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+  notes TEXT NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_letter_submissions_submitter_id (submitter_id),
+  KEY idx_letter_submissions_assigned_pj_id (assigned_pj_id),
+  KEY idx_letter_submissions_status (status),
+  KEY idx_letter_submissions_deadline (deadline),
+  CONSTRAINT fk_letter_submissions_submitter FOREIGN KEY (submitter_id) REFERENCES users(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_letter_submissions_assigned_pj FOREIGN KEY (assigned_pj_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,10 @@
+[
+  { "slug": "overview", "title": "Overview", "order": 1 },
+  { "slug": "auth", "title": "Authentication", "order": 2 },
+  { "slug": "users", "title": "Users", "order": 3 },
+  { "slug": "content-submissions", "title": "Content Submissions", "order": 4 },
+  { "slug": "letter-submissions", "title": "Letter Submissions", "order": 5 },
+  { "slug": "medinfo-pj-queue", "title": "Medinfo PJ Queue", "order": 6 },
+  { "slug": "letter-templates", "title": "Letter Templates", "order": 7 },
+  { "slug": "wa-engine", "title": "WA Engine", "order": 8 }
+]

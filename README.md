@@ -1,171 +1,119 @@
-# bemunair2026
+# BEM UNAIR Digital Submission System
 
-Platform digital untuk BEMUNAIR 2026 — sistem informasi dan manajemen kegiatan organisasi mahasiswa.
+Sistem pengajuan konten dan surat digital untuk BEM UNAIR.
 
----
+## Stack
 
-## 🧱 Tech Stack
+Backend Go + Gin + GORM MySQL, frontend SvelteKit, MySQL 8, WA Engine TypeScript + Baileys, Docker Compose, dan Nginx reverse proxy.
 
-| Layer | Teknologi |
-|---|---|
-| Frontend | SvelteKit + TailwindCSS |
-| Backend | Go + Gin |
-| Database | MySQL 8.0 |
-| Reverse Proxy | Nginx |
-| Containerization | Docker + Docker Compose |
-
----
-
-## 📁 Struktur Project
-
-```
-bemunair2026/
-├── client/          # SvelteKit (frontend)
-├── server/          # Go + Gin (backend/API)
-├── infra/           # Docker Compose, Nginx config
-│   ├── nginx/
-│   │   └── nginx.conf
-│   ├── docker-compose.yml
-│   └── dev.sh
-├── test/
-└── README.md
-```
-
----
-
-## 🌐 Arsitektur
-
-```
-Browser
-   │
-   ▼
-Nginx :80
-   ├── /          → client (SvelteKit) :3000
-   └── /api/      → server (Go Gin)   :8080  [strip /api prefix]
-                          │
-                          ▼
-                     MySQL :3306
-```
-
-Semua service berjalan dalam Docker internal network `bemunair_net`. Hanya Nginx yang expose port ke host.
-
----
-
-## 🚀 Menjalankan Project
-
-### Prasyarat
-
-- Docker Engine
-- Docker Compose v2.22+
-
-### Langkah
+## Menjalankan
 
 ```bash
-# 1. Clone repository
-git clone <repo-url>
-cd bemunair2026
-
-# 2. Salin file environment
-cp client/.env.example client/.env
 cp server/.env.example server/.env
-
-# 3. Masuk ke folder infra
+cp client/.env.example client/.env
+cp wa-engine/.env.example wa-engine/.env
 cd infra
-
-# 4. Jalankan dengan watch mode (development)
-./dev.sh up
-
-# Atau tanpa script helper
-docker compose watch
+docker compose up --build
 ```
 
-### Akses
+Akses:
 
 | Service | URL |
 |---|---|
-| Frontend | http://localhost |
-| API | http://localhost/api/ |
+| Frontend | http://localhost:8081 |
+| API | http://localhost:8081/api |
+| Docs viewer | http://localhost:8081/api/docs |
+| WA Engine internal | http://bemunair_wa_engine:3001 |
 | MySQL | localhost:3308 |
 
----
+## Database
 
-## 🛠️ Script Helper
+Schema produksi berasal dari SQL canonical di `server/database/migrations/`:
+
+1. `001_create_users_table.sql`
+2. `002_create_content_submissions_table.sql`
+3. `003_create_letter_submissions_table.sql`
+4. `004_create_medinfo_pj_queues_table.sql`
+5. `005_create_letter_templates_table.sql`
+
+Seeder eksplisit ada di `server/database/seeders/001_seed_users_and_queue.sql`. Password seed memakai bcrypt untuk nilai contoh `password`.
+
+Untuk verifikasi dev saja:
 
 ```bash
-cd infra
-
-./dev.sh up              # Start dengan watch mode
-./dev.sh down            # Stop semua container
-./dev.sh build           # Build ulang tanpa cache
-./dev.sh logs [service]  # Lihat logs
-./dev.sh reset           # Reset + hapus database
-./dev.sh ps              # Status container
+cd server
+go run ./cmd/migrate
 ```
 
----
+## Endpoint Utama
 
-## ⚙️ Environment Variables
+Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`.
 
-### `client/.env`
+Users: `GET|POST /api/users`, `GET|PUT|DELETE /api/users/:id`.
 
-```env
-PUBLIC_API_URL=http://server:8080
-PUBLIC_APP_NAME=bemunair2026
-PORT=3000
+Content submissions: `POST|GET /api/content-submissions`, `GET /api/content-submissions/:id`, `PUT /api/content-submissions/:id/status`, `DELETE /api/content-submissions/:id`.
+
+Letter submissions: `POST|GET /api/letter-submissions`, `GET /api/letter-submissions/:id`, `PUT /api/letter-submissions/:id/status`, `DELETE /api/letter-submissions/:id`.
+
+Queue PJ: `GET|POST /api/medinfo-pj/queue`, `PUT /api/medinfo-pj/queue/reorder`, `DELETE /api/medinfo-pj/queue/:id`.
+
+Templates: `POST|GET /api/letter-templates`, `GET|PUT|DELETE /api/letter-templates/:id`.
+
+Docs API: `GET /api/docs`, `GET /api/docs/:slug`.
+
+## Contoh Curl
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8081/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@bem.unair.ac.id","password":"password"}')
+
+curl -X POST http://localhost:8081/api/content-submissions \
+  -H "Authorization: Bearer $JWT" \
+  -F platform=INSTAGRAM \
+  -F submission_type=Feed \
+  -F deadline=2026-06-10T12:00:00+07:00 \
+  -F caption="Caption konten"
 ```
 
-### `server/.env`
+Success envelope:
 
-```env
-APP_ENV=development
-APP_PORT=8080
-APP_SECRET_KEY=your_secret_key_here
-
-DB_HOST=db
-DB_PORT=3306
-DB_USER=bemunair
-DB_PASSWORD=bemunair_password
-DB_NAME=bemunair_db
-DATABASE_URL=bemunair:bemunair_password@tcp(db:3306)/bemunair_db?charset=utf8mb4&parseTime=True&loc=Local
-
-ALLOWED_ORIGINS=http://localhost
+```json
+{ "success": true, "message": "Submission berhasil dibuat", "data": {} }
 ```
 
----
+Error envelope:
 
-## 📡 API Endpoints
+```json
+{ "success": false, "message": "Validasi gagal", "error": { "code": "VALIDATION_ERROR", "details": [] } }
+```
 
-| Method | Endpoint | Deskripsi |
-|---|---|---|
-| GET | `/api/ping` | Health check |
+## WhatsApp QR
 
-> Dokumentasi API lengkap menyusul.
+Lihat QR di log:
 
----
+```bash
+docker compose logs -f bemunair_wa_engine
+```
 
-## 📦 Docker Watch Mode
+Atau via web/API:
 
-Watch mode memungkinkan perubahan kode langsung ter-reflect di container tanpa rebuild manual.
+```bash
+curl http://localhost:3001/api/connect -H "Authorization: Bearer your_internal_api_key_here"
+curl http://localhost:3001/api/qr -H "Authorization: Bearer your_internal_api_key_here"
+```
 
-| Service | Trigger | Action |
-|---|---|---|
-| client | Perubahan `src/` | sync |
-| client | Perubahan `package.json` | rebuild |
-| server | Perubahan file `.go` | sync + restart |
-| server | Perubahan `go.mod` / `go.sum` | rebuild |
+## Test
 
----
+```bash
+make test
+make test-coverage
+```
 
-## 🤝 Kontribusi
+Catatan lingkungan ini: `go test ./...` berhasil. Coverage Go dengan toolchain terunduh gagal karena tool `covdata` tidak tersedia di cache toolchain lokal. WA Engine `pnpm test` berhasil: 3 file, 7 test.
 
-1. Fork repository ini
-2. Buat branch fitur: `git checkout -b feat/nama-fitur`
-3. Commit perubahan: `git commit -m "feat: deskripsi singkat"`
-4. Push branch: `git push origin feat/nama-fitur`
-5. Buat Pull Request
+## Dokumentasi API
 
----
+File docs ada di `docs/api/`: `index.json`, `overview.md`, `auth.md`, `users.md`, `content-submissions.md`, `letter-submissions.md`, `medinfo-pj-queue.md`, `letter-templates.md`, `wa-engine.md`.
 
-## 📄 Lisensi
-
-MIT License — BEMUNAIR 2026
+Untuk menambah modul dokumentasi, buat file `docs/api/<slug>.md`, lalu tambahkan `{ "slug": "<slug>", "title": "...", "order": n }` ke `docs/api/index.json`.
