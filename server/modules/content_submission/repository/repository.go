@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"bemunair2026/server/database/entities"
-	"bemunair2026/server/modules/medinfo_pj"
+	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
 	"bemunair2026/server/pkg/constants"
 	"gorm.io/gorm"
 )
@@ -32,7 +32,7 @@ func NewContentSubmissionRepository(db *gorm.DB) ContentSubmissionRepository {
 func (r *contentSubmissionRepository) CreateWithAssignment(submission *entities.ContentSubmission) (*entities.User, error) {
 	var pj *entities.User
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		assigned, err := medinfo_pj.AssignNext(tx)
+		assigned, err := medinfoRepository.AssignNext(tx)
 		if err != nil {
 			return err
 		}

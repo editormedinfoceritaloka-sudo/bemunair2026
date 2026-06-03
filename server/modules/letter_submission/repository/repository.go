@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"bemunair2026/server/database/entities"
-	"bemunair2026/server/modules/medinfo_pj"
+	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
 	"bemunair2026/server/pkg/constants"
 	"gorm.io/gorm"
 )
@@ -33,7 +33,7 @@ func (r *letterSubmissionRepository) CreateWithAssignment(submission *entities.L
 	var pj *entities.User
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if submission.Ministry == "MEDINFO" {
-			assigned, err := medinfo_pj.AssignNext(tx)
+			assigned, err := medinfoRepository.AssignNext(tx)
 			if err != nil {
 				return err
 			}

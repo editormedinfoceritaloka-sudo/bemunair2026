@@ -1,4 +1,4 @@
-package medinfo_pj
+package repository
 
 import (
 	"bemunair2026/server/database/entities"
@@ -6,21 +6,37 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type Repository struct{ db *gorm.DB }
+type MedinfoPJRepository interface {
+	List() ([]entities.MedinfoPJQueue, error)
+	Create(row *entities.MedinfoPJQueue) error
+	Delete(id uint64) error
+	Reorder(ids []uint64) error
+}
 
-func NewRepository(db *gorm.DB) *Repository { return &Repository{db: db} }
+type medinfoPJRepository struct {
+	db *gorm.DB
+}
 
-func (r *Repository) List() ([]entities.MedinfoPJQueue, error) {
+var _ MedinfoPJRepository = (*medinfoPJRepository)(nil)
+
+func NewMedinfoPJRepository(db *gorm.DB) MedinfoPJRepository {
+	return &medinfoPJRepository{db: db}
+}
+
+func (r *medinfoPJRepository) List() ([]entities.MedinfoPJQueue, error) {
 	var rows []entities.MedinfoPJQueue
 	return rows, r.db.Preload("User").Order("position ASC").Find(&rows).Error
 }
 
-func (r *Repository) Create(row *entities.MedinfoPJQueue) error { return r.db.Create(row).Error }
-func (r *Repository) Delete(id uint64) error {
+func (r *medinfoPJRepository) Create(row *entities.MedinfoPJQueue) error {
+	return r.db.Create(row).Error
+}
+
+func (r *medinfoPJRepository) Delete(id uint64) error {
 	return r.db.Delete(&entities.MedinfoPJQueue{}, id).Error
 }
 
-func (r *Repository) Reorder(ids []uint64) error {
+func (r *medinfoPJRepository) Reorder(ids []uint64) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for i, id := range ids {
 			if err := tx.Model(&entities.MedinfoPJQueue{}).Where("id = ?", id).Updates(map[string]any{"position": i + 1, "is_current": i == 0}).Error; err != nil {

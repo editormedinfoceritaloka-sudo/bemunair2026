@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"bemunair2026/server/database/entities"
+	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
 	"bemunair2026/server/pkg/constants"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,10 +28,10 @@ func TestAssignNextRoundRobin(t *testing.T) {
 	}
 
 	var first, second *entities.User
-	if err := db.Transaction(func(tx *gorm.DB) error { var err error; first, err = AssignNext(tx); return err }); err != nil {
+	if err := db.Transaction(func(tx *gorm.DB) error { var err error; first, err = medinfoRepository.AssignNext(tx); return err }); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.Transaction(func(tx *gorm.DB) error { var err error; second, err = AssignNext(tx); return err }); err != nil {
+	if err := db.Transaction(func(tx *gorm.DB) error { var err error; second, err = medinfoRepository.AssignNext(tx); return err }); err != nil {
 		t.Fatal(err)
 	}
 	if first.ID != users[0].ID || second.ID != users[1].ID {
@@ -47,7 +48,7 @@ func TestAssignNextEmptyQueue(t *testing.T) {
 		t.Fatal(err)
 	}
 	var pj *entities.User
-	if err := db.Transaction(func(tx *gorm.DB) error { var err error; pj, err = AssignNext(tx); return err }); err != nil {
+	if err := db.Transaction(func(tx *gorm.DB) error { var err error; pj, err = medinfoRepository.AssignNext(tx); return err }); err != nil {
 		t.Fatal(err)
 	}
 	if pj != nil {

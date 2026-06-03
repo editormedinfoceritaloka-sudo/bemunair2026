@@ -16,6 +16,7 @@ import (
 	letterRepository "bemunair2026/server/modules/letter_submission/repository"
 	"bemunair2026/server/modules/letter_template"
 	"bemunair2026/server/modules/medinfo_pj"
+	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
 	"bemunair2026/server/modules/user"
 	userRepository "bemunair2026/server/modules/user/repository"
 	"bemunair2026/server/pkg"
@@ -45,7 +46,7 @@ func main() {
 	waClient := pkg.NewWAClient(cfg.WAURL, cfg.WAAPIKey)
 	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
-	queueRepo := medinfo_pj.NewRepository(db)
+	queueRepo := medinfoRepository.NewMedinfoPJRepository(db)
 	templateRepo := letter_template.NewRepository(db)
 
 	router.GET("/ping", func(c *gin.Context) { response.OK(c, "pong", nil) })
