@@ -8,6 +8,7 @@ import (
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/user"
+	"bemunair2026/server/pkg/constants"
 	"bemunair2026/server/pkg/response"
 	"github.com/gin-gonic/gin"
 )
@@ -41,7 +42,7 @@ func (h *Handler) Create(c *gin.Context) {
 	if ministry == "" && claims.Ministry != nil {
 		ministry = *claims.Ministry
 	}
-	sub := &entities.ContentSubmission{SubmitterID: claims.UserID, Ministry: ministry, Platform: c.PostForm("platform"), SubmissionType: c.PostForm("submission_type"), Caption: c.PostForm("caption"), Deadline: deadline, BriefFile: brief, PosterFile: poster, Status: entities.StatusPending}
+	sub := &entities.ContentSubmission{SubmitterID: claims.UserID, Ministry: ministry, Platform: c.PostForm("platform"), SubmissionType: c.PostForm("submission_type"), Caption: c.PostForm("caption"), Deadline: deadline, BriefFile: brief, PosterFile: poster, Status: constants.StatusPending}
 	created, warnings, err := h.service.Create(sub, submitter)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, response.InternalError, "Submission gagal dibuat")

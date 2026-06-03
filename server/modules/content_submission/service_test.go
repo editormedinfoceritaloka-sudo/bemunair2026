@@ -3,7 +3,7 @@ package content_submission
 import (
 	"testing"
 
-	"bemunair2026/server/database/entities"
+	"bemunair2026/server/pkg/constants"
 )
 
 func TestValidTransition(t *testing.T) {
@@ -11,10 +11,10 @@ func TestValidTransition(t *testing.T) {
 		from, to string
 		ok       bool
 	}{
-		{entities.StatusPending, entities.StatusInReview, true},
-		{entities.StatusInReview, entities.StatusApproved, true},
-		{entities.StatusInReview, entities.StatusRejected, true},
-		{entities.StatusPending, entities.StatusApproved, false},
+		{constants.StatusPending, constants.StatusInReview, true},
+		{constants.StatusInReview, constants.StatusApproved, true},
+		{constants.StatusInReview, constants.StatusRejected, true},
+		{constants.StatusPending, constants.StatusApproved, false},
 	}
 	for _, tt := range tests {
 		if got := ValidTransition(tt.from, tt.to); got != tt.ok {

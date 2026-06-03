@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"bemunair2026/server/database/entities"
+	"bemunair2026/server/pkg/constants"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ func TestAssignNextRoundRobin(t *testing.T) {
 	if err := createTestTables(db); err != nil {
 		t.Fatal(err)
 	}
-	users := []entities.User{{Name: "A", Email: "a@test", PasswordHash: "x", Role: entities.RoleMentri}, {Name: "B", Email: "b@test", PasswordHash: "x", Role: entities.RoleMentri}}
+	users := []entities.User{{Name: "A", Email: "a@test", PasswordHash: "x", Role: constants.RoleMentri}, {Name: "B", Email: "b@test", PasswordHash: "x", Role: constants.RoleMentri}}
 	if err := db.Create(&users).Error; err != nil {
 		t.Fatal(err)
 	}

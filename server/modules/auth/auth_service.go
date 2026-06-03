@@ -7,6 +7,7 @@ import (
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/user"
+	"bemunair2026/server/pkg/constants"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,7 +22,7 @@ func NewService(users *user.Repository, jwtSecret string) *Service {
 }
 
 func (s *Service) Register(name, email, password, role string, ministry, phone *string) (*entities.User, error) {
-	if role != entities.RoleAdmin && role != entities.RoleMentri {
+	if role != constants.RoleAdmin && role != constants.RoleMentri {
 		return nil, errors.New("invalid role")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

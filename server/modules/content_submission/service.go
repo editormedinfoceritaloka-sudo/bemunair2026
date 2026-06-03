@@ -6,6 +6,7 @@ import (
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/modules/wa_notification"
 	"bemunair2026/server/pkg"
+	"bemunair2026/server/pkg/constants"
 )
 
 type Service struct {
@@ -26,10 +27,10 @@ func (s *Service) Create(sub *entities.ContentSubmission, submitter *entities.Us
 }
 
 func ValidTransition(from, to string) bool {
-	if from == entities.StatusPending && to == entities.StatusInReview {
+	if from == constants.StatusPending && to == constants.StatusInReview {
 		return true
 	}
-	if from == entities.StatusInReview && (to == entities.StatusApproved || to == entities.StatusRejected) {
+	if from == constants.StatusInReview && (to == constants.StatusApproved || to == constants.StatusRejected) {
 		return true
 	}
 	return from == to

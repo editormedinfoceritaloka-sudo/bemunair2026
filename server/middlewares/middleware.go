@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"bemunair2026/server/database/entities"
+	"bemunair2026/server/pkg/constants"
 	"bemunair2026/server/pkg/response"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -90,11 +90,11 @@ func Role(roles ...string) gin.HandlerFunc {
 }
 
 func AdminOnly() gin.HandlerFunc {
-	return Role(entities.RoleAdmin)
+	return Role(constants.RoleAdmin)
 }
 
 func MentriOnly() gin.HandlerFunc {
-	return Role(entities.RoleMentri)
+	return Role(constants.RoleMentri)
 }
 
 func CurrentClaims(c *gin.Context) *Claims {

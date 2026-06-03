@@ -42,7 +42,7 @@ Untuk verifikasi dev saja:
 
 ```bash
 cd server
-go run ./cmd/migrate
+go run ./cmd migrate
 ```
 
 ## Endpoint Utama

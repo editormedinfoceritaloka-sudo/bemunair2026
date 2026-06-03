@@ -32,3 +32,13 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 
 	return db, nil
 }
+
+func Migrate() error {
+	cfg := config.Load()
+	db, err := Connect(cfg)
+	if err != nil {
+		return err
+	}
+
+	return NewMigrationManager(db).Run()
+}

@@ -3,8 +3,8 @@ package auth
 import (
 	"testing"
 
-	"bemunair2026/server/database/entities"
 	"bemunair2026/server/modules/user"
+	"bemunair2026/server/pkg/constants"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -18,7 +18,7 @@ func TestRegisterAndLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	service := NewService(user.NewRepository(db), "secret")
-	if _, err := service.Register("Admin", "admin@test", "secret", entities.RoleAdmin, nil, nil); err != nil {
+	if _, err := service.Register("Admin", "admin@test", "secret", constants.RoleAdmin, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 	token, u, err := service.Login("admin@test", "secret")
