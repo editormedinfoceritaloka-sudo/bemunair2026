@@ -2,7 +2,7 @@ package letter_template
 
 import (
 	"bemunair2026/server/database/entities"
-	"bemunair2026/server/pkg/response"
+	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

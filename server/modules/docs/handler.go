@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bemunair2026/server/pkg/response"
+	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

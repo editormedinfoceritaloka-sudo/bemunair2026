@@ -5,7 +5,7 @@ import (
 
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/user"
-	"bemunair2026/server/pkg/response"
+	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

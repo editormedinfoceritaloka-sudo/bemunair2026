@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"bemunair2026/server/pkg/constants"
-	"bemunair2026/server/pkg/response"
+	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

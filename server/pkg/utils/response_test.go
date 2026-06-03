@@ -1,4 +1,4 @@
-package response
+package utils
 
 import (
 	"encoding/json"
@@ -20,17 +20,17 @@ func TestEnvelopeSuccessAndError(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("status = %d", w.Code)
 	}
-	var ok Envelope
+	var ok Response
 	_ = json.Unmarshal(w.Body.Bytes(), &ok)
-	if !ok.Success || ok.Message != "ok" {
+	if !ok.Status || ok.Message != "ok" {
 		t.Fatalf("unexpected ok envelope: %+v", ok)
 	}
 
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/err", nil))
-	var er Envelope
+	var er Response
 	_ = json.Unmarshal(w.Body.Bytes(), &er)
-	if er.Success || er.Error.Code != Forbidden {
+	if er.Status || er.Error != Forbidden {
 		t.Fatalf("unexpected error envelope: %+v", er)
 	}
 }

@@ -1,4 +1,4 @@
-package response
+package utils
 
 import (
 	"net/http"
@@ -35,26 +35,51 @@ type ErrorBody struct {
 	Details []FieldError `json:"details,omitempty"`
 }
 
-type Envelope struct {
-	Success bool       `json:"success"`
-	Message string     `json:"message"`
-	Data    any        `json:"data,omitempty"`
-	Meta    *Meta      `json:"meta,omitempty"`
-	Error   *ErrorBody `json:"error,omitempty"`
+type Response struct {
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
+	Error   any    `json:"error,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Meta    any    `json:"meta,omitempty"`
+}
+
+type EmptyObj struct{}
+
+func BuildResponseSuccess(message string, data any) Response {
+	return Response{
+		Status:  true,
+		Message: message,
+		Data:    data,
+	}
+}
+
+func BuildResponseFailed(message string, err string, data any) Response {
+	return Response{
+		Status:  false,
+		Message: message,
+		Error:   err,
+		Data:    data,
+	}
 }
 
 func OK(c *gin.Context, message string, data any) {
-	c.JSON(http.StatusOK, Envelope{Success: true, Message: message, Data: data})
+	c.JSON(http.StatusOK, BuildResponseSuccess(message, data))
 }
 
 func Created(c *gin.Context, message string, data any) {
-	c.JSON(http.StatusCreated, Envelope{Success: true, Message: message, Data: data})
+	c.JSON(http.StatusCreated, BuildResponseSuccess(message, data))
 }
 
 func List(c *gin.Context, message string, data any, meta Meta) {
-	c.JSON(http.StatusOK, Envelope{Success: true, Message: message, Data: data, Meta: &meta})
+	res := BuildResponseSuccess(message, data)
+	res.Meta = meta
+	c.JSON(http.StatusOK, res)
 }
 
 func Error(c *gin.Context, status int, code, message string, details ...FieldError) {
-	c.JSON(status, Envelope{Success: false, Message: message, Error: &ErrorBody{Code: code, Details: details}})
+	res := BuildResponseFailed(message, code, nil)
+	if len(details) > 0 {
+		res.Error = ErrorBody{Code: code, Details: details}
+	}
+	c.JSON(status, res)
 }
