@@ -6,7 +6,7 @@ import (
 
 	"bemunair2026/server/config"
 	contentRepository "bemunair2026/server/modules/content_submission/repository"
-	letter "bemunair2026/server/modules/letter_submission"
+	letterRepository "bemunair2026/server/modules/letter_submission/repository"
 	"bemunair2026/server/modules/wa_notification"
 	"bemunair2026/server/pkg"
 	"github.com/robfig/cron/v3"
@@ -38,7 +38,7 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 	}
 	c := cron.New(cron.WithLocation(loc))
 	contentRepo := contentRepository.NewContentSubmissionRepository(db)
-	letterRepo := letter.NewRepository(db)
+	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
 	_, _ = c.AddFunc("0 12 * * *", func() {
 		contentRows, err := contentRepo.ListPendingOlderThan(24 * time.Hour)
 		if err != nil {
