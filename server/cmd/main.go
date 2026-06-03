@@ -15,6 +15,7 @@ import (
 	letter "bemunair2026/server/modules/letter_submission"
 	letterRepository "bemunair2026/server/modules/letter_submission/repository"
 	"bemunair2026/server/modules/letter_template"
+	templateRepository "bemunair2026/server/modules/letter_template/repository"
 	"bemunair2026/server/modules/medinfo_pj"
 	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
 	"bemunair2026/server/modules/user"
@@ -47,7 +48,7 @@ func main() {
 	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
 	queueRepo := medinfoRepository.NewMedinfoPJRepository(db)
-	templateRepo := letter_template.NewRepository(db)
+	templateRepo := templateRepository.NewLetterTemplateRepository(db)
 
 	router.GET("/ping", func(c *gin.Context) { response.OK(c, "pong", nil) })
 
