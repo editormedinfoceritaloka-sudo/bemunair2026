@@ -48,15 +48,15 @@ func main() {
 
 	router.GET("/ping", func(c *gin.Context) { response.OK(c, "pong", nil) })
 
-	api := router.Group("/api")
+	v1 := router.Group("/api/v1")
 	{
-		auth.RegisterRoutes(api, userRepo, cfg.JWTSecret)
-		docs.RegisterRoutes(api, cfg.DocsDir)
-		user.RegisterRoutes(api, userRepo, cfg.JWTSecret)
-		content.RegisterRoutes(api, contentRepo, userRepo, waClient, cfg.JWTSecret)
-		letter.RegisterRoutes(api, letterRepo, userRepo, waClient, cfg.JWTSecret)
-		medinfo_pj.RegisterRoutes(api, queueRepo, cfg.JWTSecret)
-		letter_template.RegisterRoutes(api, templateRepo, cfg.JWTSecret)
+		auth.RegisterRoutes(v1, userRepo, cfg.JWTSecret)
+		docs.RegisterRoutes(v1, cfg.DocsDir)
+		user.RegisterRoutes(v1, userRepo, cfg.JWTSecret)
+		content.RegisterRoutes(v1, contentRepo, userRepo, waClient, cfg.JWTSecret)
+		letter.RegisterRoutes(v1, letterRepo, userRepo, waClient, cfg.JWTSecret)
+		medinfo_pj.RegisterRoutes(v1, queueRepo, cfg.JWTSecret)
+		letter_template.RegisterRoutes(v1, templateRepo, cfg.JWTSecret)
 	}
 
 	cron.StartDailyCron(db, waClient, cfg)
