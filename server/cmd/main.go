@@ -15,6 +15,7 @@ import (
 	"bemunair2026/server/modules/letter_template"
 	"bemunair2026/server/modules/medinfo_pj"
 	"bemunair2026/server/modules/user"
+	userRepository "bemunair2026/server/modules/user/repository"
 	"bemunair2026/server/pkg"
 	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,7 @@ func main() {
 	router := gin.New()
 	router.Use(middlewares.RequestLogger(), middlewares.Recovery(), middlewares.CORS())
 
-	userRepo := user.NewRepository(db)
+	userRepo := userRepository.NewUserRepository(db)
 	waClient := pkg.NewWAClient(cfg.WAURL, cfg.WAAPIKey)
 	contentRepo := content.NewRepository(db)
 	letterRepo := letter.NewRepository(db)

@@ -7,7 +7,7 @@ import (
 
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/middlewares"
-	"bemunair2026/server/modules/user"
+	"bemunair2026/server/modules/user/repository"
 	"bemunair2026/server/pkg/constants"
 	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -16,10 +16,10 @@ import (
 type Handler struct {
 	repo    *Repository
 	service *Service
-	users   *user.Repository
+	users   repository.UserRepository
 }
 
-func NewHandler(repo *Repository, service *Service, users *user.Repository) *Handler {
+func NewHandler(repo *Repository, service *Service, users repository.UserRepository) *Handler {
 	return &Handler{repo: repo, service: service, users: users}
 }
 

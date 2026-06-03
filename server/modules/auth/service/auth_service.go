@@ -7,22 +7,30 @@ import (
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/auth/dto"
-	"bemunair2026/server/modules/auth/repository"
+	"bemunair2026/server/modules/user/repository"
 	"bemunair2026/server/pkg/constants"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Service struct {
-	repo      *repository.Repository
-	jwtSecret string
+type AuthService interface {
+	Register(req dto.RegisterRequest) (*dto.UserResponse, error)
+	Login(req dto.LoginRequest) (*dto.LoginResponse, error)
+	Me(userID uint64) (*dto.UserResponse, error)
 }
 
-func NewService(repo *repository.Repository, jwtSecret string) *Service {
-	return &Service{repo: repo, jwtSecret: jwtSecret}
+type authService struct {
+	userRepository repository.UserRepository
+	jwtSecret      string
 }
 
-func (s *Service) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
+var _ AuthService = (*authService)(nil)
+
+func NewAuthService(userRepository repository.UserRepository, jwtSecret string) AuthService {
+	return &authService{userRepository: userRepository, jwtSecret: jwtSecret}
+}
+
+func (s *authService) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
 	if req.Role != constants.RoleAdmin && req.Role != constants.RoleMentri {
 		return nil, errors.New("invalid role")
 	}
@@ -38,15 +46,15 @@ func (s *Service) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
 		Ministry:     req.Ministry,
 		Phone:        req.Phone,
 	}
-	if err := s.repo.Create(user); err != nil {
+	if err := s.userRepository.Create(user); err != nil {
 		return nil, err
 	}
 	res := dto.NewUserResponse(user)
 	return &res, nil
 }
 
-func (s *Service) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
-	user, err := s.repo.FindByEmail(req.Email)
+func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
+	user, err := s.userRepository.FindByEmail(req.Email)
 	if err != nil || user == nil {
 		return nil, errors.New("invalid credentials")
 	}
@@ -64,8 +72,8 @@ func (s *Service) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	return &dto.LoginResponse{Token: signed, User: dto.NewUserResponse(user)}, nil
 }
 
-func (s *Service) Me(userID uint64) (*dto.UserResponse, error) {
-	user, err := s.repo.FindByID(userID)
+func (s *authService) Me(userID uint64) (*dto.UserResponse, error) {
+	user, err := s.userRepository.FindByID(userID)
 	if err != nil || user == nil {
 		return nil, err
 	}
