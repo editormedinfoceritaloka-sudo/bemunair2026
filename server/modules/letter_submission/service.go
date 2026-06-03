@@ -1,11 +1,12 @@
 package letter_submission
 
 import (
+	"errors"
+
 	"bemunair2026/server/database/entities"
-	"bemunair2026/server/modules/content_submission"
+	contentService "bemunair2026/server/modules/content_submission/service"
 	"bemunair2026/server/modules/wa_notification"
 	"bemunair2026/server/pkg"
-	"errors"
 )
 
 type Service struct {
@@ -30,7 +31,7 @@ func (s *Service) UpdateStatus(id uint64, status string, notes *string) (*entiti
 	if err != nil || current == nil {
 		return current, err
 	}
-	if !content_submission.ValidTransition(current.Status, status) {
+	if !contentService.ValidTransition(current.Status, status) {
 		return nil, errors.New("invalid transition")
 	}
 	return s.repo.UpdateStatus(id, status, notes)

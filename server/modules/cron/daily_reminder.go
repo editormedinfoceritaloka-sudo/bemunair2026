@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"bemunair2026/server/config"
-	content "bemunair2026/server/modules/content_submission"
+	contentRepository "bemunair2026/server/modules/content_submission/repository"
 	letter "bemunair2026/server/modules/letter_submission"
 	"bemunair2026/server/modules/wa_notification"
 	"bemunair2026/server/pkg"
@@ -37,7 +37,7 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 		loc = time.FixedZone("Asia/Jakarta", 7*3600)
 	}
 	c := cron.New(cron.WithLocation(loc))
-	contentRepo := content.NewRepository(db)
+	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letter.NewRepository(db)
 	_, _ = c.AddFunc("0 12 * * *", func() {
 		contentRows, err := contentRepo.ListPendingOlderThan(24 * time.Hour)

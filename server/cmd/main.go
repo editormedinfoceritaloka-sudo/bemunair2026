@@ -9,6 +9,7 @@ import (
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/auth"
 	content "bemunair2026/server/modules/content_submission"
+	contentRepository "bemunair2026/server/modules/content_submission/repository"
 	"bemunair2026/server/modules/cron"
 	"bemunair2026/server/modules/docs"
 	letter "bemunair2026/server/modules/letter_submission"
@@ -41,7 +42,7 @@ func main() {
 
 	userRepo := userRepository.NewUserRepository(db)
 	waClient := pkg.NewWAClient(cfg.WAURL, cfg.WAAPIKey)
-	contentRepo := content.NewRepository(db)
+	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letter.NewRepository(db)
 	queueRepo := medinfo_pj.NewRepository(db)
 	templateRepo := letter_template.NewRepository(db)
