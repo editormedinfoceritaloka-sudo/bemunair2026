@@ -20,7 +20,6 @@ type CreateRequest struct {
 	ArticleDriveLink *string
 	Deadline         *time.Time
 	BriefLink        string
-	PosterFile       string
 }
 
 type UpdateStatusRequest struct {
@@ -54,7 +53,6 @@ type ContentSubmissionResponse struct {
 	ArticleDriveLink *string      `json:"article_drive_link,omitempty"`
 	Deadline         *time.Time   `json:"deadline,omitempty"`
 	BriefLink        string       `json:"brief_link"`
-	PosterFile       string       `json:"poster_file"`
 	AssignedPJID     *uint64      `json:"assigned_pj_id"`
 	AssignedPJ       *UserSummary `json:"assigned_pj,omitempty"`
 	Status           string       `json:"status"`
@@ -85,7 +83,6 @@ func NewContentSubmissionResponse(sub *entities.ContentSubmission) ContentSubmis
 		ArticleDriveLink: sub.ArticleDriveLink,
 		Deadline:         sub.Deadline,
 		BriefLink:        sub.BriefLink,
-		PosterFile:       sub.PosterFile,
 		AssignedPJID:     sub.AssignedPJID,
 		AssignedPJ:       newUserSummary(sub.AssignedPJ),
 		Status:           sub.Status,

@@ -60,7 +60,6 @@ func (s *contentSubmissionService) Create(req dto.CreateRequest, submitterID uin
 		ArticleDriveLink: req.ArticleDriveLink,
 		Deadline:         deadline,
 		BriefLink:        req.BriefLink,
-		PosterFile:       req.PosterFile,
 		Status:           constants.StatusPending,
 	}
 

@@ -63,9 +63,6 @@ func (c *contentSubmissionController) Create(ctx *gin.Context) {
 		ArticleDriveLink: optionalForm(ctx, "article_drive_link"),
 		BriefLink:        ctx.PostForm("brief_link"),
 	}
-	if file, err := ctx.FormFile("poster_file"); err == nil {
-		req.PosterFile = file.Filename
-	}
 
 	if err := c.validation.ValidateCreateRequest(req); err != nil {
 		res := response.BuildResponseFailed("Validasi gagal", err.Error(), nil)
