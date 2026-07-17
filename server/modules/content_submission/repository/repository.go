@@ -56,7 +56,7 @@ func (r *contentSubmissionRepository) FindByID(id uint64) (*entities.ContentSubm
 
 func (r *contentSubmissionRepository) ListForUser(role string, userID uint64, ministry *string) ([]entities.ContentSubmission, error) {
 	var rows []entities.ContentSubmission
-	query := r.db.Preload("Submitter").Preload("AssignedPJ").Order("deadline ASC")
+	query := r.db.Preload("Submitter").Preload("AssignedPJ").Order("deadline IS NULL, deadline ASC")
 	if role == constants.RoleMentri {
 		query = query.Where("submitter_id = ? OR ministry = ?", userID, value(ministry))
 	}
@@ -81,7 +81,7 @@ func (r *contentSubmissionRepository) ListPendingOlderThan(age time.Duration) ([
 	var rows []entities.ContentSubmission
 	cutoff := time.Now().Add(-age)
 	return rows, r.db.Preload("Submitter").Preload("AssignedPJ").
-		Where("status IN ? AND created_at <= ?", []string{constants.StatusPending, constants.StatusInReview}, cutoff).
+		Where("status IN ? AND created_at <= ? AND deadline IS NOT NULL", []string{constants.StatusPending, constants.StatusInReview}, cutoff).
 		Order("deadline ASC").
 		Find(&rows).Error
 }

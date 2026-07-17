@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/modules/content_submission/dto"
@@ -42,16 +43,25 @@ func (s *contentSubmissionService) Create(req dto.CreateRequest, submitterID uin
 		req.Ministry = *claimsMinistry
 	}
 
+	deadline := deriveDeadline(req)
+
 	submission := &entities.ContentSubmission{
-		SubmitterID:    submitterID,
-		Ministry:       req.Ministry,
-		Platform:       req.Platform,
-		SubmissionType: req.SubmissionType,
-		Caption:        req.Caption,
-		Deadline:       req.Deadline,
-		BriefFile:      req.BriefFile,
-		PosterFile:     req.PosterFile,
-		Status:         constants.StatusPending,
+		SubmitterID:      submitterID,
+		Ministry:         req.Ministry,
+		SubmissionType:   req.SubmissionType,
+		Title:            req.Title,
+		AddSong:          req.AddSong,
+		Caption:          req.Caption,
+		AdditionalNotes:  req.AdditionalNotes,
+		PublishDate:      req.PublishDate,
+		PublishTime:      req.PublishTime,
+		DesignDriveLink:  req.DesignDriveLink,
+		CanvaLink:        req.CanvaLink,
+		ArticleDriveLink: req.ArticleDriveLink,
+		Deadline:         deadline,
+		BriefLink:        req.BriefLink,
+		PosterFile:       req.PosterFile,
+		Status:           constants.StatusPending,
 	}
 
 	pj, err := s.repository.CreateWithAssignment(submission)
@@ -100,6 +110,21 @@ func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusR
 
 func (s *contentSubmissionService) Delete(id uint64) error {
 	return s.repository.Delete(id)
+}
+
+func deriveDeadline(req dto.CreateRequest) *time.Time {
+	if req.PublishDate == nil {
+		return nil
+	}
+	date := *req.PublishDate
+	hour, minute := 0, 0
+	if req.PublishTime != nil {
+		if t, err := time.Parse("15:04", *req.PublishTime); err == nil {
+			hour, minute = t.Hour(), t.Minute()
+		}
+	}
+	deadline := time.Date(date.Year(), date.Month(), date.Day(), hour, minute, 0, 0, time.Local)
+	return &deadline
 }
 
 func ValidTransition(from, to string) bool {

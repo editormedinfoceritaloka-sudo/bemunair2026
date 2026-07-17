@@ -14,9 +14,12 @@ func NotifyContentSubmissionCreated(s *entities.ContentSubmission, pj, submitter
 	if wa == nil || submitter == nil {
 		return errs
 	}
-	deadline := formatTime(s.Deadline)
+	deadlineLine := ""
+	if s.Deadline != nil {
+		deadlineLine = fmt.Sprintf("Deadline: %s\n", formatTime(*s.Deadline))
+	}
 	if pj != nil && pj.Phone != nil {
-		msg := fmt.Sprintf("Halo %s\n\nAda pengajuan konten baru yang perlu kamu tangani.\n\nDari: %s (%s)\nPlatform: %s\nJenis: %s\nCaption: %s\nDeadline: %s\nStatus: PENDING\n\nSilakan cek dashboard BEM UNAIR segera.", pj.Name, submitter.Name, s.Ministry, s.Platform, s.SubmissionType, s.Caption, deadline)
+		msg := fmt.Sprintf("Halo %s\n\nAda pengajuan konten baru yang perlu kamu tangani.\n\nDari: %s (%s)\nJenis: %s\nJudul: %s\nCaption: %s\n%sStatus: PENDING\n\nSilakan cek dashboard BEM UNAIR segera.", pj.Name, submitter.Name, s.Ministry, s.SubmissionType, s.Title, s.Caption, deadlineLine)
 		if err := wa.SendTextMessage(*pj.Phone, msg); err != nil {
 			errs = append(errs, err)
 		}
@@ -26,7 +29,7 @@ func NotifyContentSubmissionCreated(s *entities.ContentSubmission, pj, submitter
 		if pj != nil {
 			pjName = pj.Name
 		}
-		msg := fmt.Sprintf("Halo %s\n\nPengajuan kamu berhasil masuk ke sistem BEM UNAIR!\n\nPlatform: %s\nJenis: %s\nDeadline: %s\nStatus: PENDING\nPJ: %s\n\nKami akan menghubungimu jika ada update. Terima kasih!", submitter.Name, s.Platform, s.SubmissionType, deadline, pjName)
+		msg := fmt.Sprintf("Halo %s\n\nPengajuan kamu berhasil masuk ke sistem BEM UNAIR!\n\nJenis: %s\nJudul: %s\n%sStatus: PENDING\nPJ: %s\n\nKami akan menghubungimu jika ada update. Terima kasih!", submitter.Name, s.SubmissionType, s.Title, deadlineLine, pjName)
 		if err := wa.SendTextMessage(*submitter.Phone, msg); err != nil {
 			errs = append(errs, err)
 		}

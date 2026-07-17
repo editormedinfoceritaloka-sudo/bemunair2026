@@ -8,4 +8,8 @@ const (
 	StatusInReview = "IN_REVIEW"
 	StatusApproved = "APPROVED"
 	StatusRejected = "REJECTED"
+
+	ContentTypeFeedsReels = "FEEDS_REELS"
+	ContentTypeInstastory = "INSTASTORY"
+	ContentTypeArtikel    = "ARTIKEL"
 )

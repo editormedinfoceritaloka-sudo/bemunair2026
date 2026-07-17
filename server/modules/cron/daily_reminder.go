@@ -52,7 +52,10 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 		}
 		items := make([]wa_notification.ReminderItem, 0, len(contentRows)+len(letterRows))
 		for _, row := range contentRows {
-			items = append(items, wa_notification.ReminderItem{Type: row.SubmissionType, Ministry: row.Ministry, Deadline: row.Deadline, PJ: row.AssignedPJ})
+			if row.Deadline == nil {
+				continue
+			}
+			items = append(items, wa_notification.ReminderItem{Type: row.SubmissionType, Ministry: row.Ministry, Deadline: *row.Deadline, PJ: row.AssignedPJ})
 		}
 		for _, row := range letterRows {
 			items = append(items, wa_notification.ReminderItem{Type: row.LetterType, Ministry: row.Ministry, Deadline: row.Deadline, PJ: row.AssignedPJ})

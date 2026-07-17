@@ -1,6 +1,29 @@
 # Content Submissions
 
-Pengajuan konten untuk platform `INSTAGRAM` atau `TWITTER`. Saat dibuat, sistem melakukan round-robin assign PJ dari queue Medinfo dan mencoba mengirim notifikasi WhatsApp. Kegagalan WA tidak menggagalkan pembuatan submission.
+Pengajuan konten dengan tiga jenis: `FEEDS_REELS`, `INSTASTORY`, dan `ARTIKEL`. Saat dibuat, sistem melakukan round-robin assign PJ dari queue Medinfo dan mencoba mengirim notifikasi WhatsApp. Kegagalan WA tidak menggagalkan pembuatan submission.
+
+## Jenis Pengajuan & Field
+
+Field bersama untuk semua jenis: `title`, `add_song` (opsional), `caption`, `additional_notes`, `brief_link` (wajib).
+
+`brief_link` berisi URL Google Docs brief yang dibuat pengaju (bukan file upload). Medinfo menyediakan template gdocs brief di luar sistem; pengaju membuat gdocs sendiri berisi brief lalu menempelkan link-nya di field ini.
+
+| Field | `FEEDS_REELS` | `INSTASTORY` | `ARTIKEL` |
+|---|:---:|:---:|:---:|
+| `publish_date` | wajib | wajib | - |
+| `publish_time` | wajib | wajib | - |
+| `design_drive_link` | wajib | wajib | - |
+| `canva_link` | wajib | wajib | - |
+| `article_drive_link` | - | - | wajib |
+
+## Deadline
+
+Tidak ada field input `deadline`. Server menurunkannya otomatis:
+
+- `FEEDS_REELS` / `INSTASTORY`: deadline diisi dari `publish_date` + `publish_time`.
+- `ARTIKEL`: tidak punya tanggal publikasi, sehingga `deadline` bernilai `null`.
+
+Konsekuensi: Artikel tetap menerima notifikasi WhatsApp saat pengajuan dibuat, tetapi tidak ikut reminder harian (cron jam 12 hanya memproses submission yang punya deadline). Pada daftar, submission tanpa deadline diurutkan paling bawah.
 
 ## Content Submission Object
 
@@ -9,12 +32,18 @@ Pengajuan konten untuk platform `INSTAGRAM` atau `TWITTER`. Saat dibuat, sistem 
   "id": 1,
   "submitter_id": 2,
   "ministry": "MEDINFO",
-  "platform": "INSTAGRAM",
-  "submission_type": "Feed",
+  "submission_type": "FEEDS_REELS",
+  "title": "Kampanye Hari Bumi",
+  "add_song": "Coldplay - Paradise",
   "caption": "Caption konten",
-  "deadline": "2026-06-10T12:00:00+07:00",
-  "brief_file": "brief.pdf",
-  "poster_file": "poster.png",
+  "additional_notes": "Tolong tag akun rektorat",
+  "publish_date": "2026-06-10T00:00:00+07:00",
+  "publish_time": "14:30",
+  "design_drive_link": "https://drive.google.com/...",
+  "canva_link": "https://canva.com/...",
+  "article_drive_link": null,
+  "deadline": "2026-06-10T14:30:00+07:00",
+  "brief_link": "https://docs.google.com/document/d/...",
   "assigned_pj_id": 3,
   "status": "PENDING",
   "notes": null,
@@ -39,12 +68,17 @@ Membuat pengajuan konten baru.
 | Field | Type | Required | Keterangan |
 |---|---|---:|---|
 | `ministry` | string | no | Jika kosong memakai ministry dari JWT |
-| `platform` | string | yes | `INSTAGRAM` atau `TWITTER` |
-| `submission_type` | string | yes | Contoh: `Feed`, `Story`, `Thread` |
-| `caption` | string | no | Caption konten |
-| `deadline` | string | yes | RFC3339, contoh `2026-06-10T12:00:00+07:00` |
-| `brief_file` | file | no | File brief |
-| `poster_file` | file | no | File poster |
+| `submission_type` | string | yes | `FEEDS_REELS`, `INSTASTORY`, atau `ARTIKEL` |
+| `title` | string | yes | Judul konten / nama kegiatan |
+| `add_song` | string | no | Lagu yang ditambahkan (opsional) |
+| `caption` | string | yes | Caption Instagram |
+| `additional_notes` | string | no | Keterangan tambahan |
+| `publish_date` | string | conditional | Format `YYYY-MM-DD`. Wajib untuk `FEEDS_REELS` / `INSTASTORY` |
+| `publish_time` | string | conditional | Format `HH:MM` (24 jam). Wajib untuk `FEEDS_REELS` / `INSTASTORY` |
+| `design_drive_link` | string | conditional | Link drive desain video/gambar. Wajib untuk `FEEDS_REELS` / `INSTASTORY` |
+| `canva_link` | string | conditional | Link Canva template kementerian. Wajib untuk `FEEDS_REELS` / `INSTASTORY` |
+| `article_drive_link` | string | conditional | Link GDrive kebutuhan artikel. Wajib untuk `ARTIKEL` |
+| `brief_link` | string | yes | Link GDocs brief yang dibuat pengaju. Wajib untuk semua jenis |
 
 ### Response 201
 
@@ -56,12 +90,15 @@ Membuat pengajuan konten baru.
     "id": 1,
     "submitter_id": 2,
     "ministry": "MEDINFO",
-    "platform": "INSTAGRAM",
-    "submission_type": "Feed",
+    "submission_type": "FEEDS_REELS",
+    "title": "Kampanye Hari Bumi",
     "caption": "Caption konten",
-    "deadline": "2026-06-10T12:00:00+07:00",
-    "brief_file": "brief.pdf",
-    "poster_file": "poster.png",
+    "publish_date": "2026-06-10T00:00:00+07:00",
+    "publish_time": "14:30",
+    "design_drive_link": "https://drive.google.com/...",
+    "canva_link": "https://canva.com/...",
+    "deadline": "2026-06-10T14:30:00+07:00",
+    "brief_link": "https://docs.google.com/document/d/...",
     "assigned_pj_id": 3,
     "status": "PENDING",
     "notes": null
@@ -74,36 +111,54 @@ Membuat pengajuan konten baru.
 | Status | Code | Keterangan |
 |---:|---|---|
 | 401 | `UNAUTHENTICATED` | Token tidak valid |
-| 422 | `VALIDATION_ERROR` | Deadline bukan RFC3339 atau field wajib kosong |
+| 422 | `VALIDATION_ERROR` | `publish_date` bukan `YYYY-MM-DD`, jenis tidak dikenal, atau field wajib per jenis kosong |
 | 500 | `INTERNAL_ERROR` | Database gagal menyimpan |
 
 ```json
 {
   "success": false,
-  "message": "Deadline harus RFC3339",
-  "error": { "code": "VALIDATION_ERROR" }
+  "message": "Validasi gagal",
+  "error": "article_drive_link wajib diisi untuk Artikel"
 }
 ```
 
 ### Curl
 
+Feeds & Reels / Instastory:
+
 ```bash
 curl -X POST http://localhost:8081/api/content-submissions \
   -H "Authorization: Bearer $TOKEN" \
   -F ministry=MEDINFO \
-  -F platform=INSTAGRAM \
-  -F submission_type=Feed \
+  -F submission_type=FEEDS_REELS \
+  -F title="Kampanye Hari Bumi" \
   -F caption="Caption konten" \
-  -F deadline=2026-06-10T12:00:00+07:00 \
-  -F brief_file=@brief.pdf \
-  -F poster_file=@poster.png
+  -F publish_date=2026-06-10 \
+  -F publish_time=14:30 \
+  -F design_drive_link="https://drive.google.com/..." \
+  -F canva_link="https://canva.com/..." \
+  -F brief_link="https://docs.google.com/document/d/..."
+```
+
+Artikel:
+
+```bash
+curl -X POST http://localhost:8081/api/content-submissions \
+  -H "Authorization: Bearer $TOKEN" \
+  -F ministry=MEDINFO \
+  -F submission_type=ARTIKEL \
+  -F title="Liputan Seminar Nasional" \
+  -F caption="Caption artikel" \
+  -F additional_notes="Penyelenggara: BEM UNAIR, tempat: Aula, waktu: 10 Juni" \
+  -F article_drive_link="https://drive.google.com/..." \
+  -F brief_link="https://docs.google.com/document/d/..."
 ```
 
 ---
 
 ## GET /api/content-submissions
 
-Mengambil daftar pengajuan konten. `ADMIN` melihat semua. `MENTRI` hanya melihat milik sendiri atau ministry-nya.
+Mengambil daftar pengajuan konten. `ADMIN` melihat semua. `MENTRI` hanya melihat milik sendiri atau ministry-nya. Submission tanpa deadline (Artikel) diurutkan paling bawah.
 
 **Auth:** Authenticated  
 **Content-Type:** none
@@ -123,10 +178,10 @@ Tidak ada query parameter pada implementasi saat ini.
       "id": 1,
       "submitter_id": 2,
       "ministry": "MEDINFO",
-      "platform": "INSTAGRAM",
-      "submission_type": "Feed",
+      "submission_type": "FEEDS_REELS",
+      "title": "Kampanye Hari Bumi",
       "caption": "Caption konten",
-      "deadline": "2026-06-10T12:00:00+07:00",
+      "deadline": "2026-06-10T14:30:00+07:00",
       "assigned_pj_id": 3,
       "status": "PENDING",
       "submitter": { "id": 2, "name": "Mentri Medinfo" },
@@ -176,12 +231,16 @@ Mengambil detail pengajuan konten.
     "id": 1,
     "submitter_id": 2,
     "ministry": "MEDINFO",
-    "platform": "INSTAGRAM",
-    "submission_type": "Feed",
+    "submission_type": "FEEDS_REELS",
+    "title": "Kampanye Hari Bumi",
     "caption": "Caption konten",
-    "deadline": "2026-06-10T12:00:00+07:00",
-    "brief_file": "brief.pdf",
-    "poster_file": "poster.png",
+    "additional_notes": "Tolong tag akun rektorat",
+    "publish_date": "2026-06-10T00:00:00+07:00",
+    "publish_time": "14:30",
+    "design_drive_link": "https://drive.google.com/...",
+    "canva_link": "https://canva.com/...",
+    "deadline": "2026-06-10T14:30:00+07:00",
+    "brief_link": "https://docs.google.com/document/d/...",
     "assigned_pj_id": 3,
     "status": "PENDING",
     "notes": null

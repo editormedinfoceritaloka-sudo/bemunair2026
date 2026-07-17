@@ -8,6 +8,7 @@ import (
 	"bemunair2026/server/middlewares"
 	"bemunair2026/server/modules/content_submission/dto"
 	"bemunair2026/server/modules/content_submission/service"
+	"bemunair2026/server/modules/content_submission/validation"
 	response "bemunair2026/server/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -21,36 +22,55 @@ type ContentSubmissionController interface {
 }
 
 type contentSubmissionController struct {
-	service service.ContentSubmissionService
+	service    service.ContentSubmissionService
+	validation *validation.ContentSubmissionValidation
 }
 
 var _ ContentSubmissionController = (*contentSubmissionController)(nil)
 
 func NewContentSubmissionController(service service.ContentSubmissionService) ContentSubmissionController {
-	return &contentSubmissionController{service: service}
+	return &contentSubmissionController{
+		service:    service,
+		validation: validation.NewContentSubmissionValidation(),
+	}
 }
 
 func (c *contentSubmissionController) Create(ctx *gin.Context) {
 	claims := middlewares.CurrentClaims(ctx)
-	deadline, err := time.Parse(time.RFC3339, ctx.PostForm("deadline"))
-	if err != nil {
-		res := response.BuildResponseFailed("Deadline harus RFC3339", err.Error(), nil)
-		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, res)
-		return
+
+	var publishDate *time.Time
+	if raw := ctx.PostForm("publish_date"); raw != "" {
+		parsed, err := time.ParseInLocation("2006-01-02", raw, time.Local)
+		if err != nil {
+			res := response.BuildResponseFailed("publish_date harus format YYYY-MM-DD", err.Error(), nil)
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, res)
+			return
+		}
+		publishDate = &parsed
 	}
 
 	req := dto.CreateRequest{
-		Ministry:       ctx.PostForm("ministry"),
-		Platform:       ctx.PostForm("platform"),
-		SubmissionType: ctx.PostForm("submission_type"),
-		Caption:        ctx.PostForm("caption"),
-		Deadline:       deadline,
-	}
-	if file, err := ctx.FormFile("brief_file"); err == nil {
-		req.BriefFile = file.Filename
+		Ministry:         ctx.PostForm("ministry"),
+		SubmissionType:   ctx.PostForm("submission_type"),
+		Title:            ctx.PostForm("title"),
+		Caption:          ctx.PostForm("caption"),
+		AddSong:          optionalForm(ctx, "add_song"),
+		AdditionalNotes:  optionalForm(ctx, "additional_notes"),
+		PublishDate:      publishDate,
+		PublishTime:      optionalForm(ctx, "publish_time"),
+		DesignDriveLink:  optionalForm(ctx, "design_drive_link"),
+		CanvaLink:        optionalForm(ctx, "canva_link"),
+		ArticleDriveLink: optionalForm(ctx, "article_drive_link"),
+		BriefLink:        ctx.PostForm("brief_link"),
 	}
 	if file, err := ctx.FormFile("poster_file"); err == nil {
 		req.PosterFile = file.Filename
+	}
+
+	if err := c.validation.ValidateCreateRequest(req); err != nil {
+		res := response.BuildResponseFailed("Validasi gagal", err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, res)
+		return
 	}
 
 	created, warnings, err := c.service.Create(req, claims.UserID, claims.Ministry)
@@ -124,4 +144,11 @@ func (c *contentSubmissionController) Delete(ctx *gin.Context) {
 
 	res := response.BuildResponseSuccess("Submission berhasil dihapus", nil)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func optionalForm(ctx *gin.Context, key string) *string {
+	if v := ctx.PostForm(key); v != "" {
+		return &v
+	}
+	return nil
 }

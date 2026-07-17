@@ -29,14 +29,15 @@ func TestNotifyContentSubmissionCreated(t *testing.T) {
 	pjPhone, submitterPhone := "6281", "6282"
 	pj := &entities.User{ID: 1, Name: "PJ", Phone: &pjPhone}
 	submitter := &entities.User{ID: 2, Name: "Submitter", Phone: &submitterPhone}
-	sub := &entities.ContentSubmission{Platform: "INSTAGRAM", SubmissionType: "Feed", Ministry: "MEDINFO", Deadline: time.Now()}
+	now := time.Now()
+	sub := &entities.ContentSubmission{SubmissionType: "FEEDS_REELS", Title: "Konten Kegiatan", Ministry: "MEDINFO", Deadline: &now}
 	wa := &mockWA{}
 	errs := NotifyContentSubmissionCreated(sub, pj, submitter, wa)
 	if len(errs) != 0 || len(wa.phones) != 2 {
 		t.Fatalf("wa calls = %d errs=%d", len(wa.phones), len(errs))
 	}
-	if !strings.Contains(wa.messages[0], "INSTAGRAM") {
-		t.Fatalf("message missing platform: %s", wa.messages[0])
+	if !strings.Contains(wa.messages[0], "FEEDS_REELS") {
+		t.Fatalf("message missing submission type: %s", wa.messages[0])
 	}
 }
 

@@ -7,13 +7,20 @@ import (
 )
 
 type CreateRequest struct {
-	Ministry       string
-	Platform       string
-	SubmissionType string
-	Caption        string
-	Deadline       time.Time
-	BriefFile      string
-	PosterFile     string
+	Ministry         string
+	SubmissionType   string
+	Title            string
+	AddSong          *string
+	Caption          string
+	AdditionalNotes  *string
+	PublishDate      *time.Time
+	PublishTime      *string
+	DesignDriveLink  *string
+	CanvaLink        *string
+	ArticleDriveLink *string
+	Deadline         *time.Time
+	BriefLink        string
+	PosterFile       string
 }
 
 type UpdateStatusRequest struct {
@@ -31,22 +38,29 @@ type UserSummary struct {
 }
 
 type ContentSubmissionResponse struct {
-	ID             uint64       `json:"id"`
-	SubmitterID    uint64       `json:"submitter_id"`
-	Submitter      *UserSummary `json:"submitter,omitempty"`
-	Ministry       string       `json:"ministry"`
-	Platform       string       `json:"platform"`
-	SubmissionType string       `json:"submission_type"`
-	Caption        string       `json:"caption"`
-	Deadline       time.Time    `json:"deadline"`
-	BriefFile      string       `json:"brief_file"`
-	PosterFile     string       `json:"poster_file"`
-	AssignedPJID   *uint64      `json:"assigned_pj_id"`
-	AssignedPJ     *UserSummary `json:"assigned_pj,omitempty"`
-	Status         string       `json:"status"`
-	Notes          *string      `json:"notes,omitempty"`
-	CreatedAt      time.Time    `json:"created_at"`
-	UpdatedAt      time.Time    `json:"updated_at"`
+	ID               uint64       `json:"id"`
+	SubmitterID      uint64       `json:"submitter_id"`
+	Submitter        *UserSummary `json:"submitter,omitempty"`
+	Ministry         string       `json:"ministry"`
+	SubmissionType   string       `json:"submission_type"`
+	Title            string       `json:"title"`
+	AddSong          *string      `json:"add_song,omitempty"`
+	Caption          string       `json:"caption"`
+	AdditionalNotes  *string      `json:"additional_notes,omitempty"`
+	PublishDate      *time.Time   `json:"publish_date,omitempty"`
+	PublishTime      *string      `json:"publish_time,omitempty"`
+	DesignDriveLink  *string      `json:"design_drive_link,omitempty"`
+	CanvaLink        *string      `json:"canva_link,omitempty"`
+	ArticleDriveLink *string      `json:"article_drive_link,omitempty"`
+	Deadline         *time.Time   `json:"deadline,omitempty"`
+	BriefLink        string       `json:"brief_link"`
+	PosterFile       string       `json:"poster_file"`
+	AssignedPJID     *uint64      `json:"assigned_pj_id"`
+	AssignedPJ       *UserSummary `json:"assigned_pj,omitempty"`
+	Status           string       `json:"status"`
+	Notes            *string      `json:"notes,omitempty"`
+	CreatedAt        time.Time    `json:"created_at"`
+	UpdatedAt        time.Time    `json:"updated_at"`
 }
 
 func NewContentSubmissionResponse(sub *entities.ContentSubmission) ContentSubmissionResponse {
@@ -55,22 +69,29 @@ func NewContentSubmissionResponse(sub *entities.ContentSubmission) ContentSubmis
 	}
 
 	return ContentSubmissionResponse{
-		ID:             sub.ID,
-		SubmitterID:    sub.SubmitterID,
-		Submitter:      newUserSummary(sub.Submitter),
-		Ministry:       sub.Ministry,
-		Platform:       sub.Platform,
-		SubmissionType: sub.SubmissionType,
-		Caption:        sub.Caption,
-		Deadline:       sub.Deadline,
-		BriefFile:      sub.BriefFile,
-		PosterFile:     sub.PosterFile,
-		AssignedPJID:   sub.AssignedPJID,
-		AssignedPJ:     newUserSummary(sub.AssignedPJ),
-		Status:         sub.Status,
-		Notes:          sub.Notes,
-		CreatedAt:      sub.CreatedAt,
-		UpdatedAt:      sub.UpdatedAt,
+		ID:               sub.ID,
+		SubmitterID:      sub.SubmitterID,
+		Submitter:        newUserSummary(sub.Submitter),
+		Ministry:         sub.Ministry,
+		SubmissionType:   sub.SubmissionType,
+		Title:            sub.Title,
+		AddSong:          sub.AddSong,
+		Caption:          sub.Caption,
+		AdditionalNotes:  sub.AdditionalNotes,
+		PublishDate:      sub.PublishDate,
+		PublishTime:      sub.PublishTime,
+		DesignDriveLink:  sub.DesignDriveLink,
+		CanvaLink:        sub.CanvaLink,
+		ArticleDriveLink: sub.ArticleDriveLink,
+		Deadline:         sub.Deadline,
+		BriefLink:        sub.BriefLink,
+		PosterFile:       sub.PosterFile,
+		AssignedPJID:     sub.AssignedPJID,
+		AssignedPJ:       newUserSummary(sub.AssignedPJ),
+		Status:           sub.Status,
+		Notes:            sub.Notes,
+		CreatedAt:        sub.CreatedAt,
+		UpdatedAt:        sub.UpdatedAt,
 	}
 }
 
