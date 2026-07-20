@@ -12,4 +12,7 @@ const (
 	ContentTypeFeedsReels = "FEEDS_REELS"
 	ContentTypeInstastory = "INSTASTORY"
 	ContentTypeArtikel    = "ARTIKEL"
+
+	ArticleStatusDraft     = "DRAFT"
+	ArticleStatusPublished = "PUBLISHED"
 )

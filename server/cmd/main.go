@@ -7,6 +7,8 @@ import (
 	"bemunair2026/server/config"
 	"bemunair2026/server/database"
 	"bemunair2026/server/middlewares"
+	"bemunair2026/server/modules/article"
+	articleRepository "bemunair2026/server/modules/article/repository"
 	"bemunair2026/server/modules/auth"
 	content "bemunair2026/server/modules/content_submission"
 	contentRepository "bemunair2026/server/modules/content_submission/repository"
@@ -49,6 +51,7 @@ func main() {
 	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
 	queueRepo := medinfoRepository.NewMedinfoPJRepository(db)
 	templateRepo := templateRepository.NewLetterTemplateRepository(db)
+	articleRepo := articleRepository.NewArticleRepository(db)
 
 	router.GET("/ping", func(c *gin.Context) { response.OK(c, "pong", nil) })
 
@@ -61,6 +64,7 @@ func main() {
 		letter.RegisterRoutes(v1, letterRepo, userRepo, waClient, cfg.JWTSecret)
 		medinfo_pj.RegisterRoutes(v1, queueRepo, cfg.JWTSecret)
 		letter_template.RegisterRoutes(v1, templateRepo, cfg.JWTSecret)
+		article.RegisterRoutes(v1, articleRepo, cfg.JWTSecret)
 	}
 
 	cron.StartDailyCron(db, waClient, cfg)

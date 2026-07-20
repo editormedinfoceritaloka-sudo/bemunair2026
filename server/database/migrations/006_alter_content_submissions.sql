@@ -16,3 +16,6 @@ ALTER TABLE content_submissions
 
 ALTER TABLE content_submissions
   CHANGE COLUMN brief_file brief_link VARCHAR(500) NULL;
+
+ALTER TABLE content_submissions
+  DROP COLUMN poster_file;

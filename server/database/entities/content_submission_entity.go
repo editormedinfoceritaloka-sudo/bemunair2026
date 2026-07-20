@@ -19,7 +19,6 @@ type ContentSubmission struct {
 	ArticleDriveLink *string    `gorm:"type:varchar(500)"`
 	Deadline         *time.Time `gorm:"index"`
 	BriefLink        string     `gorm:"type:varchar(500)"`
-	PosterFile       string     `gorm:"type:varchar(255)"`
 	AssignedPJID     *uint64    `gorm:"index"`
 	AssignedPJ       *User      `gorm:"foreignKey:AssignedPJID;references:ID;constraint:OnDelete:SET NULL"`
 	Status           string     `gorm:"type:enum('PENDING','IN_REVIEW','APPROVED','REJECTED');default:'PENDING';index"`
