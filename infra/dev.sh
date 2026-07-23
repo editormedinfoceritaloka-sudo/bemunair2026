@@ -1,16 +1,12 @@
-#!/bin/bash
-
-# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m' 
 
-# Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-# Functions
+
 function info() {
     echo -e "${GREEN}[INFO]${NC} $1"
 }
@@ -22,6 +18,7 @@ function warn() {
 function error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
+
 
 function usage() {
     echo "Usage: ./dev.sh [command]"
