@@ -1,16 +1,47 @@
-import type { NextFunction, Request, Response } from "express"
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express"
+
 import { env } from "../config/env.js"
 
-export function apiKeyMiddleware(req: Request, res: Response, next: NextFunction) {
-  const token = req.header("authorization")
-  if (!isValidApiKey(token)) {
-    res.status(401).json({ success: false, message: "Unauthorized" })
+export function apiKeyMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const authorization = req.header("authorization")
+
+  const bearerToken = authorization
+    ?.replace(/^Bearer\s+/i, "")
+    .trim()
+
+  const xApiKey = req
+    .header("x-api-key")
+    ?.trim()
+
+  const providedKey = bearerToken || xApiKey
+  const expectedKey = env.apiKey.trim()
+
+  if (
+    !providedKey ||
+    providedKey !== expectedKey
+  ) {
+    console.warn("[WA-HTTP] Unauthorized", {
+      method: req.method,
+      path: req.originalUrl,
+      hasBearerToken: Boolean(bearerToken),
+      hasXApiKey: Boolean(xApiKey),
+    })
+
+    res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    })
+
     return
   }
-  next()
-}
 
-export function isValidApiKey(header: string | undefined): boolean {
-  const token = header?.replace(/^Bearer\s+/i, "")
-  return Boolean(token && token === env.apiKey)
+  next()
 }
