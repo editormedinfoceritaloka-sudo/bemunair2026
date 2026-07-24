@@ -1,10 +1,12 @@
-FROM node:22-alpine
-
-RUN apk add --no-cache python3 make g++ vips-dev
-
-RUN corepack enable && corepack prepare pnpm@latest --activate
+FROM node:22-bookworm-slim
 
 WORKDIR /app
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
+
+RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc* ./
@@ -12,6 +14,8 @@ COPY .npmrc* ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+
+ENV NODE_ENV=production
 
 EXPOSE 3001
 
