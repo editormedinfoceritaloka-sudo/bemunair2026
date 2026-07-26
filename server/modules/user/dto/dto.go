@@ -35,9 +35,13 @@ func NewUserResponse(user *entities.User) UserResponse {
 	if user == nil {
 		return UserResponse{}
 	}
+	ministry := user.Ministry
+	if user.MinistryRef != nil {
+		ministry = &user.MinistryRef.Code
+	}
 	return UserResponse{
 		ID: user.ID, Name: user.Name, Email: user.Email, Role: user.Role,
-		MinistryID: user.MinistryID, Ministry: user.Ministry, Phone: user.Phone,
+		MinistryID: user.MinistryID, Ministry: ministry, Phone: user.Phone,
 	}
 }
 

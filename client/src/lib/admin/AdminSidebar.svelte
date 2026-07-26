@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import * as Sidebar from '$lib/components/ui/sidebar';
-  import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
+  import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
   import type { User } from '$lib/types';
   import { LayoutDashboard, Users, FileImage, Mail, ListOrdered, Files, Newspaper, Activity, LogOut, ShieldCheck, Building2, Settings2 } from '@lucide/svelte';
 
@@ -37,7 +37,6 @@
   ];
 
   const active = (href: string) => href === '/admin' ? page.url.pathname === href : page.url.pathname.startsWith(href);
-  const initials = $derived(user.name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase());
   const closeMobile = () => {
     if (sidebar.isMobile) sidebar.setOpenMobile(false);
   };
@@ -89,7 +88,8 @@
     <div class="w-full overflow-hidden rounded-xl border border-white-600 bg-card-200 p-2 group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
       <div class="flex min-w-0 items-center gap-2.5 overflow-hidden group-data-[collapsible=icon]:justify-center">
         <Avatar class="size-9 shrink-0 border border-blue-100 group-data-[collapsible=icon]:size-8" title={`${user.name} · ${user.role === 'ADMIN_MEDINFO' ? 'Admin Medinfo' : 'Admin Kementerian'}`}>
-          <AvatarFallback class="bg-blue-50 text-xs font-bold text-blue-700">{initials}</AvatarFallback>
+          <AvatarImage src="/brand/bem-unair-2026-logo.png" alt="Logo BEM UNAIR 2026" class="bg-white object-contain p-0.5" />
+          <AvatarFallback class="bg-blue-50 text-xs font-bold text-blue-700">BEM</AvatarFallback>
         </Avatar>
         <div class="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
           <p class="truncate text-sm font-semibold text-black-500">{user.name}</p>

@@ -54,6 +54,10 @@ func (r *fakeUserRepository) FindByEmail(email string) (*entities.User, error) {
 	return r.emails[email], nil
 }
 
+func (r *fakeUserRepository) FindMinistryByID(id uint64) (*entities.Ministry, error) {
+	return nil, nil
+}
+
 func (r *fakeUserRepository) List() ([]entities.User, error) {
 	users := make([]entities.User, 0, len(r.users))
 	for _, user := range r.users {

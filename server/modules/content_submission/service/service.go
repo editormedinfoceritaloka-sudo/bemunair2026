@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -191,9 +191,30 @@ func (s *contentSubmissionService) AssignPJ(id, pjID, actorID uint64) (*dto.Cont
 	if err != nil || row == nil {
 		return nil, err
 	}
-	_ = wa_notification.NotifyAssignedPJ(row.AssignedPJ, fmt.Sprintf("Anda ditetapkan sebagai PJ untuk %s - %s.", stringValue(row.RequestCode), row.Title), s.wa)
+	item := wa_notification.AssignmentItem{
+		RequestCode:   stringValue(row.RequestCode),
+		Service:       contentAssignmentService(row),
+		Title:         row.Title,
+		Ministry:      row.Ministry,
+		SubmitterName: row.SubmitterName,
+		Status:        row.Status,
+		DetailURL:     wa_notification.AdminDetailURL("content-submissions", row.ID),
+	}
+	if row.Deadline != nil {
+		item.Deadline = *row.Deadline
+	}
+	if err := wa_notification.NotifyAssignedPJ(row.AssignedPJ, item, s.wa); err != nil {
+		log.Printf("content assignment notification failed submission_id=%d pj_id=%d error=%v", row.ID, pjID, err)
+	}
 	res := dto.NewContentSubmissionResponse(row)
 	return &res, nil
+}
+
+func contentAssignmentService(row *entities.ContentSubmission) string {
+	if row.ServiceType == constants.ServiceTypeArticle {
+		return "Pengajuan Artikel"
+	}
+	return "Pengajuan Konten"
 }
 
 func (s *contentSubmissionService) Delete(id uint64) error {

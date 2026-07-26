@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/pkg/constants"
@@ -20,7 +19,7 @@ type ContentSubmissionRepository interface {
 	UpdateStatus(id uint64, status string, notes *string, actorID uint64) (*entities.ContentSubmission, error)
 	AssignPJ(id, pjID, actorID uint64) (*entities.ContentSubmission, error)
 	Delete(id uint64) error
-	ListPendingOlderThan(age time.Duration) ([]entities.ContentSubmission, error)
+	ListPendingForReminder() ([]entities.ContentSubmission, error)
 }
 
 type contentSubmissionRepository struct {
@@ -148,11 +147,10 @@ func (r *contentSubmissionRepository) Delete(id uint64) error {
 	return r.db.Delete(&entities.ContentSubmission{}, id).Error
 }
 
-func (r *contentSubmissionRepository) ListPendingOlderThan(age time.Duration) ([]entities.ContentSubmission, error) {
+func (r *contentSubmissionRepository) ListPendingForReminder() ([]entities.ContentSubmission, error) {
 	var rows []entities.ContentSubmission
-	cutoff := time.Now().Add(-age)
 	return rows, r.db.Preload("Submitter").Preload("AssignedPJ").Preload("Attachments").
-		Where("status IN ? AND created_at <= ? AND deadline IS NOT NULL", []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionSubmitted}, cutoff).
+		Where("status IN ? AND deadline IS NOT NULL", []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved, constants.StatusScheduled}).
 		Order("deadline ASC").
 		Find(&rows).Error
 }

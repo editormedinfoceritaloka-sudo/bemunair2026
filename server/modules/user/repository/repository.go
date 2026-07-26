@@ -11,6 +11,7 @@ type UserRepository interface {
 	Create(user *entities.User) error
 	FindByID(id uint64) (*entities.User, error)
 	FindByEmail(email string) (*entities.User, error)
+	FindMinistryByID(id uint64) (*entities.Ministry, error)
 	List() ([]entities.User, error)
 	Update(user *entities.User) error
 	Delete(id uint64) error
@@ -30,7 +31,7 @@ func (r *userRepository) Create(u *entities.User) error {
 
 func (r *userRepository) FindByID(id uint64) (*entities.User, error) {
 	var u entities.User
-	err := r.db.First(&u, id).Error
+	err := r.db.Preload("MinistryRef").First(&u, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -46,9 +47,18 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	return &u, err
 }
 
+func (r *userRepository) FindMinistryByID(id uint64) (*entities.Ministry, error) {
+	var ministry entities.Ministry
+	err := r.db.First(&ministry, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &ministry, err
+}
+
 func (r *userRepository) List() ([]entities.User, error) {
 	var users []entities.User
-	return users, r.db.Order("id ASC").Find(&users).Error
+	return users, r.db.Preload("MinistryRef").Order("id ASC").Find(&users).Error
 }
 
 func (r *userRepository) Update(u *entities.User) error {

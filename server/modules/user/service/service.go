@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/modules/user/dto"
 	"bemunair2026/server/modules/user/repository"
@@ -48,13 +50,18 @@ func (s *userService) Create(req dto.UserCreateRequest) (*dto.UserResponse, erro
 		return nil, err
 	}
 
+	ministry, err := s.resolveMinistry(req.MinistryID)
+	if err != nil {
+		return nil, err
+	}
+
 	user := &entities.User{
 		Name:         req.Name,
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		Role:         req.Role,
 		MinistryID:   req.MinistryID,
-		Ministry:     req.Ministry,
+		Ministry:     ministry,
 		Phone:        req.Phone,
 	}
 	if err := s.userRepository.Create(user); err != nil {
@@ -78,8 +85,13 @@ func (s *userService) Update(id uint64, req dto.UserUpdateRequest) (*dto.UserRes
 	if req.Role != "" {
 		user.Role = req.Role
 	}
+	ministry, err := s.resolveMinistry(req.MinistryID)
+	if err != nil {
+		return nil, err
+	}
 	user.MinistryID = req.MinistryID
-	user.Ministry = req.Ministry
+	user.Ministry = ministry
+	user.MinistryRef = nil
 	user.Phone = req.Phone
 
 	if err := s.userRepository.Update(user); err != nil {
@@ -91,4 +103,21 @@ func (s *userService) Update(id uint64, req dto.UserUpdateRequest) (*dto.UserRes
 
 func (s *userService) Delete(id uint64) error {
 	return s.userRepository.Delete(id)
+}
+
+func (s *userService) resolveMinistry(id *uint64) (*string, error) {
+	if id == nil {
+		return nil, nil
+	}
+	ministry, err := s.userRepository.FindMinistryByID(*id)
+	if err != nil {
+		return nil, err
+	}
+	if ministry == nil {
+		return nil, errors.New("kementerian tidak ditemukan")
+	}
+	if !ministry.IsActive {
+		return nil, errors.New("kementerian tidak aktif")
+	}
+	return &ministry.Code, nil
 }

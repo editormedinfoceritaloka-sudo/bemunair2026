@@ -40,12 +40,12 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
 	_, _ = c.AddFunc("0 12 * * *", func() {
-		contentRows, err := contentRepo.ListPendingOlderThan(24 * time.Hour)
+		contentRows, err := contentRepo.ListPendingForReminder()
 		if err != nil {
 			log.Printf("cron content reminder error: %v", err)
 			return
 		}
-		letterRows, err := letterRepo.ListPendingOlderThan(24 * time.Hour)
+		letterRows, err := letterRepo.ListPendingForReminder()
 		if err != nil {
 			log.Printf("cron letter reminder error: %v", err)
 			return
@@ -55,13 +55,33 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 			if row.Deadline == nil {
 				continue
 			}
-			items = append(items, wa_notification.ReminderItem{Type: row.SubmissionType, Ministry: row.Ministry, Deadline: *row.Deadline, PJ: row.AssignedPJ})
+			service := "Pengajuan Konten"
+			if row.ServiceType == "ARTICLE" {
+				service = "Pengajuan Artikel"
+			}
+			items = append(items, wa_notification.ReminderItem{RequestCode: stringValue(row.RequestCode), Service: service, Title: row.Title, Ministry: row.Ministry, Status: row.Status, Deadline: *row.Deadline, PJ: row.AssignedPJ, DetailURL: wa_notification.AdminDetailURL("content-submissions", row.ID)})
 		}
 		for _, row := range letterRows {
-			items = append(items, wa_notification.ReminderItem{Type: row.LetterType, Ministry: row.Ministry, Deadline: row.Deadline, PJ: row.AssignedPJ})
+			items = append(items, wa_notification.ReminderItem{RequestCode: stringValue(row.RequestCode), Service: "Pengajuan Surat", Title: row.Subject, Ministry: row.Ministry, Status: row.Status, Deadline: row.Deadline, PJ: row.AssignedPJ, DetailURL: wa_notification.AdminDetailURL("letter-submissions", row.ID)})
 		}
-		wa_notification.NotifyDailyPendingReminder(items, wa)
-		wa_notification.NotifyGroupDailyReminder(items, wa, cfg.WAGroupJID1, cfg.WAGroupJID2)
+		now := time.Now().In(loc)
+		items = wa_notification.ApproachingDeadline(items, now)
+		if len(items) == 0 {
+			return
+		}
+		for _, notifyErr := range wa_notification.NotifyDailyPendingReminder(items, now, wa) {
+			log.Printf("cron personal reminder error: %v", notifyErr)
+		}
+		for _, notifyErr := range wa_notification.NotifyGroupDailyReminder(items, now, wa, cfg.WAGroupJID1, cfg.WAGroupJID2) {
+			log.Printf("cron group reminder error: %v", notifyErr)
+		}
 	})
 	c.Start()
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }

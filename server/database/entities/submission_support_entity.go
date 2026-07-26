@@ -3,10 +3,10 @@ package entities
 import "time"
 
 type Ministry struct {
-	ID       uint64 `gorm:"primaryKey"`
-	Code     string `gorm:"type:varchar(50);uniqueIndex;not null"`
-	Name     string `gorm:"type:varchar(120);uniqueIndex;not null"`
-	IsActive bool   `gorm:"not null;default:true;index"`
+	ID       uint64 `gorm:"primaryKey" json:"id"`
+	Code     string `gorm:"type:varchar(50);uniqueIndex;not null" json:"code"`
+	Name     string `gorm:"type:varchar(120);uniqueIndex;not null" json:"name"`
+	IsActive bool   `gorm:"not null;default:true;index" json:"is_active"`
 	Timestamp
 }
 

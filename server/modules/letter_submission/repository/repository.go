@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/pkg/constants"
@@ -20,7 +19,7 @@ type LetterSubmissionRepository interface {
 	UpdateStatus(id uint64, status string, notes *string, actorID uint64) (*entities.LetterSubmission, error)
 	AssignPJ(id, pjID, actorID uint64) (*entities.LetterSubmission, error)
 	Delete(id uint64) error
-	ListPendingOlderThan(age time.Duration) ([]entities.LetterSubmission, error)
+	ListPendingForReminder() ([]entities.LetterSubmission, error)
 }
 
 type letterSubmissionRepository struct {
@@ -149,10 +148,10 @@ func (r *letterSubmissionRepository) Delete(id uint64) error {
 	return r.db.Delete(&entities.LetterSubmission{}, id).Error
 }
 
-func (r *letterSubmissionRepository) ListPendingOlderThan(age time.Duration) ([]entities.LetterSubmission, error) {
+func (r *letterSubmissionRepository) ListPendingForReminder() ([]entities.LetterSubmission, error) {
 	var rows []entities.LetterSubmission
 	return rows, r.db.Preload("Submitter").Preload("AssignedPJ").
-		Where("status IN ? AND created_at <= ?", []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionSubmitted}, time.Now().Add(-age)).
+		Where("status IN ?", []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved}).
 		Order("deadline ASC").
 		Find(&rows).Error
 }

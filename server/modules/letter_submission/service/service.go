@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"sort"
 
 	"bemunair2026/server/database/entities"
@@ -157,7 +157,18 @@ func (s *letterSubmissionService) AssignPJ(id, pjID, actorID uint64) (*dto.Lette
 	if err != nil || row == nil {
 		return nil, err
 	}
-	_ = wa_notification.NotifyAssignedPJ(row.AssignedPJ, fmt.Sprintf("Anda ditetapkan sebagai PJ untuk %s - %s.", pointerValue(row.RequestCode), row.Subject), s.wa)
+	if err := wa_notification.NotifyAssignedPJ(row.AssignedPJ, wa_notification.AssignmentItem{
+		RequestCode:   pointerValue(row.RequestCode),
+		Service:       "Pengajuan Surat",
+		Title:         row.Subject,
+		Ministry:      row.Ministry,
+		SubmitterName: row.SubmitterName,
+		Status:        row.Status,
+		Deadline:      row.Deadline,
+		DetailURL:     wa_notification.AdminDetailURL("letter-submissions", row.ID),
+	}, s.wa); err != nil {
+		log.Printf("letter assignment notification failed submission_id=%d pj_id=%d error=%v", row.ID, pjID, err)
+	}
 	res := dto.NewLetterSubmissionResponse(row)
 	return &res, nil
 }
