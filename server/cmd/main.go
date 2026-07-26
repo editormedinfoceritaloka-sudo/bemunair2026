@@ -27,12 +27,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+func runDatabaseCommand(command string) (bool, error) {
+	switch command {
+	case "migrate":
+		return true, database.Migrate()
+	case "seed":
+		return true, database.Seed()
+	case "setup":
 		if err := database.Migrate(); err != nil {
+			return true, err
+		}
+		return true, database.Seed()
+	default:
+		return false, nil
+	}
+}
+
+func main() {
+	if len(os.Args) > 1 {
+		handled, err := runDatabaseCommand(os.Args[1])
+		if err != nil {
 			log.Fatal(err)
 		}
-		return
+		if handled {
+			return
+		}
 	}
 
 	cfg := config.Load()

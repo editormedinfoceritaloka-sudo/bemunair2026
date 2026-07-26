@@ -16,12 +16,6 @@ services:
 
     volumes:
       - bemunair_mysql_data:/var/lib/mysql
-      - ../server/database/migrations/001_create_users_table.sql:/docker-entrypoint-initdb.d/001_create_users_table.sql:ro
-      - ../server/database/migrations/002_create_content_submissions_table.sql:/docker-entrypoint-initdb.d/002_create_content_submissions_table.sql:ro
-      - ../server/database/migrations/003_create_letter_submissions_table.sql:/docker-entrypoint-initdb.d/003_create_letter_submissions_table.sql:ro
-      - ../server/database/migrations/004_create_medinfo_pj_queues_table.sql:/docker-entrypoint-initdb.d/004_create_medinfo_pj_queues_table.sql:ro
-      - ../server/database/migrations/005_create_letter_templates_table.sql:/docker-entrypoint-initdb.d/005_create_letter_templates_table.sql:ro
-      - ../server/database/seeders/001_seed_users_and_queue.sql:/docker-entrypoint-initdb.d/006_seed_users_and_queue.sql:ro
 
     healthcheck:
       test:
@@ -63,6 +57,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
     ports:
       - "8080:8080"
@@ -83,6 +79,38 @@ services:
     networks:
       - bemunair_net
 
+  migrate:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    env_file:
+      - ../server/.env
+
+    environment:
+      APP_ENV: development
+      DB_HOST: db
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command:
+      - go
+      - run
+      - ./cmd
+      - setup
+
+    volumes:
+      - ../server:/app
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    restart: "no"
+
+    networks:
+      - bemunair_net
+
   client:
     build:
       context: ../client
@@ -98,6 +126,8 @@ services:
       HOST: 0.0.0.0
       PORT: 3000
       CI: "true"
+      API_INTERNAL_URL: http://server:8080/api/v1
+      WA_INTERNAL_URL: http://wa-engine:3001
       PNPM_STORE_DIR: /pnpm/store
     depends_on:
       - server

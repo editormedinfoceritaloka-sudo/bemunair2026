@@ -159,7 +159,7 @@ Membuat artikel baru. Selalu tersimpan sebagai `DRAFT`.
 | `title` | string | yes | Judul artikel |
 | `body` | string | yes | Isi HTML (akan disanitasi) |
 | `excerpt` | string | no | Ringkasan singkat |
-| `cover_image` | string | no | URL gambar sampul |
+| `cover_image` | string | no | URL hasil upload ImageKit untuk gambar sampul |
 
 `author_id` diambil dari JWT, bukan dari body.
 
