@@ -1,7 +1,10 @@
-bin/
+.git
+.gitignore
+bin
+tmp
+vendor
+Dockerfile
+Dockerfile.dev
 .env
 .env.*
 !.env.example
-tmp/
-vendor/
-.DS_Store

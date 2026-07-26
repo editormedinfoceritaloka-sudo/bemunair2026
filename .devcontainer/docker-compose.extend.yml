@@ -1,0 +1,94 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+    container_name: bemunair_workspace
+    working_dir: /workspace
+
+    command:
+      - /bin/sh
+      - -c
+      - while sleep 1000; do :; done
+
+    volumes:
+      - ..:/workspace:cached
+      - workspace_client_node_modules:/workspace/client/node_modules
+      - workspace_wa_node_modules:/workspace/wa-engine/node_modules
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - bemunair_net
+
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    environment:
+      APP_ENV: development
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ../server:/app
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    command:
+      - air
+      - -c
+      - .air.toml
+
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.dev
+
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ../client:/app
+      - client_node_modules:/app/node_modules
+
+    command:
+      - pnpm
+      - dev
+      - --host
+      - 0.0.0.0
+      - --port
+      - "3000"
+
+  wa-engine:
+    build:
+      context: ../wa-engine
+      dockerfile: Dockerfile.dev
+
+    environment:
+      NODE_ENV: development
+      WA_ENGINE_PORT: 3001
+
+    volumes:
+      - ../wa-engine:/app
+      - wa_engine_node_modules:/app/node_modules
+      - wa_auth_data:/app/sessions
+
+    command:
+      - pnpm
+      - dev
+
+volumes:
+  workspace_client_node_modules:
+  workspace_wa_node_modules:
+  client_node_modules:
+  wa_engine_node_modules:
+  server_go_modules:
+  server_go_build_cache:

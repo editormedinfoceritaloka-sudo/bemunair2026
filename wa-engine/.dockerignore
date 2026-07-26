@@ -1,5 +1,13 @@
 node_modules
-.modules.yaml
-auth_info_baileys
-*.log
+dist
+build
+sessions
+.git
+.gitignore
+Dockerfile
+Dockerfile.dev
+npm-debug.log
+pnpm-debug.log
 .env
+.env.*
+!.env.example

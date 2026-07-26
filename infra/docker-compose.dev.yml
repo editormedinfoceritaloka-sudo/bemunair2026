@@ -1,0 +1,221 @@
+name: bemunair-dev
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: bemunair_db_dev
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: bemunair_db
+      MYSQL_USER: bemunair
+      MYSQL_PASSWORD: bemunair_password
+
+    ports:
+      - "3308:3306"
+
+    volumes:
+      - bemunair_mysql_data:/var/lib/mysql
+      - ../server/database/migrations/001_create_users_table.sql:/docker-entrypoint-initdb.d/001_create_users_table.sql:ro
+      - ../server/database/migrations/002_create_content_submissions_table.sql:/docker-entrypoint-initdb.d/002_create_content_submissions_table.sql:ro
+      - ../server/database/migrations/003_create_letter_submissions_table.sql:/docker-entrypoint-initdb.d/003_create_letter_submissions_table.sql:ro
+      - ../server/database/migrations/004_create_medinfo_pj_queues_table.sql:/docker-entrypoint-initdb.d/004_create_medinfo_pj_queues_table.sql:ro
+      - ../server/database/migrations/005_create_letter_templates_table.sql:/docker-entrypoint-initdb.d/005_create_letter_templates_table.sql:ro
+      - ../server/database/seeders/001_seed_users_and_queue.sql:/docker-entrypoint-initdb.d/006_seed_users_and_queue.sql:ro
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "bemunair",
+          "-pbemunair_password"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_server_dev
+
+    env_file:
+      - ../server/.env
+
+    environment:
+      APP_ENV: development
+      DB_HOST: db
+      WA_ENGINE_URL: http://wa-engine:3001
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ../server:/app
+      - ../docs/api:/docs/api:ro
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    command:
+      - air
+      - -c
+      - .air.toml
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_client_dev
+
+    env_file:
+      - ../client/.env
+
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      CI: "true"
+      PNPM_STORE_DIR: /pnpm/store
+    depends_on:
+      - server
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ../client:/app
+      - client_node_modules:/app/node_modules
+      - client_pnpm_store:/pnpm/store
+
+    command:
+      - pnpm
+      - dev
+      - --host
+      - 0.0.0.0
+      - --port
+      - "3000"
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  wa-engine:
+    build:
+      context: ../wa-engine
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_wa_engine_dev
+
+    env_file:
+      - ../wa-engine/.env
+
+    environment:
+      NODE_ENV: development
+      WA_ENGINE_PORT: 3001
+
+    depends_on:
+      - server
+
+    ports:
+      - "3001:3001"
+
+    volumes:
+      - ../wa-engine:/app
+      - wa_engine_node_modules:/app/node_modules
+      - wa_auth_data:/app/sessions
+
+    command:
+      - pnpm
+      - dev
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  nginx:
+    image: nginx:alpine
+
+    container_name: bemunair_nginx_dev
+
+    depends_on:
+      - client
+      - server
+
+    ports:
+      - "8081:80"
+
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+
+    container_name: bemunair_workspace
+
+    # Workspace ini hanya diperlukan oleh VS Code Dev Containers. Menaruhnya
+    # dalam profile mencegah `docker compose up` development menarik image
+    # tambahan yang tidak diperlukan untuk menjalankan aplikasi.
+    profiles:
+      - devcontainer
+
+    working_dir: /workspace
+
+    command:
+      - /bin/sh
+      - -c
+      - while sleep 1000; do :; done
+
+    volumes:
+      - ..:/workspace:cached
+      - client_node_modules:/workspace/client/node_modules
+      - wa_engine_node_modules:/workspace/wa-engine/node_modules
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - bemunair_net
+
+networks:
+  bemunair_net:
+    driver: bridge
+
+volumes:
+  bemunair_mysql_data:
+  client_node_modules:
+  client_pnpm_store:
+  wa_engine_node_modules:
+  server_go_modules:
+  server_go_build_cache:
+  wa_auth_data:
