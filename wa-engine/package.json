@@ -13,7 +13,7 @@
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
-    "node-addon-api": "^8.8.0",
+    "node-addon-api": "^8.9.0",
     "node-gyp": "^12.3.0",
     "qrcode": "^1.5.3"
   },
