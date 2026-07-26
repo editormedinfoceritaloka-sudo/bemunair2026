@@ -17,6 +17,9 @@ COPY . .
 
 ENV NODE_ENV=production
 
+RUN mkdir -p /app/sessions && chown -R node:node /app
+USER node
+
 EXPOSE 3001
 
 CMD ["pnpm", "start"]

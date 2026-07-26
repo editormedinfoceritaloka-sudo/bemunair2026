@@ -16,8 +16,10 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-COPY --from=build /app/build ./build
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/node_modules ./node_modules
+RUN chown node:node /app
+COPY --chown=node:node --from=build /app/build ./build
+COPY --chown=node:node --from=build /app/package.json ./package.json
+COPY --chown=node:node --from=build /app/node_modules ./node_modules
+USER node
 EXPOSE 3000
 CMD ["node", "build/index.js"]

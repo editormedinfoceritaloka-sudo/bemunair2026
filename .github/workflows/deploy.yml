@@ -1,0 +1,205 @@
+name: CI and Deploy Production
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Test server, client, and WA engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - name: Test Go server
+        working-directory: server
+        run: go test ./...
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install client dependencies
+        working-directory: client
+        run: pnpm install --frozen-lockfile
+
+      - name: Check and build SvelteKit client
+        working-directory: client
+        run: |
+          pnpm check
+          pnpm build
+
+      - name: Install WA engine dependencies
+        working-directory: wa-engine
+        run: pnpm install --frozen-lockfile
+
+      - name: Test WA engine
+        working-directory: wa-engine
+        run: pnpm test
+
+      - name: Validate production shell script
+        run: bash -n infra/deploy.sh
+
+      - name: Validate production Compose model
+        run: docker compose --env-file infra/.env.production.example -f infra/docker-compose.yml config --quiet
+
+      - name: Validate production Nginx configuration
+        run: docker run --rm --add-host client:127.0.0.1 --add-host server:127.0.0.1 -v "$PWD/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:alpine nginx -t
+
+  publish-images:
+    name: Publish ${{ matrix.component }} image
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: server
+            suffix: server
+          - component: client
+            suffix: client
+          - component: wa-engine
+            suffix: wa-engine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve lowercase image name
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}-${{ matrix.suffix }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push immutable image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: ./${{ matrix.component }}
+          file: ./${{ matrix.component }}/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
+            ${{ steps.image.outputs.name }}:latest
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          provenance: mode=max
+          sbom: true
+
+  deploy:
+    name: Deploy immutable release to VPS
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
+    needs:
+      - validate
+      - publish-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+      VPS_APP_DIR: ${{ vars.VPS_APP_DIR || '/opt/bemunair2026' }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+      GHCR_TOKEN: ${{ secrets.GHCR_PULL_TOKEN || secrets.GITHUB_TOKEN }}
+      GHCR_USER: ${{ github.actor }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - name: Checkout deployment files
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Validate deployment variables
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$VPS_HOST" =~ ^[A-Za-z0-9._:-]+$ ]]
+          [[ "$VPS_USER" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$VPS_PORT" =~ ^[0-9]+$ ]]
+          [[ "$VPS_APP_DIR" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          [[ -n "$VPS_SSH_PRIVATE_KEY" ]]
+          [[ -n "$VPS_KNOWN_HOSTS" ]]
+
+      - name: Configure verified SSH connection
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+
+      - name: Upload versioned deployment bundle
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          archive="/tmp/bemunair-${GITHUB_SHA}.tgz"
+          remote_archive="/tmp/bemunair-${GITHUB_SHA}.tgz"
+          target="${VPS_USER}@${VPS_HOST}"
+          tar -czf "$archive" infra/docker-compose.yml infra/nginx/nginx.conf infra/deploy.sh infra/.env.production.example docs/api
+          ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" "install -d -- '$VPS_APP_DIR'"
+          scp -i "$HOME/.ssh/id_ed25519" -P "$VPS_PORT" "$archive" "$target:$remote_archive"
+          ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" "tar -xzf '$remote_archive' -C '$VPS_APP_DIR' && rm -f '$remote_archive'"
+
+      - name: Authenticate VPS to GHCR
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          target="${VPS_USER}@${VPS_HOST}"
+          printf '%s' "$GHCR_TOKEN" | ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" "docker login ghcr.io --username '$GHCR_USER' --password-stdin"
+
+      - name: Deploy, migrate, health-check, and rollback on failure
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          target="${VPS_USER}@${VPS_HOST}"
+          image_prefix="ghcr.io/${GITHUB_REPOSITORY,,}"
+          ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" \
+            "bash '$VPS_APP_DIR/infra/deploy.sh' '$GITHUB_SHA' '${image_prefix}-server:sha-${GITHUB_SHA}' '${image_prefix}-client:sha-${GITHUB_SHA}' '${image_prefix}-wa-engine:sha-${GITHUB_SHA}'"
+
+      - name: Verify public endpoint
+        if: env.PRODUCTION_URL != ''
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 "${PRODUCTION_URL%/}/healthz"
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 "${PRODUCTION_URL%/}/healthz/client"

@@ -1,2 +1,6 @@
 .agents/
 skills-lock.json
+infra/.env.production
+infra/.release.env
+infra/.release.env.previous
+backups/

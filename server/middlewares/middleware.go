@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -32,13 +33,27 @@ func (c *Claims) CanonicalRole() string {
 
 func CORS() gin.HandlerFunc {
 	return cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost", "http://localhost:8081", "http://localhost:3000", "http://localhost:5173"},
+		AllowOrigins:     corsOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "Content-Type", "X-Request-Id"},
 		ExposeHeaders:    []string{"X-Request-Id"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	})
+}
+
+func corsOrigins() []string {
+	raw := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if strings.TrimSpace(raw) == "" {
+		return []string{"http://localhost", "http://localhost:8081", "http://localhost:3000", "http://localhost:5173"}
+	}
+	origins := make([]string, 0)
+	for _, origin := range strings.Split(raw, ",") {
+		if value := strings.TrimSpace(origin); value != "" {
+			origins = append(origins, value)
+		}
+	}
+	return origins
 }
 
 func RequestLogger() gin.HandlerFunc {
