@@ -19,14 +19,14 @@ interface UploadAuthentication {
 }
 
 const MEDIA_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'
+  'image/jpeg', 'image/png', 'image/webp'
 ]);
 const BRIEF_TYPES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 ]);
-const MAX_MEDIA_BYTES = 100 * 1024 * 1024;
+const MAX_MEDIA_BYTES = 20 * 1024 * 1024;
 const MAX_BRIEF_BYTES = 15 * 1024 * 1024;
 
 function validate(file: File, purpose: SubmissionUploadPurpose) {
@@ -34,7 +34,7 @@ function validate(file: File, purpose: SubmissionUploadPurpose) {
   const max = purpose === 'submission_media' ? MAX_MEDIA_BYTES : MAX_BRIEF_BYTES;
   if (!allowed.has(file.type)) {
     throw new Error(purpose === 'submission_media'
-      ? 'Format materi harus JPG, PNG, WebP, MP4, atau MOV.'
+      ? 'Format materi harus JPG, PNG, atau WebP.'
       : 'Format brief harus PDF, DOC, atau DOCX.');
   }
   if (!file.size) throw new Error('File tidak boleh kosong.');

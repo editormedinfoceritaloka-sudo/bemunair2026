@@ -33,11 +33,12 @@ type ContentSubmission struct {
 	Deadline               *time.Time `gorm:"index"`
 	ConfirmedPublishAt     *time.Time
 	SubmittedAt            *time.Time
-	BriefLink              string  `gorm:"type:varchar(500)"`
-	AssignedPJID           *uint64 `gorm:"index"`
-	AssignedPJ             *User   `gorm:"foreignKey:AssignedPJID;references:ID;constraint:OnDelete:SET NULL"`
-	Status                 string  `gorm:"type:varchar(40);default:'DRAFT';index"`
-	Notes                  *string `gorm:"type:text"`
+	BriefLink              string                        `gorm:"type:varchar(500)"`
+	Attachments            []ContentSubmissionAttachment `gorm:"foreignKey:SubmissionID"`
+	AssignedPJID           *uint64                       `gorm:"index"`
+	AssignedPJ             *User                         `gorm:"foreignKey:AssignedPJID;references:ID;constraint:OnDelete:SET NULL"`
+	Status                 string                        `gorm:"type:varchar(40);default:'DRAFT';index"`
+	Notes                  *string                       `gorm:"type:text"`
 	Timestamp
 }
 
@@ -53,11 +54,25 @@ type ContentSubmissionStatusHistory struct {
 	CreatedAt    time.Time
 }
 
+type ContentSubmissionAssignmentHistory struct {
+	ID           uint64 `gorm:"primaryKey"`
+	SubmissionID uint64 `gorm:"index;not null"`
+	Submission   *ContentSubmission
+	ActorID      uint64 `gorm:"index;not null"`
+	Actor        *User
+	FromPJID     *uint64 `gorm:"index"`
+	FromPJ       *User   `gorm:"foreignKey:FromPJID"`
+	ToPJID       uint64  `gorm:"index;not null"`
+	ToPJ         *User   `gorm:"foreignKey:ToPJID"`
+	Note         *string `gorm:"type:varchar(255)"`
+	CreatedAt    time.Time
+}
+
 type ContentSubmissionAttachment struct {
 	ID             uint64 `gorm:"primaryKey"`
 	SubmissionID   *uint64
 	UploadedBy     uint64
-	ImageKitFileID string `gorm:"type:varchar(100);uniqueIndex;not null"`
+	ImageKitFileID string `gorm:"column:imagekit_file_id;type:varchar(100);uniqueIndex;not null"`
 	Purpose        string `gorm:"type:varchar(40);not null"`
 	Name           string `gorm:"type:varchar(255);not null"`
 	URL            string `gorm:"type:varchar(1000);not null"`

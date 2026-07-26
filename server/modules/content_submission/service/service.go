@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"bemunair2026/server/database/entities"
@@ -18,7 +21,9 @@ type ContentSubmissionService interface {
 	ListForUser(role string, userID uint64, ministry *string) ([]dto.ContentSubmissionResponse, error)
 	Get(id uint64, role string, userID uint64, ministry *string) (*dto.ContentSubmissionResponse, error)
 	Timeline(id uint64, role string, userID uint64, ministry *string) ([]dto.StatusHistoryResponse, error)
+	SubmitRevision(id uint64, role string, userID uint64, ministry *string, note *string) (*dto.ContentSubmissionResponse, error)
 	UpdateStatus(id uint64, req dto.UpdateStatusRequest, actorID uint64) (*dto.ContentSubmissionResponse, error)
+	AssignPJ(id, pjID, actorID uint64) (*dto.ContentSubmissionResponse, error)
 	Delete(id uint64) error
 }
 
@@ -54,6 +59,7 @@ func (s *contentSubmissionService) Create(req dto.CreateRequest, submitterID uin
 	if req.SubmitterPhone == nil {
 		req.SubmitterPhone = submitter.Phone
 	}
+	req.SubmitterPhone = normalizeIndonesianPhone(req.SubmitterPhone)
 	if req.ServiceType == "" {
 		if req.SubmissionType == constants.ContentTypeArtikel {
 			req.ServiceType = constants.ServiceTypeArticle
@@ -91,17 +97,18 @@ func (s *contentSubmissionService) Create(req dto.CreateRequest, submitterID uin
 		Deadline:               deadline,
 		BriefLink:              req.BriefLink,
 		Status:                 constants.StatusSubmitted,
+		Attachments:            buildAttachments(req, submitterID),
 	}
 
-	pj, err := s.repository.CreateWithAssignment(submission)
+	err := s.repository.Create(submission)
 	if err != nil {
 		return nil, nil, err
 	}
 	submission.Submitter = submitter
-	submission.AssignedPJ = pj
+	submission.AssignedPJ = nil
 
 	res := dto.NewContentSubmissionResponse(submission)
-	return &res, wa_notification.NotifyContentSubmissionCreated(submission, pj, submitter, s.wa), nil
+	return &res, wa_notification.NotifyContentSubmissionCreated(submission, nil, submitter, s.wa), nil
 }
 
 func (s *contentSubmissionService) ListForUser(role string, userID uint64, ministry *string) ([]dto.ContentSubmissionResponse, error) {
@@ -128,17 +135,45 @@ func (s *contentSubmissionService) Timeline(id uint64, role string, userID uint6
 	if _, err := s.Get(id, role, userID, ministry); err != nil {
 		return nil, err
 	}
-	rows, err := s.repository.ListHistory(id)
+	statusRows, err := s.repository.ListHistory(id)
 	if err != nil {
 		return nil, err
 	}
-	return dto.NewStatusHistoryResponses(rows), nil
+	assignmentRows, err := s.repository.ListAssignmentHistory(id)
+	if err != nil {
+		return nil, err
+	}
+	events := append(dto.NewStatusHistoryResponses(statusRows), dto.NewAssignmentHistoryResponses(assignmentRows)...)
+	sort.SliceStable(events, func(i, j int) bool { return events[i].CreatedAt.Before(events[j].CreatedAt) })
+	return events, nil
+}
+
+func (s *contentSubmissionService) SubmitRevision(id uint64, role string, userID uint64, ministry *string, note *string) (*dto.ContentSubmissionResponse, error) {
+	current, err := s.repository.FindByID(id)
+	if err != nil || current == nil {
+		return nil, err
+	}
+	if role != constants.RoleAdminMedinfo && current.SubmitterID != userID && (ministry == nil || current.Ministry != *ministry) {
+		return nil, errors.New("forbidden")
+	}
+	if current.Status != constants.StatusRevisionRequired {
+		return nil, errors.New("submission tidak sedang menunggu revisi")
+	}
+	updated, err := s.repository.UpdateStatus(id, constants.StatusRevisionSubmitted, note, userID)
+	if err != nil {
+		return nil, err
+	}
+	res := dto.NewContentSubmissionResponse(updated)
+	return &res, nil
 }
 
 func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusRequest, actorID uint64) (*dto.ContentSubmissionResponse, error) {
 	current, err := s.repository.FindByID(id)
 	if err != nil || current == nil {
 		return nil, err
+	}
+	if req.Status == constants.StatusPendingReview && current.AssignedPJID == nil {
+		return nil, errors.New("tetapkan PJ sebelum memulai peninjauan")
 	}
 	if !ValidTransition(current.Status, req.Status) {
 		return nil, errors.New("invalid transition")
@@ -151,8 +186,48 @@ func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusR
 	return &res, nil
 }
 
+func (s *contentSubmissionService) AssignPJ(id, pjID, actorID uint64) (*dto.ContentSubmissionResponse, error) {
+	row, err := s.repository.AssignPJ(id, pjID, actorID)
+	if err != nil || row == nil {
+		return nil, err
+	}
+	_ = wa_notification.NotifyAssignedPJ(row.AssignedPJ, fmt.Sprintf("Anda ditetapkan sebagai PJ untuk %s - %s.", stringValue(row.RequestCode), row.Title), s.wa)
+	res := dto.NewContentSubmissionResponse(row)
+	return &res, nil
+}
+
 func (s *contentSubmissionService) Delete(id uint64) error {
 	return s.repository.Delete(id)
+}
+
+func buildAttachments(req dto.CreateRequest, submitterID uint64) []entities.ContentSubmissionAttachment {
+	rows := make([]entities.ContentSubmissionAttachment, 0, 2)
+	if req.MediaFileID != nil && req.DesignDriveLink != nil {
+		rows = append(rows, entities.ContentSubmissionAttachment{UploadedBy: submitterID, ImageKitFileID: *req.MediaFileID, Purpose: "FINAL_MEDIA", Name: stringValue(req.MediaFileName), URL: *req.DesignDriveLink, MimeType: stringValue(req.MediaFileMimeType), SizeBytes: req.MediaFileSize, Status: "ATTACHED"})
+	}
+	if req.BriefFileID != nil && req.BriefLink != "" {
+		rows = append(rows, entities.ContentSubmissionAttachment{UploadedBy: submitterID, ImageKitFileID: *req.BriefFileID, Purpose: "BRIEF_DOCUMENT", Name: stringValue(req.BriefFileName), URL: req.BriefLink, MimeType: stringValue(req.BriefFileMimeType), SizeBytes: req.BriefFileSize, Status: "ATTACHED"})
+	}
+	return rows
+}
+
+func normalizeIndonesianPhone(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	phone := strings.TrimSpace(*value)
+	phone = strings.TrimPrefix(phone, "+")
+	if strings.HasPrefix(phone, "0") {
+		phone = "62" + strings.TrimPrefix(phone, "0")
+	}
+	return &phone
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }
 
 func deriveDeadline(req dto.CreateRequest) *time.Time {

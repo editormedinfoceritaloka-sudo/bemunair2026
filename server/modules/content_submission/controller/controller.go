@@ -18,7 +18,9 @@ type ContentSubmissionController interface {
 	List(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Timeline(ctx *gin.Context)
+	SubmitRevision(ctx *gin.Context)
 	UpdateStatus(ctx *gin.Context)
+	AssignPJ(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 }
 
@@ -69,6 +71,14 @@ func (c *contentSubmissionController) Create(ctx *gin.Context) {
 		RequiredInformation:    optionalForm(ctx, "required_information"),
 		SongTitle:              optionalForm(ctx, "song_title"),
 		SongArtist:             optionalForm(ctx, "song_artist"),
+		MediaFileID:            optionalForm(ctx, "media_file_id"),
+		MediaFileName:          optionalForm(ctx, "media_file_name"),
+		MediaFileMimeType:      optionalForm(ctx, "media_file_mime_type"),
+		MediaFileSize:          uintForm(ctx, "media_file_size"),
+		BriefFileID:            optionalForm(ctx, "brief_file_id"),
+		BriefFileName:          optionalForm(ctx, "brief_file_name"),
+		BriefFileMimeType:      optionalForm(ctx, "brief_file_mime_type"),
+		BriefFileSize:          uintForm(ctx, "brief_file_size"),
 		BriefLink:              ctx.PostForm("brief_link"),
 	}
 
@@ -130,6 +140,22 @@ func (c *contentSubmissionController) Timeline(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("Timeline submission", rows))
 }
 
+func (c *contentSubmissionController) SubmitRevision(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	var req dto.UpdateStatusRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.BuildResponseFailed("Validasi gagal", err.Error(), nil))
+		return
+	}
+	claims := middlewares.CurrentClaims(ctx)
+	row, err := c.service.SubmitRevision(id, claims.Role, claims.UserID, claims.Ministry, req.Notes)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusConflict, response.BuildResponseFailed("Revisi gagal dikirim", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("Revisi berhasil dikirim", row))
+}
+
 func (c *contentSubmissionController) UpdateStatus(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	var req dto.UpdateStatusRequest
@@ -150,6 +176,21 @@ func (c *contentSubmissionController) UpdateStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+func (c *contentSubmissionController) AssignPJ(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	var req dto.AssignPJRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil || req.AssignedPJID == 0 {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.BuildResponseFailed("Validasi gagal", response.ValidationError, nil))
+		return
+	}
+	row, err := c.service.AssignPJ(id, req.AssignedPJID, middlewares.CurrentClaims(ctx).UserID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusConflict, response.BuildResponseFailed("PJ gagal ditetapkan", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("PJ berhasil ditetapkan", row))
+}
+
 func (c *contentSubmissionController) Delete(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err := c.service.Delete(id); err != nil {
@@ -160,6 +201,11 @@ func (c *contentSubmissionController) Delete(ctx *gin.Context) {
 
 	res := response.BuildResponseSuccess("Submission berhasil dihapus", nil)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func uintForm(ctx *gin.Context, key string) uint64 {
+	value, _ := strconv.ParseUint(ctx.PostForm(key), 10, 64)
+	return value
 }
 
 func optionalForm(ctx *gin.Context, key string) *string {

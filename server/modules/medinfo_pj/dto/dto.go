@@ -1,6 +1,9 @@
 package dto
 
-import "bemunair2026/server/database/entities"
+import (
+	"bemunair2026/server/database/entities"
+	"bemunair2026/server/modules/medinfo_pj/repository"
+)
 
 type CreateRequest struct {
 	UserID   uint64 `json:"user_id"`
@@ -21,11 +24,16 @@ type UserSummary struct {
 }
 
 type QueueResponse struct {
-	ID        uint64       `json:"id"`
-	UserID    uint64       `json:"user_id"`
-	User      *UserSummary `json:"user,omitempty"`
-	Position  int          `json:"position"`
-	IsCurrent bool         `json:"is_current"`
+	ID                uint64       `json:"id"`
+	UserID            uint64       `json:"user_id"`
+	User              *UserSummary `json:"user,omitempty"`
+	Position          int          `json:"position"`
+	IsCurrent         bool         `json:"is_current"`
+	IsBusy            bool         `json:"is_busy"`
+	ActiveTaskType    string       `json:"active_task_type,omitempty"`
+	ActiveTaskID      uint64       `json:"active_task_id,omitempty"`
+	ActiveRequestCode string       `json:"active_request_code,omitempty"`
+	ActiveTaskTitle   string       `json:"active_task_title,omitempty"`
 }
 
 func NewQueueResponse(row *entities.MedinfoPJQueue) QueueResponse {
@@ -40,6 +48,20 @@ func NewQueueResponse(row *entities.MedinfoPJQueue) QueueResponse {
 		Position:  row.Position,
 		IsCurrent: row.IsCurrent,
 	}
+}
+
+func NewAvailabilityResponses(rows []repository.QueueAvailability) []QueueResponse {
+	responses := make([]QueueResponse, 0, len(rows))
+	for i := range rows {
+		response := NewQueueResponse(&rows[i].Queue)
+		response.IsBusy = rows[i].IsBusy
+		response.ActiveTaskType = rows[i].ActiveTaskType
+		response.ActiveTaskID = rows[i].ActiveTaskID
+		response.ActiveRequestCode = rows[i].ActiveRequestCode
+		response.ActiveTaskTitle = rows[i].ActiveTaskTitle
+		responses = append(responses, response)
+	}
+	return responses
 }
 
 func NewQueueResponses(rows []entities.MedinfoPJQueue) []QueueResponse {

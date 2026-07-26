@@ -54,6 +54,7 @@ func RegisterRoutes(api *gin.RouterGroup, db *gorm.DB, jwtSecret string) {
 	medinfo.POST("/ministries", c.createMinistry)
 	medinfo.PUT("/ministries/:id", c.updateMinistry)
 	medinfo.PUT("/media-submission-settings/:serviceType", c.updateSetting)
+	medinfo.POST("/content-submissions/:id/article-draft", c.createArticleDraft)
 }
 
 func (c *controller) listMinistries(ctx *gin.Context) {

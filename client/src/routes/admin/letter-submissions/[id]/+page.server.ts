@@ -1,3 +1,53 @@
-import { actionError, apiRequest, formValue, nullable, tokenFrom } from '$lib/server/api'; import type { LetterSubmission } from '$lib/types'; import { fail, redirect } from '@sveltejs/kit'; import type { Actions, PageServerLoad } from './$types';
-export const load:PageServerLoad=async({params,fetch,cookies})=>({letter:(await apiRequest<LetterSubmission>(fetch,tokenFrom(cookies),`/letter-submissions/${params.id}`)).data});
-export const actions:Actions={status:async({params,request,fetch,cookies})=>{const f=await request.formData();try{await apiRequest(fetch,tokenFrom(cookies),`/letter-submissions/${params.id}/status`,{method:'PUT',body:JSON.stringify({status:formValue(f,'status'),notes:nullable(f,'notes')})});return{success:true}}catch(e){const x=actionError(e);return fail(x.status,{error:x.message})}},delete:async({params,fetch,cookies})=>{try{await apiRequest(fetch,tokenFrom(cookies),`/letter-submissions/${params.id}`,{method:'DELETE'})}catch(e){const x=actionError(e);return fail(x.status,{error:x.message})}redirect(303,'/admin/letter-submissions')}};
+import { actionError, apiRequest, formValue, nullable, tokenFrom } from '$lib/server/api';
+import type { LetterSubmission, SubmissionHistory, QueueItem } from '$lib/types';
+import { fail, redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ params, fetch, cookies, parent }) => {
+  const user = (await parent()).user!;
+  const token = tokenFrom(cookies);
+  const [letter, timeline, queue] = await Promise.all([
+    apiRequest<LetterSubmission>(fetch, token, `/letter-submissions/${params.id}`),
+    apiRequest<SubmissionHistory[]>(fetch, token, `/letter-submissions/${params.id}/timeline`),
+    user.role === 'ADMIN_MEDINFO'
+      ? apiRequest<QueueItem[]>(fetch, token, '/medinfo-pj/queue')
+      : Promise.resolve({ data: [] as QueueItem[] })
+  ]);
+  return { letter: letter.data, timeline: timeline.data, queue: queue.data, user };
+};
+
+export const actions: Actions = {
+  assign: async ({ params, request, fetch, cookies }) => {
+    const form = await request.formData();
+    try {
+      await apiRequest(fetch, tokenFrom(cookies), `/letter-submissions/${params.id}/assignee`, {
+        method: 'PUT',
+        body: JSON.stringify({ assigned_pj_id: Number(formValue(form, 'assigned_pj_id')) })
+      });
+      return { success: true };
+    } catch (error) { const result = actionError(error); return fail(result.status, { error: result.message }); }
+  },
+  status: async ({ params, request, fetch, cookies }) => {
+    const form = await request.formData();
+    try {
+      await apiRequest(fetch, tokenFrom(cookies), `/letter-submissions/${params.id}/status`, {
+        method: 'PUT', body: JSON.stringify({ status: formValue(form, 'status'), notes: nullable(form, 'notes') })
+      });
+      return { success: true };
+    } catch (error) { const result = actionError(error); return fail(result.status, { error: result.message }); }
+  },
+  revision: async ({ params, request, fetch, cookies }) => {
+    const form = await request.formData();
+    try {
+      await apiRequest(fetch, tokenFrom(cookies), `/letter-submissions/${params.id}/revision`, {
+        method: 'POST', body: JSON.stringify({ notes: nullable(form, 'notes') })
+      });
+      return { success: true };
+    } catch (error) { const result = actionError(error); return fail(result.status, { error: result.message }); }
+  },
+  delete: async ({ params, fetch, cookies }) => {
+    try { await apiRequest(fetch, tokenFrom(cookies), `/letter-submissions/${params.id}`, { method: 'DELETE' }); }
+    catch (error) { const result = actionError(error); return fail(result.status, { error: result.message }); }
+    redirect(303, '/admin/letter-submissions');
+  }
+};

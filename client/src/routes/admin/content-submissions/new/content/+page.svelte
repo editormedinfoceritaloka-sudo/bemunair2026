@@ -7,9 +7,9 @@
   import { ArrowLeft, ArrowRight, ExternalLink, Info } from '@lucide/svelte';
   let { data } = $props();
   let accepted = $state(false);
-  const setting = data.setting;
-  const terms = setting.terms || [];
-  const sopUrl = setting.sop_url || setting.SOPURL;
+  const setting = $derived(data.setting);
+  const terms = $derived(setting.terms || []);
+  const sopUrl = $derived(setting.sop_url || setting.SOPURL);
 </script>
 
 <PageHeader title="Ketentuan Pengajuan Konten" description="Baca SOP dan ketentuan sebelum melanjutkan ke formulir." />

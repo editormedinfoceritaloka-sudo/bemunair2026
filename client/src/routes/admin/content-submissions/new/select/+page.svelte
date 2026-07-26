@@ -26,19 +26,19 @@
     <CardContent class="space-y-5">
       <p class="text-sm leading-6 text-muted-foreground">Feed, reels, Instastory, desain, dan publikasi Instagram BEM UNAIR.</p>
       <div class="flex items-center gap-2 text-xs text-blue-700"><Clock3 class="size-4" />Diajukan paling lambat H-7</div>
-      <Button href="/admin/content-submissions/new/content" class="w-full bg-blue-500">Pilih Konten <ArrowRight /></Button>
+      <Button href="/admin/content-submissions/new/content/form" class="w-full bg-blue-500">Pilih Konten <ArrowRight /></Button>
     </CardContent>
   </Card>
 
-  <Card class="group border-orange-100 bg-orange-50/50 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md">
+  <Card class="group border-blue-100 bg-blue-50/40 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
     <CardHeader>
-      <div class="mb-3 grid size-12 place-items-center rounded-xl bg-orange-500 text-white"><Newspaper /></div>
+      <div class="mb-3 grid size-12 place-items-center rounded-xl bg-blue-500 text-white"><Newspaper /></div>
       <CardTitle>Pengajuan Artikel</CardTitle>
     </CardHeader>
     <CardContent class="space-y-5">
       <p class="text-sm leading-6 text-muted-foreground">Berita, liputan kegiatan, dokumentasi, dan artikel website BEM UNAIR.</p>
-      <div class="flex items-center gap-2 text-xs text-orange-700"><Clock3 class="size-4" />Publikasi paling cepat H+3</div>
-      <Button href="/admin/content-submissions/new/article" class="w-full bg-orange-500 hover:bg-orange-600">Pilih Artikel <ArrowRight /></Button>
+      <div class="flex items-center gap-2 text-xs text-blue-700"><Clock3 class="size-4" />Publikasi paling cepat H+3</div>
+      <Button href="/admin/content-submissions/new/article/form" class="w-full bg-blue-500 hover:bg-blue-600">Pilih Artikel <ArrowRight /></Button>
     </CardContent>
   </Card>
 </div>

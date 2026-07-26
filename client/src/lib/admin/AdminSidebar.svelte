@@ -3,7 +3,7 @@
   import * as Sidebar from '$lib/components/ui/sidebar';
   import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
   import type { User } from '$lib/types';
-  import { LayoutDashboard, Users, FileImage, Mail, ListOrdered, Files, Newspaper, Activity, LogOut, ShieldCheck } from '@lucide/svelte';
+  import { LayoutDashboard, Users, FileImage, Mail, ListOrdered, Files, Newspaper, Activity, LogOut, ShieldCheck, Building2, Settings2 } from '@lucide/svelte';
 
   let { user }: { user: User } = $props();
   const sidebar = Sidebar.useSidebar();
@@ -13,7 +13,8 @@
       label: 'Workspace',
       items: [
         { href: '/admin', label: 'Ringkasan', icon: LayoutDashboard, medinfoOnly: false },
-        { href: '/admin/users', label: 'Pengguna', icon: Users, medinfoOnly: true }
+        { href: '/admin/users', label: 'Pengguna', icon: Users, medinfoOnly: true },
+        { href: '/admin/ministries', label: 'Kementerian', icon: Building2, medinfoOnly: true }
       ]
     },
     {
@@ -29,7 +30,8 @@
       label: 'Publikasi & sistem',
       items: [
         { href: '/admin/articles', label: 'Artikel', icon: Newspaper, medinfoOnly: true },
-        { href: '/admin/system', label: 'Status Sistem', icon: Activity, medinfoOnly: true }
+        { href: '/admin/system', label: 'Status Sistem', icon: Activity, medinfoOnly: true },
+        { href: '/admin/settings/media', label: 'Pengaturan Media', icon: Settings2, medinfoOnly: true }
       ]
     }
   ];

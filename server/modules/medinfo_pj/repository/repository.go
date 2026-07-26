@@ -2,12 +2,23 @@ package repository
 
 import (
 	"bemunair2026/server/database/entities"
+	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
+type QueueAvailability struct {
+	Queue             entities.MedinfoPJQueue
+	IsBusy            bool
+	ActiveTaskType    string
+	ActiveTaskID      uint64
+	ActiveRequestCode string
+	ActiveTaskTitle   string
+}
+
 type MedinfoPJRepository interface {
 	List() ([]entities.MedinfoPJQueue, error)
+	ListAvailability() ([]QueueAvailability, error)
 	Create(row *entities.MedinfoPJQueue) error
 	Delete(id uint64) error
 	Reorder(ids []uint64) error
@@ -26,6 +37,49 @@ func NewMedinfoPJRepository(db *gorm.DB) MedinfoPJRepository {
 func (r *medinfoPJRepository) List() ([]entities.MedinfoPJQueue, error) {
 	var rows []entities.MedinfoPJQueue
 	return rows, r.db.Preload("User").Order("position ASC").Find(&rows).Error
+}
+
+func (r *medinfoPJRepository) ListAvailability() ([]QueueAvailability, error) {
+	rows, err := r.List()
+	if err != nil {
+		return nil, err
+	}
+	result := make([]QueueAvailability, 0, len(rows))
+	activeContent := []string{"SUBMITTED", "PENDING_REVIEW", "REVISION_REQUIRED", "REVISION_SUBMITTED", "APPROVED", "SCHEDULED"}
+	activeLetter := []string{"SUBMITTED", "PENDING_REVIEW", "REVISION_REQUIRED", "REVISION_SUBMITTED", "APPROVED"}
+	for i := range rows {
+		item := QueueAvailability{Queue: rows[i]}
+		var content entities.ContentSubmission
+		err := r.db.Where("assigned_pj_id = ? AND status IN ?", rows[i].UserID, activeContent).Order("created_at ASC").First(&content).Error
+		if err == nil {
+			item.IsBusy = true
+			item.ActiveTaskType = "CONTENT"
+			item.ActiveTaskID = content.ID
+			item.ActiveTaskTitle = content.Title
+			if content.RequestCode != nil {
+				item.ActiveRequestCode = *content.RequestCode
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+		if !item.IsBusy {
+			var letter entities.LetterSubmission
+			err = r.db.Where("assigned_pj_id = ? AND status IN ?", rows[i].UserID, activeLetter).Order("created_at ASC").First(&letter).Error
+			if err == nil {
+				item.IsBusy = true
+				item.ActiveTaskType = "LETTER"
+				item.ActiveTaskID = letter.ID
+				item.ActiveTaskTitle = letter.Subject
+				if letter.RequestCode != nil {
+					item.ActiveRequestCode = *letter.RequestCode
+				}
+			} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, err
+			}
+		}
+		result = append(result, item)
+	}
+	return result, nil
 }
 
 func (r *medinfoPJRepository) Create(row *entities.MedinfoPJQueue) error {

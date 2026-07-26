@@ -24,11 +24,11 @@ func NewMedinfoPJService(repository repository.MedinfoPJRepository) MedinfoPJSer
 }
 
 func (s *medinfoPJService) List() ([]dto.QueueResponse, error) {
-	rows, err := s.repository.List()
+	rows, err := s.repository.ListAvailability()
 	if err != nil {
 		return nil, err
 	}
-	return dto.NewQueueResponses(rows), nil
+	return dto.NewAvailabilityResponses(rows), nil
 }
 
 func (s *medinfoPJService) Create(req dto.CreateRequest) (*dto.QueueResponse, error) {

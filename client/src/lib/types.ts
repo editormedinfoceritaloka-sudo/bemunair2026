@@ -13,19 +13,19 @@ export interface ContentSubmission {
   submission_type: 'FEEDS_REELS' | 'FEED_INSTAGRAM' | 'REELS_INSTAGRAM' | 'INSTASTORY' | 'ARTIKEL'; title: string;
   add_song?: string; caption: string; additional_notes?: string; publish_date?: string;
   publish_time?: string; design_drive_link?: string; canva_link?: string;
-  article_drive_link?: string; deadline?: string; brief_link: string;
+  article_drive_link?: string; documentation_drive_link?: string; required_information?: string; deadline?: string; brief_link: string;
   assigned_pj_id?: number; assigned_pj?: UserSummary; status: SubmissionStatus;
   notes?: string; created_at: string; updated_at: string;
 }
 
 export interface LetterSubmission {
-  id: number; submitter_id: number; submitter?: UserSummary; ministry: string;
+  id: number; request_code?: string; submitter_name: string; submitter_phone?: string; ministry_id?: number; submitter_id: number; submitter?: UserSummary; ministry: string;
   letter_type: string; subject: string; body: string; deadline: string;
   assigned_pj_id?: number; assigned_pj?: UserSummary; status: SubmissionStatus;
   notes?: string; created_at: string; updated_at: string;
 }
 
-export interface QueueItem { id: number; user_id: number; user?: UserSummary; position: number; is_current: boolean }
+export interface QueueItem { id: number; user_id: number; user?: UserSummary; position: number; is_current: boolean; is_busy: boolean; active_task_type?: "CONTENT" | "LETTER"; active_task_id?: number; active_request_code?: string; active_task_title?: string }
 export interface LetterTemplate { id: number; name: string; type: string; subject: string; body: string; created_at: string; updated_at: string }
 export interface Article {
   id: number; slug: string; title: string; excerpt?: string; body: string;
@@ -34,6 +34,6 @@ export interface Article {
 }
 export interface Ministry { id: number; code: string; name: string; is_active: boolean; created_at: string; updated_at: string }
 export interface MediaSubmissionSetting { ServiceType?: string; service_type?: string; SOPURL?: string; sop_url?: string; MinistryTemplateURL?: string; ministry_template_url?: string; BriefTemplateURL?: string; brief_template_url?: string; CaptionTemplateURL?: string; caption_template_url?: string; PICName?: string; pic_name?: string; PICWhatsApp?: string; pic_whatsapp?: string; MinimumLeadDays?: number; minimum_lead_days?: number; PublishTimeStart?: string; publish_time_start?: string; PublishTimeEnd?: string; publish_time_end?: string; SlotIntervalMinutes?: number; slot_interval_minutes?: number; terms: string[] }
-export interface SubmissionHistory { id: number; actor?: UserSummary; from_status?: string; to_status: string; note?: string; created_at: string }
+export interface SubmissionHistory { id: number; event_type?: "STATUS_CHANGED" | "PJ_ASSIGNED" | "PJ_REASSIGNED"; actor?: UserSummary; from_status?: string; to_status?: string; from_pj?: UserSummary; to_pj?: UserSummary; note?: string; created_at: string }
 
 export interface LoginResult { token: string; user: User }

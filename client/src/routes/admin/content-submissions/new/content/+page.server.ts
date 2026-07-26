@@ -1,11 +1,6 @@
-import { apiRequest, tokenFrom } from '$lib/server/api';
-import type { MediaSubmissionSetting } from '$lib/types';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
-  const { user } = await parent();
-  const { data: setting } = await apiRequest<MediaSubmissionSetting>(
-    fetch, tokenFrom(cookies), '/media-submission-settings/CONTENT'
-  );
-  return { user, setting };
+export const load: PageServerLoad = async () => {
+  redirect(303, '/admin/content-submissions/new/content/form');
 };

@@ -3,9 +3,11 @@ import type { LetterSubmission, LetterTemplate } from '$lib/types';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, cookies }) => ({
-  templates: (await apiRequest<LetterTemplate[]>(fetch, tokenFrom(cookies), '/letter-templates')).data
-});
+export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
+  const user = (await parent()).user!;
+  const templates = user.role === 'ADMIN_MEDINFO' ? (await apiRequest<LetterTemplate[]>(fetch, tokenFrom(cookies), '/letter-templates')).data : [];
+  return { templates, user };
+};
 
 export const actions: Actions = {
   default: async ({ request, fetch, cookies }) => {

@@ -35,3 +35,17 @@ type LetterSubmissionStatusHistory struct {
 	Note         *string `gorm:"type:text"`
 	CreatedAt    time.Time
 }
+
+type LetterSubmissionAssignmentHistory struct {
+	ID           uint64 `gorm:"primaryKey"`
+	SubmissionID uint64 `gorm:"index;not null"`
+	Submission   *LetterSubmission
+	ActorID      uint64 `gorm:"index;not null"`
+	Actor        *User
+	FromPJID     *uint64 `gorm:"index"`
+	FromPJ       *User   `gorm:"foreignKey:FromPJID"`
+	ToPJID       uint64  `gorm:"index;not null"`
+	ToPJ         *User   `gorm:"foreignKey:ToPJID"`
+	Note         *string `gorm:"type:varchar(255)"`
+	CreatedAt    time.Time
+}

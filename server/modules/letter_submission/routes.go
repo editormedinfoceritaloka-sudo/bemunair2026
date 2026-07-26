@@ -24,8 +24,11 @@ func RegisterRoutes(
 	submissions.POST("", letterController.Create)
 	submissions.GET("", letterController.List)
 	submissions.GET("/:id", letterController.Get)
+	submissions.GET("/:id/timeline", letterController.Timeline)
+	submissions.POST("/:id/revision", letterController.SubmitRevision)
 
 	admin := submissions.Group("", middlewares.AdminOnly())
 	admin.PUT("/:id/status", letterController.UpdateStatus)
+	admin.PUT("/:id/assignee", letterController.AssignPJ)
 	admin.DELETE("/:id", letterController.Delete)
 }

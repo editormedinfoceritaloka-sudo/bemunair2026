@@ -16,7 +16,10 @@ type LetterSubmissionController interface {
 	Create(ctx *gin.Context)
 	List(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Timeline(ctx *gin.Context)
+	SubmitRevision(ctx *gin.Context)
 	UpdateStatus(ctx *gin.Context)
+	AssignPJ(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 }
 
@@ -77,7 +80,7 @@ func (c *letterSubmissionController) List(ctx *gin.Context) {
 
 func (c *letterSubmissionController) Get(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
-	row, err := c.service.Get(id)
+	row, err := c.service.Get(id, middlewares.CurrentClaims(ctx).Role, middlewares.CurrentClaims(ctx).UserID, middlewares.CurrentClaims(ctx).Ministry)
 	if err != nil || row == nil {
 		res := response.BuildResponseFailed("Submission tidak ditemukan", response.NotFound, nil)
 		ctx.AbortWithStatusJSON(http.StatusNotFound, res)
@@ -86,6 +89,33 @@ func (c *letterSubmissionController) Get(ctx *gin.Context) {
 
 	res := response.BuildResponseSuccess("Detail letter submission", row)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *letterSubmissionController) Timeline(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	claims := middlewares.CurrentClaims(ctx)
+	rows, err := c.service.Timeline(id, claims.Role, claims.UserID, claims.Ministry)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response.BuildResponseFailed("Submission tidak ditemukan", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("Timeline submission surat", rows))
+}
+
+func (c *letterSubmissionController) SubmitRevision(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	var req dto.UpdateStatusRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.BuildResponseFailed("Validasi gagal", err.Error(), nil))
+		return
+	}
+	claims := middlewares.CurrentClaims(ctx)
+	row, err := c.service.SubmitRevision(id, claims.Role, claims.UserID, claims.Ministry, req.Notes)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusConflict, response.BuildResponseFailed("Revisi gagal dikirim", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("Revisi berhasil dikirim", row))
 }
 
 func (c *letterSubmissionController) UpdateStatus(ctx *gin.Context) {
@@ -97,7 +127,7 @@ func (c *letterSubmissionController) UpdateStatus(ctx *gin.Context) {
 		return
 	}
 
-	row, err := c.service.UpdateStatus(id, req)
+	row, err := c.service.UpdateStatus(id, req, middlewares.CurrentClaims(ctx).UserID)
 	if err != nil {
 		res := response.BuildResponseFailed("Status gagal diperbarui", err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusConflict, res)
@@ -106,6 +136,21 @@ func (c *letterSubmissionController) UpdateStatus(ctx *gin.Context) {
 
 	res := response.BuildResponseSuccess("Status berhasil diperbarui", row)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *letterSubmissionController) AssignPJ(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	var req dto.AssignPJRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil || req.AssignedPJID == 0 {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.BuildResponseFailed("Validasi gagal", response.ValidationError, nil))
+		return
+	}
+	row, err := c.service.AssignPJ(id, req.AssignedPJID, middlewares.CurrentClaims(ctx).UserID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusConflict, response.BuildResponseFailed("PJ gagal ditetapkan", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("PJ berhasil ditetapkan", row))
 }
 
 func (c *letterSubmissionController) Delete(ctx *gin.Context) {
