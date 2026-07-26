@@ -109,20 +109,20 @@
 </Dialog.Root>
 
 <style>
-  .media-sop-title {
+  :global(.media-sop-title) {
     margin: 0;
     text-align: center;
     font-weight: 800;
     line-height: 1.08;
     letter-spacing: -0.02em;
   }
-  .media-sop-title span { display: block; }
-  .media-sop-title-primary {
+  :global(.media-sop-title span) { display: block; }
+  :global(.media-sop-title-primary) {
     color: var(--blue-600);
     font-size: clamp(1.875rem, 5vw, 2.75rem);
     text-shadow: 0 3px 0 var(--white-600), 1px 4px 3px rgb(0 0 0 / 0.16);
   }
-  .media-sop-title-secondary {
+  :global(.media-sop-title-secondary) {
     color: var(--blue-400);
     font-size: clamp(1.75rem, 4.8vw, 2.625rem);
     text-shadow: 0 3px 0 var(--white-600), 1px 4px 3px rgb(0 0 0 / 0.14);

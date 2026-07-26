@@ -42,6 +42,7 @@
   const minimumDate = $derived.by(() => {
     const date = new Date();
     date.setDate(date.getDate() + minimumDays);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     return date.toISOString().slice(0, 10);
   });
   const startTime = $derived(setting.publish_time_start ?? setting.PublishTimeStart ?? '08:00');
@@ -166,10 +167,10 @@
       <input type="hidden" name="design_drive_link" value={media?.url || ''} />
     {/if}
     <input type="hidden" name="brief_link" value={service === 'CONTENT' ? brief?.url || '' : '-'} />
-    <input type="hidden" name="media_file_id" value={media?.file_id || ''} />
-    <input type="hidden" name="media_file_name" value={media?.name || ''} />
-    <input type="hidden" name="media_file_mime_type" value={media?.mime_type || ''} />
-    <input type="hidden" name="media_file_size" value={media?.size || 0} />
+    <input type="hidden" name="media_file_id" value={contentFormat !== 'REELS_INSTAGRAM' ? media?.file_id || '' : ''} />
+    <input type="hidden" name="media_file_name" value={contentFormat !== 'REELS_INSTAGRAM' ? media?.name || '' : ''} />
+    <input type="hidden" name="media_file_mime_type" value={contentFormat !== 'REELS_INSTAGRAM' ? media?.mime_type || '' : ''} />
+    <input type="hidden" name="media_file_size" value={contentFormat !== 'REELS_INSTAGRAM' ? media?.size || 0 : 0} />
     <input type="hidden" name="brief_file_id" value={brief?.file_id || ''} />
     <input type="hidden" name="brief_file_name" value={brief?.name || ''} />
     <input type="hidden" name="brief_file_mime_type" value={brief?.mime_type || ''} />

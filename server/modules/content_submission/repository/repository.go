@@ -106,6 +106,16 @@ func (r *contentSubmissionRepository) AssignPJ(id, pjID, actorID uint64) (*entit
 		}
 		activeContent := []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved, constants.StatusScheduled}
 		activeLetter := []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved}
+		assignable := false
+		for _, status := range activeContent {
+			if submission.Status == status {
+				assignable = true
+				break
+			}
+		}
+		if !assignable {
+			return errors.New("task yang sudah selesai tidak dapat di-assign")
+		}
 		var busy int64
 		if err := tx.Model(&entities.ContentSubmission{}).Where("assigned_pj_id = ? AND id <> ? AND status IN ?", pjID, id, activeContent).Count(&busy).Error; err != nil {
 			return err

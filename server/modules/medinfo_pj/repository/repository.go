@@ -83,10 +83,26 @@ func (r *medinfoPJRepository) ListAvailability() ([]QueueAvailability, error) {
 }
 
 func (r *medinfoPJRepository) Create(row *entities.MedinfoPJQueue) error {
+	var user entities.User
+	if err := r.db.Preload("MinistryRef").First(&user, row.UserID).Error; err != nil {
+		return err
+	}
+	if user.Role != "ADMIN_MEDINFO" || user.MinistryRef == nil || user.MinistryRef.Code != "MEDINFO" {
+		return errors.New("PJ harus ADMIN_MEDINFO dari kementerian MEDINFO")
+	}
 	return r.db.Create(row).Error
 }
 
 func (r *medinfoPJRepository) Delete(id uint64) error {
+	rows, err := r.ListAvailability()
+	if err != nil {
+		return err
+	}
+	for i := range rows {
+		if rows[i].Queue.ID == id && rows[i].IsBusy {
+			return errors.New("PJ yang sedang menangani task tidak dapat dihapus")
+		}
+	}
 	return r.db.Delete(&entities.MedinfoPJQueue{}, id).Error
 }
 

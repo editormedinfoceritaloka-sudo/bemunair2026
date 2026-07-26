@@ -39,11 +39,11 @@ func (v *ContentSubmissionValidation) ValidateCreateRequest(req dto.CreateReques
 
 	switch req.SubmissionType {
 	case constants.ContentTypeFeedsReels, constants.ContentTypeFeed, constants.ContentTypeInstastory:
-		if req.BriefLink == "" {
-			return errors.New("brief konten wajib diunggah")
+		if err := validateBrief(req); err != nil {
+			return err
 		}
-		if isBlank(req.DesignDriveLink) {
-			return errors.New("gambar final wajib diunggah")
+		if err := validateImage(req); err != nil {
+			return err
 		}
 		if isBlank(req.CanvaLink) || !hasHost(*req.CanvaLink, "canva.com") {
 			return errors.New("link Canva yang valid wajib diisi untuk Feed dan Instastory")
@@ -52,8 +52,8 @@ func (v *ContentSubmissionValidation) ValidateCreateRequest(req dto.CreateReques
 			return errors.New("tanggal publikasi konten minimal tujuh hari dari hari ini")
 		}
 	case constants.ContentTypeReels:
-		if req.BriefLink == "" {
-			return errors.New("brief konten wajib diunggah")
+		if err := validateBrief(req); err != nil {
+			return err
 		}
 		if isBlank(req.DesignDriveLink) || !isGoogleDrive(*req.DesignDriveLink) {
 			return errors.New("link Google Drive video final wajib diisi untuk Reels")
@@ -71,6 +71,34 @@ func (v *ContentSubmissionValidation) ValidateCreateRequest(req dto.CreateReques
 		if isBlank(req.ArticleDriveLink) || !hasHost(*req.ArticleDriveLink, "docs.google.com") {
 			return errors.New("link Google Docs isi artikel wajib diisi")
 		}
+	}
+	return nil
+}
+
+func validateBrief(req dto.CreateRequest) error {
+	if isBlank(req.BriefFileID) {
+		return errors.New("metadata upload brief wajib diisi")
+	}
+	allowed := map[string]bool{"application/pdf": true, "application/msword": true, "application/vnd.openxmlformats-officedocument.wordprocessingml.document": true}
+	if req.BriefFileMimeType == nil || !allowed[*req.BriefFileMimeType] {
+		return errors.New("brief harus berformat PDF, DOC, atau DOCX")
+	}
+	if req.BriefFileSize == 0 || req.BriefFileSize > 15*1024*1024 {
+		return errors.New("ukuran brief maksimal 15 MB")
+	}
+	return nil
+}
+
+func validateImage(req dto.CreateRequest) error {
+	if isBlank(req.MediaFileID) {
+		return errors.New("metadata upload gambar wajib diisi")
+	}
+	allowed := map[string]bool{"image/jpeg": true, "image/png": true, "image/webp": true}
+	if req.MediaFileMimeType == nil || !allowed[*req.MediaFileMimeType] {
+		return errors.New("gambar harus berformat JPG, PNG, atau WebP")
+	}
+	if req.MediaFileSize == 0 || req.MediaFileSize > 20*1024*1024 {
+		return errors.New("ukuran gambar maksimal 20 MB")
 	}
 	return nil
 }

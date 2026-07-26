@@ -46,8 +46,8 @@
 <Sidebar.Root collapsible="icon" class="overflow-x-hidden border-r border-sidebar-border bg-sidebar">
   <Sidebar.Header class="overflow-hidden border-b border-sidebar-border px-3 py-4 group-data-[collapsible=icon]:p-2">
     <a href="/admin" onclick={closeMobile} class="flex h-11 min-w-0 items-center gap-3 overflow-hidden rounded-xl px-1 no-underline group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0">
-      <div class="relative grid size-10 shrink-0 place-items-center rounded-xl bg-blue-900 font-black text-white-50 shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:rounded-lg">
-        B
+      <div class="relative grid size-10 shrink-0 place-items-center rounded-xl border border-blue-100 bg-white p-1 shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:rounded-lg">
+        <img src="/brand/bem-unair-2026-logo.png" alt="Logo BEM UNAIR 2026 Kabinet Cerita Loka" class="size-full object-contain" />
         <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-sidebar bg-orange-500 group-data-[collapsible=icon]:hidden"></span>
       </div>
       <div class="min-w-0 group-data-[collapsible=icon]:hidden">

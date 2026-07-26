@@ -107,6 +107,16 @@ func (r *letterSubmissionRepository) AssignPJ(id, pjID, actorID uint64) (*entiti
 		}
 		activeContent := []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved, constants.StatusScheduled}
 		activeLetter := []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionRequired, constants.StatusRevisionSubmitted, constants.StatusApproved}
+		assignable := false
+		for _, status := range activeLetter {
+			if submission.Status == status {
+				assignable = true
+				break
+			}
+		}
+		if !assignable {
+			return errors.New("task yang sudah selesai tidak dapat di-assign")
+		}
 		var busy int64
 		if err := tx.Model(&entities.ContentSubmission{}).Where("assigned_pj_id = ? AND status IN ?", pjID, activeContent).Count(&busy).Error; err != nil {
 			return err

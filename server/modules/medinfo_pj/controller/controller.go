@@ -81,7 +81,7 @@ func (c *medinfoPJController) Delete(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err := c.service.Delete(id); err != nil {
 		res := response.BuildResponseFailed("Queue gagal dihapus", err.Error(), nil)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		ctx.AbortWithStatusJSON(http.StatusConflict, res)
 		return
 	}
 

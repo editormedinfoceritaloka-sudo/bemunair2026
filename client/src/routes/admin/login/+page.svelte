@@ -14,7 +14,16 @@
   <div class="w-full max-w-md">
     <Card class="border-border bg-card shadow-lg shadow-black-900/5">
       <CardHeader class="space-y-4 pb-4">
-        <div><CardTitle class="text-2xl text-foreground">Selamat datang kembali</CardTitle><CardDescription>Masuk untuk mengelola operasional BEM UNAIR.</CardDescription></div>
+        <div class="flex items-center justify-center gap-4" aria-label="Universitas Airlangga dan BEM UNAIR">
+          <div class="grid size-20 place-items-center rounded-2xl border border-blue-100 bg-white p-2 shadow-sm">
+            <img src="/brand/unair-logo.png" alt="Logo Universitas Airlangga" class="size-full object-contain" />
+          </div>
+          <div class="h-12 w-px bg-border"></div>
+          <div class="grid size-20 place-items-center rounded-2xl border border-blue-100 bg-white p-2 shadow-sm">
+            <img src="/brand/bem-unair-2026-logo.png" alt="Logo BEM UNAIR 2026 Kabinet Cerita Loka" class="size-full object-contain" />
+          </div>
+        </div>
+        <div class="text-center"><CardTitle class="text-2xl text-foreground">Selamat datang kembali</CardTitle><CardDescription>Masuk untuk mengelola operasional BEM UNAIR.</CardDescription></div>
       </CardHeader>
       <CardContent>
         {#if form?.error}<Alert variant="destructive" class="mb-4"><AlertDescription>{form.error}</AlertDescription></Alert>{/if}

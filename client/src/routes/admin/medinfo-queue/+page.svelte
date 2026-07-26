@@ -24,7 +24,7 @@
 </script>
 
 <PageHeader title="Roster PJ Medinfo" description="Kelola petugas yang dapat dipilih untuk menangani satu task aktif.">
-  <Button onclick={() => open = true} class="bg-blue-500" disabled={!available.length}><Plus />Tambah PJ</Button>
+  <Button onclick={() => { userId = ''; open = true; }} class="bg-blue-500"><Plus />Tambah PJ</Button>
 </PageHeader>
 
 {#if form?.error}<Alert variant="destructive" class="mb-4"><AlertDescription>{form.error}</AlertDescription></Alert>{/if}
@@ -66,15 +66,23 @@
 <Dialog.Root bind:open>
   <Dialog.Content>
     <Dialog.Header><Dialog.Title>Tambah PJ Medinfo</Dialog.Title><Dialog.Description>Hanya akun ADMIN_MEDINFO kementerian MEDINFO yang dapat dimasukkan.</Dialog.Description></Dialog.Header>
-    <form method="POST" action="?/create" use:enhance={done('PJ ditambahkan')} class="space-y-4">
-      <div class="space-y-2">
-        <Label for="user_id">Pengguna</Label>
-        <select id="user_id" name="user_id" bind:value={userId} required class="h-10 w-full rounded-lg border bg-card px-3 text-sm">
-          <option value="" disabled>Pilih pengguna</option>
-          {#each available as user}<option value={user.id}>{user.name} · {user.email}</option>{/each}
-        </select>
+    {#if available.length}
+      <form method="POST" action="?/create" use:enhance={done('PJ ditambahkan')} class="space-y-4">
+        <div class="space-y-2">
+          <Label for="user_id">Pengguna</Label>
+          <select id="user_id" name="user_id" bind:value={userId} required class="h-10 w-full rounded-lg border bg-card px-3 text-sm">
+            <option value="" disabled>Pilih pengguna</option>
+            {#each available as user}<option value={user.id}>{user.name} · {user.email}</option>{/each}
+          </select>
+          <p class="text-xs text-muted-foreground">Akun baru yang dibuat setelah proses seeding akan otomatis muncul sebagai pilihan selama memenuhi role dan kementerian.</p>
+        </div>
+        <Dialog.Footer><Button type="button" variant="outline" onclick={() => open = false}>Batal</Button><Button type="submit" class="bg-blue-500">Tambahkan</Button></Dialog.Footer>
+      </form>
+    {:else}
+      <div class="space-y-4">
+        <Alert><UserCheck class="size-4" /><AlertDescription>Semua akun ADMIN_MEDINFO dari kementerian MEDINFO saat ini sudah masuk roster. Anda tetap dapat menambahkan PJ baru setelah membuat akun yang memenuhi kriteria tersebut.</AlertDescription></Alert>
+        <Dialog.Footer><Button type="button" variant="outline" onclick={() => open = false}>Tutup</Button><Button href="/admin/users" class="bg-blue-500">Kelola Pengguna</Button></Dialog.Footer>
       </div>
-      <Dialog.Footer><Button type="button" variant="outline" onclick={() => open = false}>Batal</Button><Button type="submit" class="bg-blue-500">Tambahkan</Button></Dialog.Footer>
-    </form>
+    {/if}
   </Dialog.Content>
 </Dialog.Root>
