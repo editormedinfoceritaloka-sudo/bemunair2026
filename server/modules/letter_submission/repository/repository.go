@@ -59,7 +59,7 @@ func (r *letterSubmissionRepository) FindByID(id uint64) (*entities.LetterSubmis
 func (r *letterSubmissionRepository) ListForUser(role string, userID uint64, ministry *string) ([]entities.LetterSubmission, error) {
 	var rows []entities.LetterSubmission
 	query := r.db.Preload("Submitter").Preload("AssignedPJ").Order("deadline ASC")
-	if role == constants.RoleMentri {
+	if role != constants.RoleAdminMedinfo {
 		query = query.Where("submitter_id = ? OR ministry = ?", userID, value(ministry))
 	}
 	return rows, query.Find(&rows).Error
@@ -82,7 +82,7 @@ func (r *letterSubmissionRepository) Delete(id uint64) error {
 func (r *letterSubmissionRepository) ListPendingOlderThan(age time.Duration) ([]entities.LetterSubmission, error) {
 	var rows []entities.LetterSubmission
 	return rows, r.db.Preload("Submitter").Preload("AssignedPJ").
-		Where("status IN ? AND created_at <= ?", []string{constants.StatusPending, constants.StatusInReview}, time.Now().Add(-age)).
+		Where("status IN ? AND created_at <= ?", []string{constants.StatusSubmitted, constants.StatusPendingReview, constants.StatusRevisionSubmitted}, time.Now().Add(-age)).
 		Order("deadline ASC").
 		Find(&rows).Error
 }

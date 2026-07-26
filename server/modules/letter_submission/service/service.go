@@ -50,7 +50,7 @@ func (s *letterSubmissionService) Create(req dto.CreateRequest, submitterID uint
 		Subject:     req.Subject,
 		Body:        req.Body,
 		Deadline:    req.DeadlineAt,
-		Status:      constants.StatusPending,
+		Status:      constants.StatusSubmitted,
 	}
 
 	pj, err := s.repository.CreateWithAssignment(submission)

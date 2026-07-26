@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 
   try {
     const session = await apiRequest<User>(fetch, token, '/auth/me');
-    if (session.data?.role !== 'ADMIN') {
+    if (!['ADMIN', 'ADMIN_MEDINFO'].includes(session.data?.role ?? '')) {
       return json({ status: false, message: 'Akses upload hanya untuk admin.', error: { code: 'FORBIDDEN' } }, { status: 403 });
     }
 

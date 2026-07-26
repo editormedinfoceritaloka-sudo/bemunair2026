@@ -13,10 +13,21 @@ import (
 )
 
 type Claims struct {
-	UserID   uint64  `json:"user_id"`
-	Role     string  `json:"role"`
-	Ministry *string `json:"ministry,omitempty"`
+	UserID     uint64  `json:"user_id"`
+	Role       string  `json:"role"`
+	MinistryID *uint64 `json:"ministry_id,omitempty"`
+	Ministry   *string `json:"ministry,omitempty"`
 	jwt.RegisteredClaims
+}
+
+func (c *Claims) CanonicalRole() string {
+	if c != nil && c.Role == constants.RoleMentri {
+		return constants.RoleAdmin
+	}
+	if c == nil {
+		return ""
+	}
+	return c.Role
 }
 
 func CORS() gin.HandlerFunc {
@@ -58,15 +69,17 @@ func Auth(secret string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		tokenText := strings.TrimPrefix(header, "Bearer ")
 		claims := &Claims{}
-		token, err := jwt.ParseWithClaims(tokenText, claims, func(token *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(strings.TrimPrefix(header, "Bearer "), claims, func(token *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		})
 		if err != nil || !token.Valid {
 			response.Error(c, http.StatusUnauthorized, response.Unauthenticated, "Token tidak valid")
 			c.Abort()
 			return
+		}
+		if claims.Role == constants.RoleMentri {
+			claims.Role = constants.RoleAdmin
 		}
 		c.Set("claims", claims)
 		c.Next()
@@ -80,7 +93,7 @@ func Role(roles ...string) gin.HandlerFunc {
 	}
 	return func(c *gin.Context) {
 		claims, ok := c.MustGet("claims").(*Claims)
-		if !ok || !allowed[claims.Role] {
+		if !ok || !allowed[claims.CanonicalRole()] {
 			response.Error(c, http.StatusForbidden, response.Forbidden, "Akses ditolak")
 			c.Abort()
 			return
@@ -89,12 +102,21 @@ func Role(roles ...string) gin.HandlerFunc {
 	}
 }
 
+func AuthenticatedAdmin() gin.HandlerFunc {
+	return Role(constants.RoleAdmin, constants.RoleAdminMedinfo)
+}
+
+func MedinfoOnly() gin.HandlerFunc {
+	return Role(constants.RoleAdminMedinfo)
+}
+
+// AdminOnly is kept as an alias for existing operational routes.
 func AdminOnly() gin.HandlerFunc {
-	return Role(constants.RoleAdmin)
+	return MedinfoOnly()
 }
 
 func MentriOnly() gin.HandlerFunc {
-	return Role(constants.RoleMentri)
+	return Role(constants.RoleAdmin)
 }
 
 func CurrentClaims(c *gin.Context) *Claims {

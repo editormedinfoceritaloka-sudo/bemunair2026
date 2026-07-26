@@ -57,7 +57,7 @@ func TestAssignNextEmptyQueue(t *testing.T) {
 }
 
 func createTestTables(db *gorm.DB) error {
-	if err := db.Exec(`CREATE TABLE users (id integer primary key autoincrement, name text, email text unique, password_hash text, role text, ministry text, phone text, created_at datetime, updated_at datetime)`).Error; err != nil {
+	if err := db.Exec(`CREATE TABLE users (id integer primary key autoincrement, name text, email text unique, password_hash text, role text, ministry_id integer, ministry text, phone text, created_at datetime, updated_at datetime)`).Error; err != nil {
 		return err
 	}
 	return db.Exec(`CREATE TABLE medinfo_pj_queues (id integer primary key autoincrement, user_id integer unique, position integer, is_current boolean, created_at datetime, updated_at datetime)`).Error

@@ -11,7 +11,7 @@ INSERT INTO letter_submissions (
     'Dengan hormat, kami mengundang Bapak/Ibu untuk menjadi narasumber dalam kegiatan Leadership Class BEM Universitas Airlangga.',
     DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 3 DAY),
     (SELECT id FROM users WHERE email = 'mentri.medinfo@bem.unair.ac.id'),
-    'PENDING',
+    'PENDING_REVIEW',
     NULL
   ),
   (
@@ -23,7 +23,7 @@ INSERT INTO letter_submissions (
     'Dengan hormat, kami mengajukan permohonan peminjaman aula untuk pelaksanaan kegiatan pengabdian masyarakat.',
     DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 DAY),
     (SELECT id FROM users WHERE email = 'editor.medinfo@bem.unair.ac.id'),
-    'IN_REVIEW',
+    'PENDING_REVIEW',
     'Jadwal penggunaan aula sedang dikonfirmasi.'
   ),
   (

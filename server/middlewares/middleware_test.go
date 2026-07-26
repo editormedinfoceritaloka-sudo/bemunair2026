@@ -14,7 +14,7 @@ import (
 func TestAuthAndRoleMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	secret := "secret"
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{UserID: 1, Role: constants.RoleAdmin, RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour))}})
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{UserID: 1, Role: constants.RoleAdminMedinfo, RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour))}})
 	signed, _ := token.SignedString([]byte(secret))
 	r := gin.New()
 	r.GET("/admin", Auth(secret), AdminOnly(), func(c *gin.Context) { c.Status(http.StatusNoContent) })

@@ -17,6 +17,7 @@ type ContentSubmissionController interface {
 	Create(ctx *gin.Context)
 	List(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Timeline(ctx *gin.Context)
 	UpdateStatus(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 }
@@ -50,18 +51,25 @@ func (c *contentSubmissionController) Create(ctx *gin.Context) {
 	}
 
 	req := dto.CreateRequest{
-		Ministry:         ctx.PostForm("ministry"),
-		SubmissionType:   ctx.PostForm("submission_type"),
-		Title:            ctx.PostForm("title"),
-		Caption:          ctx.PostForm("caption"),
-		AddSong:          optionalForm(ctx, "add_song"),
-		AdditionalNotes:  optionalForm(ctx, "additional_notes"),
-		PublishDate:      publishDate,
-		PublishTime:      optionalForm(ctx, "publish_time"),
-		DesignDriveLink:  optionalForm(ctx, "design_drive_link"),
-		CanvaLink:        optionalForm(ctx, "canva_link"),
-		ArticleDriveLink: optionalForm(ctx, "article_drive_link"),
-		BriefLink:        ctx.PostForm("brief_link"),
+		Ministry:               ctx.PostForm("ministry"),
+		ServiceType:            ctx.PostForm("service_type"),
+		ContentFormat:          optionalForm(ctx, "content_format"),
+		SubmitterPhone:         optionalForm(ctx, "submitter_phone"),
+		SubmissionType:         ctx.PostForm("submission_type"),
+		Title:                  ctx.PostForm("title"),
+		Caption:                ctx.PostForm("caption"),
+		AddSong:                optionalForm(ctx, "add_song"),
+		AdditionalNotes:        optionalForm(ctx, "additional_notes"),
+		PublishDate:            publishDate,
+		PublishTime:            optionalForm(ctx, "publish_time"),
+		DesignDriveLink:        optionalForm(ctx, "design_drive_link"),
+		CanvaLink:              optionalForm(ctx, "canva_link"),
+		ArticleDriveLink:       optionalForm(ctx, "article_drive_link"),
+		DocumentationDriveLink: optionalForm(ctx, "documentation_drive_link"),
+		RequiredInformation:    optionalForm(ctx, "required_information"),
+		SongTitle:              optionalForm(ctx, "song_title"),
+		SongArtist:             optionalForm(ctx, "song_artist"),
+		BriefLink:              ctx.PostForm("brief_link"),
 	}
 
 	if err := c.validation.ValidateCreateRequest(req); err != nil {
@@ -100,7 +108,7 @@ func (c *contentSubmissionController) List(ctx *gin.Context) {
 
 func (c *contentSubmissionController) Get(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
-	row, err := c.service.Get(id)
+	row, err := c.service.Get(id, middlewares.CurrentClaims(ctx).Role, middlewares.CurrentClaims(ctx).UserID, middlewares.CurrentClaims(ctx).Ministry)
 	if err != nil || row == nil {
 		res := response.BuildResponseFailed("Submission tidak ditemukan", response.NotFound, nil)
 		ctx.AbortWithStatusJSON(http.StatusNotFound, res)
@@ -109,6 +117,17 @@ func (c *contentSubmissionController) Get(ctx *gin.Context) {
 
 	res := response.BuildResponseSuccess("Detail content submission", row)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *contentSubmissionController) Timeline(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	claims := middlewares.CurrentClaims(ctx)
+	rows, err := c.service.Timeline(id, claims.Role, claims.UserID, claims.Ministry)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response.BuildResponseFailed("Submission tidak ditemukan", err.Error(), nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildResponseSuccess("Timeline submission", rows))
 }
 
 func (c *contentSubmissionController) UpdateStatus(ctx *gin.Context) {
@@ -120,7 +139,7 @@ func (c *contentSubmissionController) UpdateStatus(ctx *gin.Context) {
 		return
 	}
 
-	row, err := c.service.UpdateStatus(id, req)
+	row, err := c.service.UpdateStatus(id, req, middlewares.CurrentClaims(ctx).UserID)
 	if err != nil {
 		res := response.BuildResponseFailed("Status gagal diperbarui", err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusConflict, res)

@@ -9,9 +9,12 @@ export const load: LayoutServerLoad = async ({ url, cookies, fetch }) => {
   if (!token) throw redirect(303, '/admin/login');
   try {
     const { data: user } = await apiRequest<User>(fetch, token, '/auth/me');
-    if (user.role !== 'ADMIN') throw new Error('Role bukan ADMIN');
+    if (!['ADMIN', 'ADMIN_MEDINFO'].includes(user.role)) throw new Error('Role tidak diizinkan');
+    const medinfoOnly = ['/admin/users', '/admin/medinfo-queue', '/admin/letter-templates', '/admin/articles', '/admin/system', '/admin/ministries', '/admin/settings'];
+    if (user.role === 'ADMIN' && medinfoOnly.some((path) => url.pathname.startsWith(path))) throw redirect(303, '/admin');
     return { user };
-  } catch {
+  } catch (error) {
+    if (typeof error === 'object' && error && 'status' in error && Number(error.status) >= 300 && Number(error.status) < 400) throw error;
     clearSession(cookies);
     throw redirect(303, '/admin/login?expired=1');
   }

@@ -53,6 +53,7 @@ func (s *userService) Create(req dto.UserCreateRequest) (*dto.UserResponse, erro
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		Role:         req.Role,
+		MinistryID:   req.MinistryID,
 		Ministry:     req.Ministry,
 		Phone:        req.Phone,
 	}
@@ -77,6 +78,7 @@ func (s *userService) Update(id uint64, req dto.UserUpdateRequest) (*dto.UserRes
 	if req.Role != "" {
 		user.Role = req.Role
 	}
+	user.MinistryID = req.MinistryID
 	user.Ministry = req.Ministry
 	user.Phone = req.Phone
 

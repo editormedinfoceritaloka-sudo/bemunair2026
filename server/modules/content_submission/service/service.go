@@ -16,8 +16,9 @@ import (
 type ContentSubmissionService interface {
 	Create(req dto.CreateRequest, submitterID uint64, claimsMinistry *string) (*dto.ContentSubmissionResponse, []error, error)
 	ListForUser(role string, userID uint64, ministry *string) ([]dto.ContentSubmissionResponse, error)
-	Get(id uint64) (*dto.ContentSubmissionResponse, error)
-	UpdateStatus(id uint64, req dto.UpdateStatusRequest) (*dto.ContentSubmissionResponse, error)
+	Get(id uint64, role string, userID uint64, ministry *string) (*dto.ContentSubmissionResponse, error)
+	Timeline(id uint64, role string, userID uint64, ministry *string) ([]dto.StatusHistoryResponse, error)
+	UpdateStatus(id uint64, req dto.UpdateStatusRequest, actorID uint64) (*dto.ContentSubmissionResponse, error)
 	Delete(id uint64) error
 }
 
@@ -39,28 +40,57 @@ func NewContentSubmissionService(
 
 func (s *contentSubmissionService) Create(req dto.CreateRequest, submitterID uint64, claimsMinistry *string) (*dto.ContentSubmissionResponse, []error, error) {
 	submitter, _ := s.userRepository.FindByID(submitterID)
-	if req.Ministry == "" && claimsMinistry != nil {
+	if submitter == nil {
+		return nil, nil, errors.New("submitter tidak ditemukan")
+	}
+	if req.Ministry == "" && submitter.Ministry != nil {
+		req.Ministry = *submitter.Ministry
+	} else if req.Ministry == "" && claimsMinistry != nil {
 		req.Ministry = *claimsMinistry
+	}
+	if req.MinistryID == nil {
+		req.MinistryID = submitter.MinistryID
+	}
+	if req.SubmitterPhone == nil {
+		req.SubmitterPhone = submitter.Phone
+	}
+	if req.ServiceType == "" {
+		if req.SubmissionType == constants.ContentTypeArtikel {
+			req.ServiceType = constants.ServiceTypeArticle
+		} else {
+			req.ServiceType = constants.ServiceTypeContent
+		}
 	}
 
 	deadline := deriveDeadline(req)
 
 	submission := &entities.ContentSubmission{
-		SubmitterID:      submitterID,
-		Ministry:         req.Ministry,
-		SubmissionType:   req.SubmissionType,
-		Title:            req.Title,
-		AddSong:          req.AddSong,
-		Caption:          req.Caption,
-		AdditionalNotes:  req.AdditionalNotes,
-		PublishDate:      req.PublishDate,
-		PublishTime:      req.PublishTime,
-		DesignDriveLink:  req.DesignDriveLink,
-		CanvaLink:        req.CanvaLink,
-		ArticleDriveLink: req.ArticleDriveLink,
-		Deadline:         deadline,
-		BriefLink:        req.BriefLink,
-		Status:           constants.StatusPending,
+		SubmitterID:            submitterID,
+		SubmitterName:          submitter.Name,
+		SubmitterPhone:         req.SubmitterPhone,
+		MinistryID:             req.MinistryID,
+		ServiceType:            req.ServiceType,
+		ContentFormat:          req.ContentFormat,
+		Ministry:               req.Ministry,
+		SubmissionType:         req.SubmissionType,
+		Title:                  req.Title,
+		AddSong:                req.AddSong,
+		SongTitle:              req.SongTitle,
+		SongArtist:             req.SongArtist,
+		SongStartSeconds:       req.SongStartSeconds,
+		SongEndSeconds:         req.SongEndSeconds,
+		Caption:                req.Caption,
+		AdditionalNotes:        req.AdditionalNotes,
+		PublishDate:            req.PublishDate,
+		PublishTime:            req.PublishTime,
+		DesignDriveLink:        req.DesignDriveLink,
+		CanvaLink:              req.CanvaLink,
+		ArticleDriveLink:       req.ArticleDriveLink,
+		DocumentationDriveLink: req.DocumentationDriveLink,
+		RequiredInformation:    req.RequiredInformation,
+		Deadline:               deadline,
+		BriefLink:              req.BriefLink,
+		Status:                 constants.StatusSubmitted,
 	}
 
 	pj, err := s.repository.CreateWithAssignment(submission)
@@ -82,16 +112,30 @@ func (s *contentSubmissionService) ListForUser(role string, userID uint64, minis
 	return dto.NewContentSubmissionResponses(rows), nil
 }
 
-func (s *contentSubmissionService) Get(id uint64) (*dto.ContentSubmissionResponse, error) {
+func (s *contentSubmissionService) Get(id uint64, role string, userID uint64, ministry *string) (*dto.ContentSubmissionResponse, error) {
 	submission, err := s.repository.FindByID(id)
 	if err != nil || submission == nil {
 		return nil, err
+	}
+	if role != constants.RoleAdminMedinfo && submission.SubmitterID != userID && (ministry == nil || submission.Ministry != *ministry) {
+		return nil, errors.New("forbidden")
 	}
 	res := dto.NewContentSubmissionResponse(submission)
 	return &res, nil
 }
 
-func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusRequest) (*dto.ContentSubmissionResponse, error) {
+func (s *contentSubmissionService) Timeline(id uint64, role string, userID uint64, ministry *string) ([]dto.StatusHistoryResponse, error) {
+	if _, err := s.Get(id, role, userID, ministry); err != nil {
+		return nil, err
+	}
+	rows, err := s.repository.ListHistory(id)
+	if err != nil {
+		return nil, err
+	}
+	return dto.NewStatusHistoryResponses(rows), nil
+}
+
+func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusRequest, actorID uint64) (*dto.ContentSubmissionResponse, error) {
 	current, err := s.repository.FindByID(id)
 	if err != nil || current == nil {
 		return nil, err
@@ -99,7 +143,7 @@ func (s *contentSubmissionService) UpdateStatus(id uint64, req dto.UpdateStatusR
 	if !ValidTransition(current.Status, req.Status) {
 		return nil, errors.New("invalid transition")
 	}
-	updated, err := s.repository.UpdateStatus(id, req.Status, req.Notes)
+	updated, err := s.repository.UpdateStatus(id, req.Status, req.Notes, actorID)
 	if err != nil || updated == nil {
 		return nil, err
 	}
@@ -127,11 +171,14 @@ func deriveDeadline(req dto.CreateRequest) *time.Time {
 }
 
 func ValidTransition(from, to string) bool {
-	if from == constants.StatusPending && to == constants.StatusInReview {
-		return true
+	allowed := map[string]map[string]bool{
+		constants.StatusPending:           {constants.StatusInReview: true},
+		constants.StatusInReview:          {constants.StatusApproved: true, constants.StatusRejected: true},
+		constants.StatusSubmitted:         {constants.StatusPendingReview: true, constants.StatusRejected: true},
+		constants.StatusPendingReview:     {constants.StatusRevisionRequired: true, constants.StatusApproved: true, constants.StatusRejected: true},
+		constants.StatusRevisionSubmitted: {constants.StatusPendingReview: true, constants.StatusRevisionRequired: true, constants.StatusApproved: true, constants.StatusRejected: true},
+		constants.StatusApproved:          {constants.StatusScheduled: true, constants.StatusRejected: true},
+		constants.StatusScheduled:         {constants.StatusPublished: true},
 	}
-	if from == constants.StatusInReview && (to == constants.StatusApproved || to == constants.StatusRejected) {
-		return true
-	}
-	return from == to
+	return from == to || allowed[from][to]
 }

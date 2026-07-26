@@ -20,7 +20,7 @@ INSERT INTO content_submissions (
     DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 DAY),
     'https://drive.google.com/example/brief-oprec',
     (SELECT id FROM users WHERE email = 'mentri.medinfo@bem.unair.ac.id'),
-    'PENDING',
+    'PENDING_REVIEW',
     NULL
   ),
   (
@@ -40,7 +40,7 @@ INSERT INTO content_submissions (
     DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY),
     'https://drive.google.com/example/brief-donasi',
     (SELECT id FROM users WHERE email = 'editor.medinfo@bem.unair.ac.id'),
-    'IN_REVIEW',
+    'PENDING_REVIEW',
     'Copy sedang diselaraskan dengan data penerima.'
   ),
   (

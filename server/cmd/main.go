@@ -20,6 +20,7 @@ import (
 	templateRepository "bemunair2026/server/modules/letter_template/repository"
 	"bemunair2026/server/modules/medinfo_pj"
 	medinfoRepository "bemunair2026/server/modules/medinfo_pj/repository"
+	"bemunair2026/server/modules/submission_support"
 	"bemunair2026/server/modules/user"
 	userRepository "bemunair2026/server/modules/user/repository"
 	"bemunair2026/server/pkg"
@@ -84,6 +85,7 @@ func main() {
 		medinfo_pj.RegisterRoutes(v1, queueRepo, cfg.JWTSecret)
 		letter_template.RegisterRoutes(v1, templateRepo, cfg.JWTSecret)
 		article.RegisterRoutes(v1, articleRepo, cfg.JWTSecret)
+		submission_support.RegisterRoutes(v1, db, cfg.JWTSecret)
 	}
 
 	cron.StartDailyCron(db, waClient, cfg)

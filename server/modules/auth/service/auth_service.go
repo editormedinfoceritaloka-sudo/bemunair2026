@@ -31,7 +31,7 @@ func NewAuthService(userRepository repository.UserRepository, jwtSecret string) 
 }
 
 func (s *authService) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
-	if req.Role != constants.RoleAdmin && req.Role != constants.RoleMentri {
+	if req.Role != constants.RoleAdmin && req.Role != constants.RoleAdminMedinfo {
 		return nil, errors.New("invalid role")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -43,6 +43,7 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.UserResponse, erro
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		Role:         req.Role,
+		MinistryID:   req.MinistryID,
 		Ministry:     req.Ministry,
 		Phone:        req.Phone,
 	}
@@ -62,7 +63,7 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 		return nil, errors.New("invalid credentials")
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, middlewares.Claims{
-		UserID: user.ID, Role: user.Role, Ministry: user.Ministry,
+		UserID: user.ID, Role: user.Role, MinistryID: user.MinistryID, Ministry: user.Ministry,
 		RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour))},
 	})
 	signed, err := token.SignedString([]byte(s.jwtSecret))

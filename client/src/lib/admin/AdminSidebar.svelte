@@ -12,24 +12,24 @@
     {
       label: 'Workspace',
       items: [
-        { href: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
-        { href: '/admin/users', label: 'Pengguna', icon: Users }
+        { href: '/admin', label: 'Ringkasan', icon: LayoutDashboard, medinfoOnly: false },
+        { href: '/admin/users', label: 'Pengguna', icon: Users, medinfoOnly: true }
       ]
     },
     {
       label: 'Layanan',
       items: [
-        { href: '/admin/content-submissions', label: 'Pengajuan Konten', icon: FileImage },
-        { href: '/admin/letter-submissions', label: 'Pengajuan Surat', icon: Mail },
-        { href: '/admin/medinfo-queue', label: 'Antrean PJ', icon: ListOrdered },
-        { href: '/admin/letter-templates', label: 'Template Surat', icon: Files }
+        { href: '/admin/content-submissions', label: 'Pengajuan Media', icon: FileImage, medinfoOnly: false },
+        { href: '/admin/letter-submissions', label: 'Pengajuan Surat', icon: Mail, medinfoOnly: false },
+        { href: '/admin/medinfo-queue', label: 'Antrean PJ', icon: ListOrdered, medinfoOnly: true },
+        { href: '/admin/letter-templates', label: 'Template Surat', icon: Files, medinfoOnly: true }
       ]
     },
     {
       label: 'Publikasi & sistem',
       items: [
-        { href: '/admin/articles', label: 'Artikel', icon: Newspaper },
-        { href: '/admin/system', label: 'Status Sistem', icon: Activity }
+        { href: '/admin/articles', label: 'Artikel', icon: Newspaper, medinfoOnly: true },
+        { href: '/admin/system', label: 'Status Sistem', icon: Activity, medinfoOnly: true }
       ]
     }
   ];
@@ -61,7 +61,7 @@
         <Sidebar.GroupLabel class="px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black-200 group-data-[collapsible=icon]:hidden">{section.label}</Sidebar.GroupLabel>
         <Sidebar.GroupContent>
           <Sidebar.Menu class="gap-1 group-data-[collapsible=icon]:items-center">
-            {#each section.items as item}
+            {#each section.items.filter((item) => !item.medinfoOnly || user.role === 'ADMIN_MEDINFO') as item}
               <Sidebar.MenuItem class="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                 <Sidebar.MenuButton
                   isActive={active(item.href)}
@@ -86,12 +86,12 @@
   <Sidebar.Footer class="overflow-hidden border-t border-sidebar-border p-3 group-data-[collapsible=icon]:p-2">
     <div class="w-full overflow-hidden rounded-xl border border-white-600 bg-card-200 p-2 group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
       <div class="flex min-w-0 items-center gap-2.5 overflow-hidden group-data-[collapsible=icon]:justify-center">
-        <Avatar class="size-9 shrink-0 border border-blue-100 group-data-[collapsible=icon]:size-8" title={`${user.name} · Administrator`}>
+        <Avatar class="size-9 shrink-0 border border-blue-100 group-data-[collapsible=icon]:size-8" title={`${user.name} · ${user.role === 'ADMIN_MEDINFO' ? 'Admin Medinfo' : 'Admin Kementerian'}`}>
           <AvatarFallback class="bg-blue-50 text-xs font-bold text-blue-700">{initials}</AvatarFallback>
         </Avatar>
         <div class="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
           <p class="truncate text-sm font-semibold text-black-500">{user.name}</p>
-          <div class="mt-0.5 flex items-center gap-1 text-[11px] text-black-300"><ShieldCheck class="size-3" />Administrator</div>
+          <div class="mt-0.5 flex items-center gap-1 text-[11px] text-black-300"><ShieldCheck class="size-3" />{user.role === 'ADMIN_MEDINFO' ? 'Admin Medinfo' : 'Admin Kementerian'}</div>
         </div>
         <form method="POST" action="/admin/logout" class="shrink-0 group-data-[collapsible=icon]:hidden">
           <button class="rounded-lg p-2 text-black-200 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring" aria-label="Keluar" title="Keluar">
