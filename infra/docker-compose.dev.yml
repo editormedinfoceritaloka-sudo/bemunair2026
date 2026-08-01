@@ -207,36 +207,6 @@ services:
     networks:
       - bemunair_net
 
-  workspace:
-    image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
-
-    container_name: bemunair_workspace
-
-    # Workspace ini hanya diperlukan oleh VS Code Dev Containers. Menaruhnya
-    # dalam profile mencegah `docker compose up` development menarik image
-    # tambahan yang tidak diperlukan untuk menjalankan aplikasi.
-    profiles:
-      - devcontainer
-
-    working_dir: /workspace
-
-    command:
-      - /bin/sh
-      - -c
-      - while sleep 1000; do :; done
-
-    volumes:
-      - ..:/workspace:cached
-      - client_node_modules:/workspace/client/node_modules
-      - wa_engine_node_modules:/workspace/wa-engine/node_modules
-
-    depends_on:
-      db:
-        condition: service_healthy
-
-    networks:
-      - bemunair_net
-
 networks:
   bemunair_net:
     driver: bridge

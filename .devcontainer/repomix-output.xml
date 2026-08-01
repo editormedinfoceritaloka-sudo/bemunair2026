@@ -1,0 +1,269 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+scripts/
+  post-create.sh
+devcontainer-lock.json
+devcontainer.json
+docker-compose.extend.yml
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="scripts/post-create.sh">
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PROJECT_ROOT="/workspace"
+
+echo "========================================"
+echo "Configuring BEM UNAIR development"
+echo "========================================"
+
+echo "Enabling Corepack..."
+if ! command -v pnpm >/dev/null 2>&1; then
+  sudo corepack enable
+fi
+
+install_node_dependencies() {
+  local directory="$1"
+
+  if [[ ! -f "${directory}/package.json" ]]; then
+    echo "Skipping ${directory}: package.json not found."
+    return
+  fi
+
+  echo "Installing dependencies in ${directory}..."
+  cd "${directory}"
+
+  if [[ -f pnpm-lock.yaml ]]; then
+    pnpm install --frozen-lockfile
+  else
+    pnpm install
+  fi
+}
+
+echo "Preparing node_modules directories..."
+
+sudo mkdir -p \
+  "${PROJECT_ROOT}/client/node_modules" \
+  "${PROJECT_ROOT}/wa-engine/node_modules" \
+  /go/pkg/mod \
+  /home/node/.cache/go-build
+
+sudo chown -R node:node \
+  "${PROJECT_ROOT}/client/node_modules" \
+  "${PROJECT_ROOT}/wa-engine/node_modules" \
+  /go/pkg/mod \
+  /home/node/.cache/go-build
+
+install_node_dependencies "${PROJECT_ROOT}/client"
+install_node_dependencies "${PROJECT_ROOT}/wa-engine"
+
+if [[ -f "${PROJECT_ROOT}/server/go.mod" ]]; then
+  echo "Downloading Go modules..."
+
+  cd "${PROJECT_ROOT}/server"
+  go mod download
+fi
+
+echo
+echo "========================================"
+echo "Development workspace is ready"
+echo "========================================"
+echo
+echo "Nginx App : http://localhost:8081"
+echo "SvelteKit : http://localhost:3000"
+echo "Go API    : http://localhost:8080"
+echo "WA Engine : http://localhost:3001"
+echo "MySQL     : localhost:3308"
+echo
+</file>
+
+<file path="devcontainer-lock.json">
+{
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "version": "2.5.9",
+      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a",
+      "integrity": "sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.3.4",
+      "resolved": "ghcr.io/devcontainers/features/go@sha256:d85e921f91b41340055bb12b325d9d551170ed04b3b832e33530bf42f167c032",
+      "integrity": "sha256:d85e921f91b41340055bb12b325d9d551170ed04b3b832e33530bf42f167c032"
+    }
+  }
+}
+</file>
+
+<file path="devcontainer.json">
+{
+  "name": "BEM UNAIR Development",
+  "dockerComposeFile": [
+    "../infra/docker-compose.dev.yml",
+    "docker-compose.extend.yml"
+  ],
+  "service": "workspace",
+  "runServices": [
+    "db",
+    "server",
+    "migrate",
+    "client",
+    "wa-engine",
+    "nginx",
+    "workspace"
+  ],
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "upgradePackages": false
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.25"
+    }
+  },
+  "containerEnv": {
+    "PNPM_HOME": "/home/node/.local/share/pnpm",
+    "PATH": "/home/node/.local/share/pnpm:${containerEnv:PATH}"
+  },
+  "postCreateCommand": "bash /workspace/.devcontainer/scripts/post-create.sh",
+  "forwardPorts": [
+    3000,
+    3001,
+    8080,
+    8081,
+    3308
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "SvelteKit"
+    },
+    "3001": {
+      "label": "WhatsApp Engine"
+    },
+    "8080": {
+      "label": "Go Server"
+    },
+    "8081": {
+      "label": "Nginx"
+    },
+    "3308": {
+      "label": "MySQL"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "golang.go",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "mikestead.dotenv",
+        "usernamehw.errorlens",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "[svelte]": {
+          "editor.defaultFormatter": "svelte.svelte-vscode"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[go]": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        }
+      }
+    }
+  }
+}
+</file>
+
+<file path="docker-compose.extend.yml">
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+    container_name: bemunair_workspace
+    working_dir: /workspace
+
+    command:
+      - /bin/sh
+      - -c
+      - while sleep 1000; do :; done
+
+    volumes:
+      - ..:/workspace:cached
+      - client_node_modules:/workspace/client/node_modules
+      - wa_engine_node_modules:/workspace/wa-engine/node_modules
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/home/node/.cache/go-build
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - bemunair_net
+</file>
+
+</files>

@@ -9,7 +9,9 @@ echo "Configuring BEM UNAIR development"
 echo "========================================"
 
 echo "Enabling Corepack..."
-corepack enable
+if ! command -v pnpm >/dev/null 2>&1; then
+  sudo corepack enable
+fi
 
 install_node_dependencies() {
   local directory="$1"
@@ -33,11 +35,15 @@ echo "Preparing node_modules directories..."
 
 sudo mkdir -p \
   "${PROJECT_ROOT}/client/node_modules" \
-  "${PROJECT_ROOT}/wa-engine/node_modules"
+  "${PROJECT_ROOT}/wa-engine/node_modules" \
+  /go/pkg/mod \
+  /home/node/.cache/go-build
 
 sudo chown -R node:node \
   "${PROJECT_ROOT}/client/node_modules" \
-  "${PROJECT_ROOT}/wa-engine/node_modules"
+  "${PROJECT_ROOT}/wa-engine/node_modules" \
+  /go/pkg/mod \
+  /home/node/.cache/go-build
 
 install_node_dependencies "${PROJECT_ROOT}/client"
 install_node_dependencies "${PROJECT_ROOT}/wa-engine"

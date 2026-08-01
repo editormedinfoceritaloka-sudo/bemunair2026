@@ -164,6 +164,19 @@ Development stack sudah mendukung update otomatis:
 - database tersimpan pada named volume dan tidak hilang saat container restart.
 
 Jika dependency atau Dockerfile berubah, jalankan ulang dengan `--build`.
+### VS Code Dev Container
+
+Repository ini menyediakan konfigurasi Dev Container di `.devcontainer/`. Konfigurasi tersebut memakai Compose development yang sama untuk `db`, `server`, `client`, `wa-engine`, dan `nginx`, lalu menambahkan container `workspace` sebagai lingkungan kerja VS Code.
+
+Prasyarat tambahan:
+
+- VS Code dengan ekstensi Dev Containers.
+- Docker Engine dengan Docker Compose v2.
+- File `server/.env`, `client/.env`, dan `wa-engine/.env` sudah dibuat dari file `.env.example`.
+
+Buka repository ini di VS Code, lalu jalankan perintah `Dev Containers: Reopen in Container`. VS Code akan membangun image development, menjalankan migrasi database, mengaktifkan hot reload seluruh service, dan memasang dependency pada container workspace.
+
+URL service tetap sama seperti development biasa: `http://localhost:8081` untuk gateway Nginx, `http://localhost:3000` untuk frontend, `http://localhost:8080` untuk API, dan `http://localhost:3001` untuk WA Engine.
 
 ## Environment
 

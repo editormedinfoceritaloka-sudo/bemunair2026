@@ -1,10 +1,14 @@
 {
   "name": "BEM UNAIR Development",
-  "dockerComposeFile": "../infra/docker-compose.dev.yml",
+  "dockerComposeFile": [
+    "../infra/docker-compose.dev.yml",
+    "docker-compose.extend.yml"
+  ],
   "service": "workspace",
   "runServices": [
     "db",
     "server",
+    "migrate",
     "client",
     "wa-engine",
     "nginx",
@@ -27,7 +31,7 @@
     "PNPM_HOME": "/home/node/.local/share/pnpm",
     "PATH": "/home/node/.local/share/pnpm:${containerEnv:PATH}"
   },
-  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postCreateCommand": "bash /workspace/.devcontainer/scripts/post-create.sh",
   "forwardPorts": [
     3000,
     3001,

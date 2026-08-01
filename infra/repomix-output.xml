@@ -1,0 +1,884 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+nginx/
+  nginx.conf
+  nginx.dev.conf
+.env.production.example
+deploy.sh
+dev.sh
+docker-compose.dev.yml
+docker-compose.yml
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="nginx/nginx.conf">
+worker_processes auto;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include mime.types;
+    default_type application/octet-stream;
+
+    sendfile on;
+    server_tokens off;
+    keepalive_timeout 65;
+    client_max_body_size 25m;
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml;
+
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        "" close;
+    }
+
+    map $http_x_forwarded_proto $forwarded_proto {
+        default $http_x_forwarded_proto;
+        "" $scheme;
+    }
+
+    upstream client_upstream {
+        server client:3000;
+        keepalive 16;
+    }
+
+    upstream server_upstream {
+        server server:8080;
+        keepalive 16;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        send_timeout 60s;
+
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+        location = /healthz {
+            access_log off;
+            proxy_pass http://server_upstream/ping;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+
+        location = /healthz/client {
+            access_log off;
+            proxy_pass http://client_upstream/admin/login;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+
+        location ^~ /api/uploads/ {
+            proxy_pass http://client_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+
+        location = /api/docs {
+            proxy_pass http://client_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+
+        location ^~ /api/v1/ {
+            proxy_pass http://server_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+
+        location / {
+            proxy_pass http://client_upstream;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        }
+    }
+}
+</file>
+
+<file path="nginx/nginx.dev.conf">
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml;
+
+    upstream client {
+        server client:3000;
+    }
+
+    upstream backend {
+        server server:8080;
+    }
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        proxy_connect_timeout       600;
+        proxy_send_timeout          600;
+        proxy_read_timeout          600;
+        send_timeout                600;
+
+        location / {
+            proxy_pass http://client;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location = /api/docs {
+            proxy_pass http://client;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /api/ {
+            proxy_pass http://backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+</file>
+
+<file path=".env.production.example">
+# Image release. GitHub Actions menulis nilai ini ke .release.env.
+SERVER_IMAGE=ghcr.io/owner/repository-server:sha-commit
+CLIENT_IMAGE=ghcr.io/owner/repository-client:sha-commit
+WA_ENGINE_IMAGE=ghcr.io/owner/repository-wa-engine:sha-commit
+
+# Untuk reproduktibilitas maksimum, ganti tag image infrastruktur dengan digest.
+MYSQL_IMAGE=mysql:8.0
+NGINX_IMAGE=nginx:alpine
+
+TZ=Asia/Jakarta
+HTTP_BIND_ADDRESS=127.0.0.1
+HTTP_PORT=8081
+
+MYSQL_DATABASE=bemunair_db
+MYSQL_USER=bemunair
+MYSQL_PASSWORD=replace_with_a_long_random_password
+MYSQL_ROOT_PASSWORD=replace_with_another_long_random_password
+DB_MAX_OPEN=20
+DB_MAX_IDLE=10
+
+JWT_SECRET=replace_with_at_least_32_random_bytes
+CORS_ALLOWED_ORIGINS=https://bem.example.org
+APP_ORIGIN=https://bem.example.org
+ADMIN_DASHBOARD_URL=https://bem.example.org/admin
+PUBLIC_APP_NAME=BEM UNAIR
+
+WA_ENGINE_API_KEY=replace_with_a_long_random_internal_key
+WA_AUTO_CONNECT=true
+WA_SENDER_PHONE=628xxxxxxxxxx
+WA_GROUP_JID_1=
+WA_GROUP_JID_2=
+
+IMAGEKIT_PUBLIC_KEY=replace_with_imagekit_public_key
+IMAGEKIT_PRIVATE_KEY=replace_with_imagekit_private_key
+IMAGEKIT_UPLOAD_FOLDER=/bemunair
+IMAGEKIT_MAX_UPLOAD_BYTES=20971520
+IMAGEKIT_MAX_IMAGE_BYTES=20971520
+IMAGEKIT_MAX_BRIEF_BYTES=15728640
+</file>
+
+<file path="deploy.sh">
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [[ $# -ne 4 ]]; then
+  echo "Usage: $0 <release-sha> <server-image> <client-image> <wa-engine-image>" >&2
+  exit 64
+fi
+
+release_sha="$1"
+server_image="$2"
+client_image="$3"
+wa_engine_image="$4"
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+app_dir="$(cd "$script_dir/.." && pwd)"
+production_env="$script_dir/.env.production"
+release_env="$script_dir/.release.env"
+previous_env="$script_dir/.release.env.previous"
+backup_dir="$app_dir/backups"
+
+if [[ ! -f "$production_env" ]]; then
+  echo "Missing $production_env. Copy .env.production.example and fill every secret first." >&2
+  exit 66
+fi
+
+umask 077
+mkdir -p "$backup_dir"
+
+if [[ -f "$release_env" ]]; then
+  cp "$release_env" "$previous_env"
+fi
+
+cat >"$release_env" <<EOF
+SERVER_IMAGE=$server_image
+CLIENT_IMAGE=$client_image
+WA_ENGINE_IMAGE=$wa_engine_image
+EOF
+
+compose=(docker compose --env-file "$production_env" --env-file "$release_env" -f "$script_dir/docker-compose.yml")
+
+rollback() {
+  exit_code=$?
+  if [[ $exit_code -eq 0 ]]; then
+    return
+  fi
+
+  echo "Deployment failed. Restoring previous application images..." >&2
+  if [[ -f "$previous_env" ]]; then
+    cp "$previous_env" "$release_env"
+    "${compose[@]}" up -d --remove-orphans || true
+  else
+    echo "No previous release metadata is available for automatic rollback." >&2
+  fi
+  exit "$exit_code"
+}
+trap rollback ERR
+
+"${compose[@]}" config --quiet
+"${compose[@]}" pull
+"${compose[@]}" up -d db
+
+for attempt in {1..30}; do
+  if "${compose[@]}" exec -T db sh -c 'mysqladmin ping -h 127.0.0.1 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent' >/dev/null 2>&1; then
+    break
+  fi
+  if [[ $attempt -eq 30 ]]; then
+    echo "Database did not become ready in time." >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+# Backup dibuat sebelum image migrasi baru dijalankan.
+backup_file="$backup_dir/pre-deploy-${release_sha}-$(date -u +%Y%m%dT%H%M%SZ).sql"
+"${compose[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysqldump --single-transaction --quick --lock-tables=false -u"$MYSQL_USER" "$MYSQL_DATABASE"' >"$backup_file"
+chmod 600 "$backup_file"
+
+"${compose[@]}" up -d --remove-orphans
+
+http_port="$(sed -n 's/^HTTP_PORT=//p' "$production_env" | tail -n 1)"
+http_port="${http_port:-8081}"
+for attempt in {1..45}; do
+  if curl --fail --silent --show-error "http://127.0.0.1:${http_port}/healthz" >/dev/null \
+    && curl --fail --silent --show-error "http://127.0.0.1:${http_port}/healthz/client" >/dev/null \
+    && "${compose[@]}" exec -T wa-engine node -e "fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" >/dev/null 2>&1; then
+    trap - ERR
+    echo "Release $release_sha is healthy."
+    "${compose[@]}" ps
+    exit 0
+  fi
+  sleep 4
+done
+
+echo "Application health check failed after deployment." >&2
+exit 1
+</file>
+
+<file path="dev.sh">
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' 
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+
+function info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+function warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+function error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+
+function usage() {
+    echo "Usage: ./dev.sh [command]"
+    echo ""
+    echo "Commands:"
+    echo "  up             Start containers with watch mode"
+    echo "  down           Stop and remove containers"
+    echo "  build          Build or rebuild services without cache"
+    echo "  logs [service] Tail logs (all or specific service)"
+    echo "  reset          Stop, remove volumes, and start again"
+    echo "  ps             List container status"
+    echo ""
+}
+
+case "$1" in
+    up)
+        info "Starting containers with watch mode..."
+        docker compose watch
+        ;;
+    down)
+        info "Stopping containers..."
+        docker compose down
+        ;;
+    build)
+        info "Building containers without cache..."
+        docker compose build --no-cache
+        ;;
+    logs)
+        info "Tailing logs..."
+        docker compose logs -f "$2"
+        ;;
+    reset)
+        warn "Resetting environment (removing volumes)..."
+        docker compose down -v
+        info "Starting fresh..."
+        docker compose up -d
+        info "Containers started in background. Use './dev.sh logs' to see logs."
+        ;;
+    ps)
+        info "Container status:"
+        docker compose ps
+        ;;
+    *)
+        usage
+        ;;
+esac
+</file>
+
+<file path="docker-compose.dev.yml">
+name: bemunair-dev
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: bemunair_db_dev
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: bemunair_db
+      MYSQL_USER: bemunair
+      MYSQL_PASSWORD: bemunair_password
+
+    ports:
+      - "3308:3306"
+
+    volumes:
+      - bemunair_mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "bemunair",
+          "-pbemunair_password"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_server_dev
+
+    env_file:
+      - ../server/.env
+
+    environment:
+      APP_ENV: development
+      DB_HOST: db
+      WA_ENGINE_URL: http://wa-engine:3001
+
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ../server:/app
+      - ../docs/api:/docs/api:ro
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    command:
+      - air
+      - -c
+      - .air.toml
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  migrate:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    env_file:
+      - ../server/.env
+
+    environment:
+      APP_ENV: development
+      DB_HOST: db
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command:
+      - go
+      - run
+      - ./cmd
+      - setup
+
+    volumes:
+      - ../server:/app
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    restart: "no"
+
+    networks:
+      - bemunair_net
+
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_client_dev
+
+    env_file:
+      - ../client/.env
+
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      CI: "true"
+      API_INTERNAL_URL: http://server:8080/api/v1
+      WA_INTERNAL_URL: http://wa-engine:3001
+      PNPM_STORE_DIR: /pnpm/store
+    depends_on:
+      - server
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ../client:/app
+      - client_node_modules:/app/node_modules
+      - client_pnpm_store:/pnpm/store
+
+    command:
+      - pnpm
+      - dev
+      - --host
+      - 0.0.0.0
+      - --port
+      - "3000"
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  wa-engine:
+    build:
+      context: ../wa-engine
+      dockerfile: Dockerfile.dev
+
+    container_name: bemunair_wa_engine_dev
+
+    env_file:
+      - ../wa-engine/.env
+
+    environment:
+      NODE_ENV: development
+      WA_ENGINE_PORT: 3001
+
+    depends_on:
+      - server
+
+    ports:
+      - "3001:3001"
+
+    volumes:
+      - ../wa-engine:/app
+      - wa_engine_node_modules:/app/node_modules
+      - wa_auth_data:/app/sessions
+
+    command:
+      - pnpm
+      - dev
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+  nginx:
+    image: nginx:alpine
+
+    container_name: bemunair_nginx_dev
+
+    depends_on:
+      - client
+      - server
+
+    ports:
+      - "8081:80"
+
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+
+    restart: unless-stopped
+
+    networks:
+      - bemunair_net
+
+networks:
+  bemunair_net:
+    driver: bridge
+
+volumes:
+  bemunair_mysql_data:
+  client_node_modules:
+  client_pnpm_store:
+  wa_engine_node_modules:
+  server_go_modules:
+  server_go_build_cache:
+  wa_auth_data:
+</file>
+
+<file path="docker-compose.yml">
+name: bemunair-production
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "5"
+
+services:
+  db:
+    <<: *service-defaults
+    image: ${MYSQL_IMAGE:-mysql:8.0}
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE wajib diisi}
+      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER wajib diisi}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD wajib diisi}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD wajib diisi}
+      TZ: ${TZ:-Asia/Jakarta}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - bemunair_mysql_data:/var/lib/mysql
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - backend
+
+  migrate:
+    image: ${SERVER_IMAGE:?SERVER_IMAGE wajib diisi oleh release}
+    pull_policy: always
+    command: ["./server", "migrate"]
+    restart: "no"
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    environment: &server-environment
+      APP_ENV: production
+      PORT: "8080"
+      TZ: ${TZ:-Asia/Jakarta}
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE:?MYSQL_DATABASE wajib diisi}
+      DB_USER: ${MYSQL_USER:?MYSQL_USER wajib diisi}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD wajib diisi}
+      DB_MAX_OPEN: ${DB_MAX_OPEN:-20}
+      DB_MAX_IDLE: ${DB_MAX_IDLE:-10}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET wajib diisi}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS wajib diisi}
+      WA_ENGINE_URL: http://wa-engine:3001
+      WA_ENGINE_API_KEY: ${WA_ENGINE_API_KEY:?WA_ENGINE_API_KEY wajib diisi}
+      WA_GROUP_JID_1: ${WA_GROUP_JID_1:-}
+      WA_GROUP_JID_2: ${WA_GROUP_JID_2:-}
+      ADMIN_DASHBOARD_URL: ${ADMIN_DASHBOARD_URL:?ADMIN_DASHBOARD_URL wajib diisi}
+      DOCS_DIR: /docs/api
+    volumes:
+      - ../docs/api:/docs/api:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  server:
+    <<: *service-defaults
+    image: ${SERVER_IMAGE:?SERVER_IMAGE wajib diisi oleh release}
+    pull_policy: always
+    environment: *server-environment
+    volumes:
+      - ../docs/api:/docs/api:ro
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+
+  client:
+    <<: *service-defaults
+    image: ${CLIENT_IMAGE:?CLIENT_IMAGE wajib diisi oleh release}
+    pull_policy: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      ORIGIN: ${APP_ORIGIN:?APP_ORIGIN wajib diisi}
+      PUBLIC_APP_NAME: ${PUBLIC_APP_NAME:-BEM UNAIR}
+      API_INTERNAL_URL: http://server:8080/api/v1
+      WA_INTERNAL_URL: http://wa-engine:3001
+      IMAGEKIT_PUBLIC_KEY: ${IMAGEKIT_PUBLIC_KEY:?IMAGEKIT_PUBLIC_KEY wajib diisi}
+      IMAGEKIT_PRIVATE_KEY: ${IMAGEKIT_PRIVATE_KEY:?IMAGEKIT_PRIVATE_KEY wajib diisi}
+      IMAGEKIT_UPLOAD_FOLDER: ${IMAGEKIT_UPLOAD_FOLDER:-/bemunair}
+      IMAGEKIT_MAX_UPLOAD_BYTES: ${IMAGEKIT_MAX_UPLOAD_BYTES:-20971520}
+      IMAGEKIT_MAX_IMAGE_BYTES: ${IMAGEKIT_MAX_IMAGE_BYTES:-20971520}
+      IMAGEKIT_MAX_BRIEF_BYTES: ${IMAGEKIT_MAX_BRIEF_BYTES:-15728640}
+    expose:
+      - "3000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch(\x27http://127.0.0.1:3000/admin/login\x27).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - frontend
+      - backend
+
+  wa-engine:
+    <<: *service-defaults
+    image: ${WA_ENGINE_IMAGE:?WA_ENGINE_IMAGE wajib diisi oleh release}
+    pull_policy: always
+    environment:
+      NODE_ENV: production
+      WA_ENGINE_PORT: "3001"
+      WA_ENGINE_API_KEY: ${WA_ENGINE_API_KEY:?WA_ENGINE_API_KEY wajib diisi}
+      WA_SESSION_DIR: /app/sessions
+      WA_AUTO_CONNECT: ${WA_AUTO_CONNECT:-true}
+      WA_SENDER_PHONE: ${WA_SENDER_PHONE:-}
+      WA_GROUP_JID_1: ${WA_GROUP_JID_1:-}
+      WA_GROUP_JID_2: ${WA_GROUP_JID_2:-}
+    volumes:
+      - wa_auth_data:/app/sessions
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch(\x27http://127.0.0.1:3001/health\x27).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend
+      - outbound
+
+  nginx:
+    <<: *service-defaults
+    image: ${NGINX_IMAGE:-nginx:alpine}
+    ports:
+      - "${HTTP_BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8081}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=32m
+      - /var/run:size=4m
+      - /tmp:size=16m
+    depends_on:
+      client:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null && wget -qO- http://127.0.0.1/healthz/client >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
+  outbound:
+    driver: bridge
+
+volumes:
+  bemunair_mysql_data:
+  wa_auth_data:
+</file>
+
+</files>
