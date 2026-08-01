@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { User } from '$lib/types';
 import { apiRequest, tokenFrom } from '$lib/server/api';
-import { ImageUploadError, parsePurpose, uploadImage, validateImage } from '$lib/server/imagekit';
+import { ImageUploadError, parsePurpose, uploadImage, validateUpload } from '$lib/server/imagekit';
 
 export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
   const token = tokenFrom(cookies);
@@ -24,16 +24,16 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
     }
     const file = data.get('file');
     if (!(file instanceof File)) {
-      throw new ImageUploadError('Field file wajib berisi gambar.', 400, 'FILE_REQUIRED');
+      throw new ImageUploadError('Field file wajib berisi file.', 400, 'FILE_REQUIRED');
     }
 
     const purpose = parsePurpose(data.get('purpose'));
-    await validateImage(file);
+    await validateUpload(file, purpose);
     const uploaded = await uploadImage(file, purpose);
 
     return json({
       status: true,
-      message: 'Gambar berhasil diunggah.',
+      message: 'File berhasil diunggah.',
       data: {
         file_id: uploaded.fileId,
         name: uploaded.name,

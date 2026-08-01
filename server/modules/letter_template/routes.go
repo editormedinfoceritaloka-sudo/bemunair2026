@@ -12,10 +12,11 @@ func RegisterRoutes(api *gin.RouterGroup, repo repository.LetterTemplateReposito
 	templateService := service.NewLetterTemplateService(repo)
 	templateController := controller.NewLetterTemplateController(templateService)
 
-	templates := api.Group("/letter-templates", middlewares.Auth(jwtSecret), middlewares.AdminOnly())
-	templates.POST("", templateController.Create)
+	templates := api.Group("/letter-templates", middlewares.Auth(jwtSecret), middlewares.AuthenticatedAdmin())
 	templates.GET("", templateController.List)
 	templates.GET("/:id", templateController.Get)
-	templates.PUT("/:id", templateController.Update)
-	templates.DELETE("/:id", templateController.Delete)
+	manage := templates.Group("", middlewares.MedinfoOnly())
+	manage.POST("", templateController.Create)
+	manage.PUT("/:id", templateController.Update)
+	manage.DELETE("/:id", templateController.Delete)
 }

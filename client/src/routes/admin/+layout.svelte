@@ -1,23 +1,30 @@
 <script lang="ts">
   import AdminSidebar from '$lib/admin/AdminSidebar.svelte';
-  import * as Sidebar from '$lib/components/ui/sidebar';
-  import * as Tooltip from '$lib/components/ui/tooltip';
+  import { page } from '$app/state';
+  import { LoaderCircle } from '@lucide/svelte';
+
   let { data, children } = $props();
 </script>
-{#if data.user}
-  <Tooltip.Provider>
-    <Sidebar.Provider>
-      <AdminSidebar user={data.user} />
-      <Sidebar.Inset class="admin-workspace min-w-0 bg-background">
-        <header class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border/80 bg-card/90 px-4 backdrop-blur md:px-6">
-          <Sidebar.Trigger />
-          <div class="h-5 w-px bg-border"></div>
-          <span class="text-sm font-medium text-muted-foreground">Admin Workspace</span>
-        </header>
-        <main class="w-full p-4 md:p-7 xl:p-8">{@render children()}</main>
-      </Sidebar.Inset>
-    </Sidebar.Provider>
-  </Tooltip.Provider>
-{:else}
+
+{#if page.url.pathname === '/admin/login'}
   {@render children()}
+{:else if data.user}
+  <div class="h-svh overflow-hidden bg-background md:flex">
+    <AdminSidebar user={data.user} />
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <header class="flex h-14 shrink-0 items-center border-b border-border/80 bg-card px-4 md:px-6">
+        <span class="text-sm font-medium text-muted-foreground">Admin Workspace</span>
+      </header>
+      <main id="admin-main" class="min-h-0 flex-1 overflow-y-auto p-4 md:p-7 xl:p-8">
+        {@render children()}
+      </main>
+    </div>
+  </div>
+{:else}
+  <div class="grid min-h-svh place-items-center bg-background p-6" role="status">
+    <div class="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+      <LoaderCircle class="size-4 animate-spin text-blue-600" />
+      Memuat workspace admin...
+    </div>
+  </div>
 {/if}

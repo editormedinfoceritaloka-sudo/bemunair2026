@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
   const user = (await parent()).user!;
-  const templates = user.role === 'ADMIN_MEDINFO' ? (await apiRequest<LetterTemplate[]>(fetch, tokenFrom(cookies), '/letter-templates')).data : [];
+  const templates = (await apiRequest<LetterTemplate[]>(fetch, tokenFrom(cookies), '/letter-templates')).data;
   return { templates, user };
 };
 
@@ -18,16 +18,16 @@ export const actions: Actions = {
       letter_type: formValue(form, 'letter_type'),
       subject: formValue(form, 'subject'),
       body: formValue(form, 'body'),
-      deadline: `${deadline}:00+07:00`
+      deadline: deadline + ':00+07:00'
     };
     let id: number;
     try {
       const result = await apiRequest<LetterSubmission>(fetch, tokenFrom(cookies), '/letter-submissions', { method: 'POST', body: JSON.stringify(body) });
       id = result.data.id;
     } catch (error) {
-      const x = actionError(error);
-      return fail(x.status, { error: x.message });
+      const result = actionError(error);
+      return fail(result.status, { error: result.message });
     }
-    redirect(303, `/admin/letter-submissions/${id}`);
+    redirect(303, '/admin/letter-submissions/' + id);
   }
 };

@@ -1,7 +1,1 @@
-<script lang="ts">
-	
-</script>
-
-<div class="">
-	
-</div>
+<div></div>

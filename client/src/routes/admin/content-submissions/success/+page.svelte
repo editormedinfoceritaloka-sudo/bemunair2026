@@ -21,7 +21,7 @@
           <div><p class="text-xs text-muted-foreground">Kode pengajuan</p><p class="font-mono font-bold text-blue-800">{row.request_code || `MED-${row.id}`}</p></div>
           <div><p class="text-xs text-muted-foreground">Status awal</p><div class="mt-1"><StatusBadge status={row.status} /></div></div>
           <div class="sm:col-span-2"><p class="text-xs text-muted-foreground">Judul</p><p class="font-semibold">{row.title}</p></div>
-          <div><p class="text-xs text-muted-foreground">Jenis</p><p class="font-medium">{row.service_type === 'ARTICLE' ? 'Artikel' : 'Konten'}</p></div>
+          <div><p class="text-xs text-muted-foreground">Jenis</p><p class="font-medium">{row.service_type === 'ARTICLE' ? 'Artikel' : 'Media'}</p></div>
           <div><p class="text-xs text-muted-foreground">Tanggal usulan</p><p class="font-medium">{row.publish_date ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(row.publish_date)) : '—'}</p></div>
         </div>
       </div>

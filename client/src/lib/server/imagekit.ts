@@ -3,11 +3,14 @@ import { env } from '$env/dynamic/private';
 
 const DEFAULT_MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+const ALLOWED_PDF_TYPES = new Set(['application/pdf']);
 const PURPOSE_FOLDERS = {
   article: 'articles',
   cover: 'article-covers',
   profile: 'profiles',
-  submission: 'submissions'
+  submission: 'submissions',
+  documentation: 'program-documentations',
+  letter_template: 'letter-templates'
 } as const;
 
 export type ImagePurpose = keyof typeof PURPOSE_FOLDERS;
@@ -44,6 +47,18 @@ function safeFileName(original: string) {
     .replace(/^-+|-+$/g, '')
     .slice(0, 80) || 'image';
   return extension ? `${base}.${extension}` : base;
+}
+
+export async function validateUpload(file: File, purpose: ImagePurpose) {
+  if (purpose === 'letter_template') {
+    if (!ALLOWED_PDF_TYPES.has(file.type)) throw new ImageUploadError('Template surat harus berupa file PDF.', 415, 'UNSUPPORTED_PDF_TYPE');
+    if (file.size === 0) throw new ImageUploadError('File PDF kosong.', 400, 'EMPTY_FILE');
+    if (file.size > configuredMaxBytes()) throw new ImageUploadError('Ukuran PDF maksimal ' + Math.floor(configuredMaxBytes() / 1024 / 1024) + ' MB.', 413, 'FILE_TOO_LARGE');
+    const header = new TextDecoder().decode(new Uint8Array(await file.slice(0, 5).arrayBuffer()));
+    if (header !== '%PDF-') throw new ImageUploadError('Isi file tidak sesuai dengan PDF.', 415, 'INVALID_PDF_SIGNATURE');
+    return;
+  }
+  return validateImage(file);
 }
 
 export async function validateImage(file: File) {

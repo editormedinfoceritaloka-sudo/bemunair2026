@@ -10,6 +10,8 @@ import (
 	"bemunair2026/server/modules/article"
 	articleRepository "bemunair2026/server/modules/article/repository"
 	"bemunair2026/server/modules/auth"
+	"bemunair2026/server/modules/cabinet"
+	cabinetRepository "bemunair2026/server/modules/cabinet/repository"
 	content "bemunair2026/server/modules/content_submission"
 	contentRepository "bemunair2026/server/modules/content_submission/repository"
 	"bemunair2026/server/modules/cron"
@@ -72,6 +74,7 @@ func main() {
 	queueRepo := medinfoRepository.NewMedinfoPJRepository(db)
 	templateRepo := templateRepository.NewLetterTemplateRepository(db)
 	articleRepo := articleRepository.NewArticleRepository(db)
+	cabinetRepo := cabinetRepository.New(db)
 
 	router.GET("/ping", func(c *gin.Context) { response.OK(c, "pong", nil) })
 
@@ -85,6 +88,7 @@ func main() {
 		medinfo_pj.RegisterRoutes(v1, queueRepo, cfg.JWTSecret)
 		letter_template.RegisterRoutes(v1, templateRepo, cfg.JWTSecret)
 		article.RegisterRoutes(v1, articleRepo, cfg.JWTSecret)
+		cabinet.RegisterRoutes(v1, cabinetRepo, cfg.JWTSecret)
 		submission_support.RegisterRoutes(v1, db, cfg.JWTSecret)
 	}
 

@@ -7,15 +7,17 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
   const token = tokenFrom(cookies)!;
   const common = await Promise.allSettled([
     apiRequest<ContentSubmission[]>(fetch, token, '/content-submissions'),
-    apiRequest<LetterSubmission[]>(fetch, token, '/letter-submissions')
+    Promise.resolve({ data: [] as LetterSubmission[] }),
+    user.role === 'ADMIN_MEDINFO' ? Promise.resolve({ data: [] as LetterTemplate[] }) : apiRequest<LetterTemplate[]>(fetch, token, '/letter-templates')
   ]);
   const content = common[0].status === 'fulfilled' ? common[0].value.data : [];
   const letters = common[1].status === 'fulfilled' ? common[1].value.data : [];
+  const templates = common[2].status === 'fulfilled' ? common[2].value.data : [];
 
   if (user.role !== 'ADMIN_MEDINFO') {
     return {
-      user, content, letters, users: [] as User[], queue: [] as QueueItem[],
-      templates: [] as LetterTemplate[], articles: [] as Article[],
+      user, content, letters, templates, users: [] as User[], queue: [] as QueueItem[],
+      articles: [] as Article[],
       partialFailure: common.some((item) => item.status === 'rejected')
     };
   }
@@ -23,7 +25,6 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
   const operations = await Promise.allSettled([
     apiRequest<User[]>(fetch, token, '/users'),
     apiRequest<QueueItem[]>(fetch, token, '/medinfo-pj/queue'),
-    apiRequest<LetterTemplate[]>(fetch, token, '/letter-templates'),
     apiRequest<Article[]>(fetch, token, '/admin/articles?page=1&per_page=50')
   ]);
   const value = <T>(index: number, fallback: T): T =>
@@ -32,9 +33,9 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
       : fallback;
 
   return {
-    user, content, letters,
+    user, content, letters, templates,
     users: value<User[]>(0, []), queue: value<QueueItem[]>(1, []),
-    templates: value<LetterTemplate[]>(2, []), articles: value<Article[]>(3, []),
+    articles: value<Article[]>(2, []),
     partialFailure: [...common, ...operations].some((item) => item.status === 'rejected')
   };
 };

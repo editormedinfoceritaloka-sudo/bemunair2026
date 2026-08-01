@@ -40,6 +40,7 @@
 		"vite": "^8.0.7"
 	},
 	"dependencies": {
+		"gsap": "^3.13.0",
 		"@imagekit/nodejs": "^7.10.0",
 		"@internationalized/date": "^3.12.2",
 		"@sveltejs/adapter-node": "^5.5.4",

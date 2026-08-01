@@ -21,7 +21,7 @@
   <Card class="group border-blue-100 bg-blue-50/40 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
     <CardHeader>
       <div class="mb-3 grid size-12 place-items-center rounded-xl bg-blue-500 text-white"><FileImage /></div>
-      <CardTitle>Pengajuan Konten</CardTitle>
+      <CardTitle>Pengajuan Media</CardTitle>
     </CardHeader>
     <CardContent class="space-y-5">
       <p class="text-sm leading-6 text-muted-foreground">Feed, reels, Instastory, desain, dan publikasi Instagram BEM UNAIR.</p>

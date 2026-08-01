@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import type { MediaSubmissionSetting, User } from '$lib/types';
   import { uploadSubmissionFile, type UploadedSubmissionFile } from '$lib/admin/upload-submission-file';
@@ -138,7 +139,7 @@
 <div class="mx-auto max-w-5xl" class:pointer-events-none={!sopAccepted} aria-hidden={!sopAccepted}>
   <header class="mb-8 text-center">
     <h1 class="submission-title">
-      <span class="text-blue-600">Pengajuan {service === 'CONTENT' ? 'Konten' : 'Artikel'}</span>
+      <span class="text-blue-600">Pengajuan {service === 'CONTENT' ? 'Media' : 'Artikel'}</span>
       <span class="text-blue-400">Medinfo BEM UNAIR 2026</span>
     </h1>
     <p class="mt-4 text-sm text-muted-foreground">Lengkapi seluruh informasi berikut. Data akan tersimpan sebagai draft pada perangkat ini.</p>
@@ -207,7 +208,7 @@
     </section>
 
     <section class="form-section">
-      <h2>3. Materi {service === 'CONTENT' ? 'Konten' : 'Artikel'}</h2>
+      <h2>3. Materi {service === 'CONTENT' ? 'Media' : 'Artikel'}</h2>
       <div class="grid gap-5">
         {#if service === 'CONTENT'}
           {#if contentFormat === 'REELS_INSTAGRAM'}
@@ -259,7 +260,7 @@
     </section>
 
     <div class="flex flex-col-reverse justify-between gap-3 sm:flex-row">
-      <Button href="/admin/content-submissions/new/select" variant="outline"><ArrowLeft /> Kembali</Button>
+      <Button href={resolve("/admin/content-submissions") + (service === "ARTICLE" ? "?type=ARTICLE" : "?type=CONTENT")} variant="outline"><ArrowLeft /> Kembali</Button>
       <Button type="submit" class="bg-blue-500 hover:bg-blue-600" disabled={!allAccepted || mediaUploading || briefUploading || (service === 'CONTENT' && ((contentFormat !== 'REELS_INSTAGRAM' && !media) || !brief)) || submitting}>
         {#if submitting}<LoaderCircle class="animate-spin" /> Mengirim...{:else}<Check /> Periksa dan Kirim Pengajuan{/if}
       </Button>

@@ -7,5 +7,6 @@
   { "slug": "medinfo-pj-queue", "title": "Medinfo PJ Queue", "order": 6 },
   { "slug": "letter-templates", "title": "Letter Templates", "order": 7 },
   { "slug": "articles", "title": "Articles", "order": 8 },
-  { "slug": "wa-engine", "title": "WA Engine", "order": 9 }
+  { "slug": "wa-engine", "title": "WA Engine", "order": 9 },
+  { "slug": "cabinet", "title": "Cabinet Content", "order": 10 }
 ]

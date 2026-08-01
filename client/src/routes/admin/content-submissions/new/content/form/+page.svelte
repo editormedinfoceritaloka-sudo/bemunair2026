@@ -3,5 +3,5 @@
   let { data, form } = $props();
 </script>
 
-<svelte:head><title>Pengajuan Konten · BEM UNAIR</title></svelte:head>
+<svelte:head><title>Pengajuan Media · BEM UNAIR</title></svelte:head>
 <MediaSubmissionForm service="CONTENT" user={data.user} setting={data.setting} {form} />

@@ -1,248 +1,76 @@
 # Letter Templates
 
-Template surat reusable. Semua endpoint hanya untuk `ADMIN`.
+Template surat disimpan sebagai PDF pada ImageKit. Metadata file disimpan pada `media_assets`, sedangkan `letter_templates` menyimpan jenis, nama, dan relasinya.
+
+## Authorization
+
+- `GET /api/v1/letter-templates` dan `GET /api/v1/letter-templates/:id`: `ADMIN` dan `ADMIN_MEDINFO`.
+- `POST`, `PUT`, dan `DELETE`: hanya `ADMIN_MEDINFO`.
+- Admin Kementerian hanya memakai URL download PDF dari response.
 
 ## Template Object
 
 ```json
 {
-  "id": 1,
-  "name": "Undangan Rapat",
+  "id": 900001,
+  "name": "Undangan Kegiatan Resmi",
   "type": "UNDANGAN",
-  "subject": "Undangan Rapat",
-  "body": "Dengan hormat...",
-  "created_at": "2026-06-01T03:00:00+07:00",
-  "updated_at": "2026-06-01T03:00:00+07:00"
+  "subject": "Undangan Kegiatan BEM Universitas Airlangga",
+  "media_asset_id": 910107,
+  "file": {
+    "id": 910107,
+    "url": "https://cdn.example/template.pdf",
+    "name": "template-undangan.pdf",
+    "mime_type": "application/pdf",
+    "size_bytes": 25000
+  },
+  "download_url": "https://cdn.example/template.pdf",
+  "is_active": true,
+  "display_order": 0
 }
 ```
 
----
+## Upload flow
 
-## POST /api/letter-templates
+Halaman Admin Medinfo menjalankan tiga langkah:
 
-Membuat template surat.
+1. Upload PDF ke `/api/uploads/imagekit` dengan purpose `letter_template`.
+2. Simpan metadata hasil upload ke `POST /api/v1/admin/media-assets` dengan `purpose: letter_template`.
+3. Simpan template ke `POST /api/v1/letter-templates` dengan `media_asset_id`.
 
-**Auth:** ADMIN only  
-**Content-Type:** `application/json`
+File harus berformat PDF, memiliki signature PDF yang valid, dan berukuran paling besar 10 MB.
 
-### Request Body
+## GET /api/v1/letter-templates
 
-| Field | Type | Required | Keterangan |
-|---|---|---:|---|
-| `name` | string | yes | Nama template |
-| `type` | string | yes | Jenis template |
-| `subject` | string | yes | Subject default |
-| `body` | string | yes | Isi template |
-
-```json
-{
-  "name": "Undangan Rapat",
-  "type": "UNDANGAN",
-  "subject": "Undangan Rapat",
-  "body": "Dengan hormat..."
-}
-```
-
-### Response 201
-
-```json
-{
-  "success": true,
-  "message": "Template berhasil dibuat",
-  "data": {
-    "id": 1,
-    "name": "Undangan Rapat",
-    "type": "UNDANGAN",
-    "subject": "Undangan Rapat",
-    "body": "Dengan hormat..."
-  }
-}
-```
-
-### Error Responses
-
-| Status | Code | Keterangan |
-|---:|---|---|
-| 422 | `VALIDATION_ERROR` | JSON tidak valid |
-| 500 | `INTERNAL_ERROR` | Gagal simpan |
-
-### Curl
+Mengambil daftar template untuk download.
 
 ```bash
-curl -X POST http://localhost:8081/api/letter-templates \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Undangan Rapat","type":"UNDANGAN","subject":"Undangan Rapat","body":"Dengan hormat..."}'
-```
-
----
-
-## GET /api/letter-templates
-
-Mengambil semua template.
-
-**Auth:** ADMIN only  
-**Content-Type:** none
-
-### Response 200
-
-```json
-{
-  "success": true,
-  "message": "Daftar template",
-  "data": [
-    {
-      "id": 1,
-      "name": "Undangan Rapat",
-      "type": "UNDANGAN",
-      "subject": "Undangan Rapat",
-      "body": "Dengan hormat..."
-    }
-  ],
-  "meta": { "page": 1, "per_page": 1, "total": 1, "total_pages": 1 }
-}
-```
-
-### Error Responses
-
-| Status | Code | Keterangan |
-|---:|---|---|
-| 403 | `FORBIDDEN` | Role bukan `ADMIN` |
-| 500 | `INTERNAL_ERROR` | Query gagal |
-
-### Curl
-
-```bash
-curl http://localhost:8081/api/letter-templates \
+curl http://localhost:8081/api/v1/letter-templates \
   -H "Authorization: Bearer $TOKEN"
 ```
 
----
+## POST /api/v1/letter-templates
 
-## GET /api/letter-templates/:id
+Membuat metadata template setelah media PDF tersimpan.
 
-Mengambil detail template.
-
-**Auth:** ADMIN only  
-**Content-Type:** none
-
-### Response 200
+**Auth:** `ADMIN_MEDINFO`
 
 ```json
 {
-  "success": true,
-  "message": "Detail template",
-  "data": {
-    "id": 1,
-    "name": "Undangan Rapat",
-    "type": "UNDANGAN",
-    "subject": "Undangan Rapat",
-    "body": "Dengan hormat..."
-  }
-}
-```
-
-### Error Responses
-
-| Status | Code | Keterangan |
-|---:|---|---|
-| 404 | `NOT_FOUND` | Template tidak ditemukan |
-
-### Curl
-
-```bash
-curl http://localhost:8081/api/letter-templates/1 \
-  -H "Authorization: Bearer $TOKEN"
-```
-
----
-
-## PUT /api/letter-templates/:id
-
-Memperbarui template.
-
-**Auth:** ADMIN only  
-**Content-Type:** `application/json`
-
-### Request Body
-
-| Field | Type | Required | Keterangan |
-|---|---|---:|---|
-| `name` | string | yes | Nama template |
-| `type` | string | yes | Jenis template |
-| `subject` | string | yes | Subject |
-| `body` | string | yes | Isi |
-
-```json
-{
-  "name": "Undangan Rapat Bulanan",
+  "name": "Undangan Kegiatan Resmi",
   "type": "UNDANGAN",
-  "subject": "Undangan Rapat Bulanan",
-  "body": "Dengan hormat..."
+  "subject": "Undangan Kegiatan BEM Universitas Airlangga",
+  "body": "",
+  "media_asset_id": 910107,
+  "is_active": true,
+  "display_order": 0
 }
 ```
 
-### Response 200
+## PUT /api/v1/letter-templates/:id
 
-```json
-{
-  "success": true,
-  "message": "Template berhasil diperbarui",
-  "data": {
-    "id": 1,
-    "name": "Undangan Rapat Bulanan",
-    "type": "UNDANGAN",
-    "subject": "Undangan Rapat Bulanan",
-    "body": "Dengan hormat..."
-  }
-}
-```
+Memperbarui metadata atau mengganti relasi PDF. Jika `media_asset_id` diisi, media tersebut harus berupa PDF dengan purpose `letter_template`.
 
-### Error Responses
+## DELETE /api/v1/letter-templates/:id
 
-| Status | Code | Keterangan |
-|---:|---|---|
-| 404 | `NOT_FOUND` | Template tidak ditemukan |
-| 422 | `VALIDATION_ERROR` | JSON tidak valid |
-| 500 | `INTERNAL_ERROR` | Gagal update |
-
-### Curl
-
-```bash
-curl -X PUT http://localhost:8081/api/letter-templates/1 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Undangan Rapat Bulanan","type":"UNDANGAN","subject":"Undangan Rapat Bulanan","body":"Dengan hormat..."}'
-```
-
----
-
-## DELETE /api/letter-templates/:id
-
-Menghapus template.
-
-**Auth:** ADMIN only  
-**Content-Type:** none
-
-### Response 200
-
-```json
-{
-  "success": true,
-  "message": "Template berhasil dihapus"
-}
-```
-
-### Error Responses
-
-| Status | Code | Keterangan |
-|---:|---|---|
-| 403 | `FORBIDDEN` | Role bukan `ADMIN` |
-| 500 | `INTERNAL_ERROR` | Gagal hapus |
-
-### Curl
-
-```bash
-curl -X DELETE http://localhost:8081/api/letter-templates/1 \
-  -H "Authorization: Bearer $TOKEN"
-```
+Menghapus metadata template. Penghapusan record tidak menghapus file fisik ImageKit secara otomatis sehingga asset perlu ditangani melalui proses cleanup terpisah.

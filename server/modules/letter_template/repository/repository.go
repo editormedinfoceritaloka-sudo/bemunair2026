@@ -13,6 +13,7 @@ type LetterTemplateRepository interface {
 	FindByID(id uint64) (*entities.LetterTemplate, error)
 	Update(template *entities.LetterTemplate) error
 	Delete(id uint64) error
+	FindMediaAsset(id uint64) (*entities.MediaAsset, error)
 }
 
 type letterTemplateRepository struct {
@@ -31,12 +32,12 @@ func (r *letterTemplateRepository) Create(template *entities.LetterTemplate) err
 
 func (r *letterTemplateRepository) List() ([]entities.LetterTemplate, error) {
 	var rows []entities.LetterTemplate
-	return rows, r.db.Order("id ASC").Find(&rows).Error
+	return rows, r.db.Preload("MediaAsset").Order("display_order ASC, id ASC").Find(&rows).Error
 }
 
 func (r *letterTemplateRepository) FindByID(id uint64) (*entities.LetterTemplate, error) {
 	var template entities.LetterTemplate
-	err := r.db.First(&template, id).Error
+	err := r.db.Preload("MediaAsset").First(&template, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -49,4 +50,13 @@ func (r *letterTemplateRepository) Update(template *entities.LetterTemplate) err
 
 func (r *letterTemplateRepository) Delete(id uint64) error {
 	return r.db.Delete(&entities.LetterTemplate{}, id).Error
+}
+
+func (r *letterTemplateRepository) FindMediaAsset(id uint64) (*entities.MediaAsset, error) {
+	var media entities.MediaAsset
+	err := r.db.First(&media, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &media, err
 }

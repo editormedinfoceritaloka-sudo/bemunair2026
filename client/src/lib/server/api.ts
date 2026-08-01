@@ -14,7 +14,8 @@ export async function apiRequest<T>(fetcher: typeof fetch, token: string | undef
   if (token) headers.set('Authorization', `Bearer ${token}`);
   if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
   headers.set('Accept', 'application/json');
-  const response = await fetcher(`${API_BASE}${path}`, { ...init, headers });
+  const request = API_BASE.startsWith("http://server") ? globalThis.fetch : fetcher;
+  const response = await request(API_BASE + path, { ...init, headers });
   let payload: ApiEnvelope<T> | undefined;
   try { payload = await response.json(); } catch { /* handled below */ }
   if (!payload) throw new ApiError("Respons API tidak valid (" + response.status + ")", response.status);

@@ -249,14 +249,14 @@
 
   <CardContent class="p-0">
     <div class="grid grid-cols-7 border-b border-border bg-white-500/70">
-      {#each weekdays as weekday}
+      {#each weekdays as weekday (weekday)}
         <div class="px-1 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-black-300 sm:text-xs">
           {weekday}
         </div>
       {/each}
     </div>
     <div class="grid grid-cols-7 bg-border/80">
-      {#each calendarDays as day}
+      {#each calendarDays as day (day.key)}
         {@const dayEvents = eventsByDate[day.key] || []}
         <div
           class:opacity-45={!day.inMonth}
@@ -275,7 +275,7 @@
           </button>
 
           <div class="space-y-1">
-            {#each dayEvents.slice(0, 2) as event}
+            {#each dayEvents.slice(0, 2) as event (event.id)}
               <button
                 type="button"
                 class={`flex h-5 w-full min-w-0 items-center justify-center rounded-md border px-1 text-left text-[10px] font-medium transition-colors sm:h-auto sm:justify-start sm:py-1 ${kindClasses(event.kind)}`}
@@ -318,7 +318,7 @@
     </Dialog.Header>
 
     <div class="space-y-3">
-      {#each selectedEvents as event}
+      {#each selectedEvents as event (event.id)}
         {@const EventIcon = event.kind === 'CONTENT' ? FileImage : event.kind === 'LETTER' ? Mail : Newspaper}
         <article class="rounded-xl border border-border bg-card p-4">
           <div class="flex items-start gap-3">

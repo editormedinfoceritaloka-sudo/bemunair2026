@@ -23,6 +23,7 @@ Role yang valid hanya:
 | Role | Akses |
 |---|---|
 | `ADMIN` | Kelola user, template, queue PJ, semua submission, update status |
+| `ADMIN_MEDINFO` | Kelola konten publik kabinet, media, struktur organisasi, dan dokumentasi lintas unit |
 | `MENTRI` | Buat submission dan melihat submission milik sendiri/kementerian |
 
 ## Standard Success Envelope

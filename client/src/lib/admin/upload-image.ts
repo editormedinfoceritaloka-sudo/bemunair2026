@@ -1,4 +1,4 @@
-export type UploadPurpose = 'article' | 'cover' | 'profile' | 'submission';
+export type UploadPurpose = 'article' | 'cover' | 'profile' | 'submission' | 'documentation' | 'letter_template';
 
 export interface UploadedImage {
   file_id: string;
@@ -20,13 +20,15 @@ interface UploadResponse {
 }
 
 const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+const ACCEPTED_PDF_TYPES = new Set(['application/pdf']);
 const CLIENT_MAX_BYTES = 10 * 1024 * 1024;
 
 export async function uploadImageFile(file: File, purpose: UploadPurpose): Promise<UploadedImage> {
-  if (!ACCEPTED_TYPES.has(file.type)) {
-    throw new Error('Format gambar harus JPEG, PNG, WebP, GIF, atau AVIF.');
+  const acceptedTypes = purpose === 'letter_template' ? ACCEPTED_PDF_TYPES : ACCEPTED_TYPES;
+  if (!acceptedTypes.has(file.type)) {
+    throw new Error(purpose === 'letter_template' ? 'Template surat harus berupa PDF.' : 'Format gambar harus JPEG, PNG, WebP, GIF, atau AVIF.');
   }
-  if (file.size > CLIENT_MAX_BYTES) throw new Error('Ukuran gambar maksimal 10 MB.');
+  if (file.size > CLIENT_MAX_BYTES) throw new Error('Ukuran file maksimal 10 MB.');
 
   const body = new FormData();
   body.set('file', file);
@@ -38,7 +40,7 @@ export async function uploadImageFile(file: File, purpose: UploadPurpose): Promi
   });
   const payload = await response.json().catch(() => null) as UploadResponse | null;
   if (!response.ok || !payload?.status || !payload.data) {
-    throw new Error(payload?.message || 'Gagal mengunggah gambar.');
+    throw new Error(payload?.message || 'Gagal mengunggah file.');
   }
   return payload.data;
 }

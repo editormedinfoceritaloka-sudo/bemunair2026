@@ -10,7 +10,9 @@ const PURPOSES = {
   cover: { folder: 'article-covers', medinfoOnly: true },
   profile: { folder: 'profiles', medinfoOnly: true },
   submission_media: { folder: 'submissions/media', medinfoOnly: false },
-  submission_brief: { folder: 'submissions/briefs', medinfoOnly: false }
+  submission_brief: { folder: 'submissions/briefs', medinfoOnly: false },
+  documentation: { folder: 'program-documentations', medinfoOnly: false },
+  letter_template: { folder: 'letter-templates', medinfoOnly: true }
 } as const;
 
 type Purpose = keyof typeof PURPOSES;
