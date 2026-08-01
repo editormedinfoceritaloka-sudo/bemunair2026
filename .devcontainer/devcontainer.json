@@ -7,11 +7,6 @@
   "service": "workspace",
   "runServices": [
     "db",
-    "server",
-    "migrate",
-    "client",
-    "wa-engine",
-    "nginx",
     "workspace"
   ],
   "workspaceFolder": "/workspace",
@@ -28,8 +23,7 @@
     }
   },
   "containerEnv": {
-    "PNPM_HOME": "/home/node/.local/share/pnpm",
-    "PATH": "/home/node/.local/share/pnpm:${containerEnv:PATH}"
+    "PNPM_HOME": "/home/node/.local/share/pnpm"
   },
   "postCreateCommand": "bash /workspace/.devcontainer/scripts/post-create.sh",
   "forwardPorts": [

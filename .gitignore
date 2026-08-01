@@ -4,3 +4,23 @@ infra/.env.production
 infra/.release.env
 infra/.release.env.previous
 backups/
+
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# pnpm local store/cache
+.pnpm-store/
+**/.pnpm-store/
+.pnpm/
+**/.pnpm/
+
+# General build caches
+.cache/
+**/.cache/
+
+# Repomix generated output
+repomix-output.*
+
+.pnpm-store/
+node_modules/
