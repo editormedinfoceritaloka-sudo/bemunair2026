@@ -77,7 +77,7 @@
   id="calendar"
   aria-labelledby="calendar-heading"
   class="
-    relative min-h-screen overflow-hidden
+    relative py-24 overflow-hidden
     bg-gradient-to-b
     from-[#8fb2d8]
     via-[#dce8f5]

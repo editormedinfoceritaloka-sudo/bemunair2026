@@ -189,10 +189,10 @@
   class="
     w-full overflow-hidden
     bg-linear-to-b from-blue-700 via-blue-500 to-blue-100
-    px-3 py-20
-    sm:px-6 sm:py-24
+    px-3 py-24
+    sm:px-6 sm:py-26
     md:px-10 md:py-28
-    lg:px-16 lg:py-32
+    lg:px-16 lg:py-30
   "
 >
   <div

@@ -88,7 +88,7 @@
 <section
   bind:this={heroSection}
   id="home"
-  class="relative h-[70vh] overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white sm:h-[100vh] md:h-screen"
+  class="relative h-[80vh] overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white sm:h-[100vh] md:h-screen"
 >
   <div class="absolute inset-0 flex flex-col">
     <div

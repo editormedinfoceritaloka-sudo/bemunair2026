@@ -368,7 +368,7 @@
           onclick={(event) => selectCard(event, index)}
           class={`
             relative shrink-0
-            h-80 w-[92vw] max-w-[480px]
+            h-80 w-64
             -mr-24
             transition-[transform,opacity,filter] duration-500
 
