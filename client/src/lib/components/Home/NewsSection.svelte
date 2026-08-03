@@ -5,6 +5,7 @@
 
   import CardNews from './news/CardNews.svelte';
   import CoverNews from './news/CoverNews.svelte';
+  import { ArrowRightIcon } from '@lucide/svelte';
 
   type NewsItem = {
     id: string;
@@ -23,7 +24,7 @@
       title: 'Festival Bunga Cerita Loka: Merawat Budaya dan Lingkungan',
       excerpt:
         'Kabinet Cerita Loka menghadirkan festival budaya dan lingkungan sebagai ruang kolaborasi mahasiswa dalam merawat kreativitas, keberagaman, serta kepedulian terhadap alam.',
-      coverImage: '/landing/news/news-1.jpg',
+      coverImage: '/landing/news/test.png',
       category: 'Sosial dan Politik',
       publishedAt: '2026-06-24'
     },
@@ -33,7 +34,7 @@
       title: 'Ruang Ekspresi Mahasiswa Hadir dengan Konsep yang Lebih Segar',
       excerpt:
         'Program ini menjadi wadah bagi mahasiswa Universitas Airlangga untuk menyampaikan gagasan, karya, dan aspirasi melalui aktivitas yang kreatif dan inklusif.',
-      coverImage: '/landing/news/news-2.jpg',
+      coverImage: '/landing/news/test.png',
       category: 'Seni dan Budaya',
       publishedAt: '2026-06-22'
     },
@@ -43,7 +44,7 @@
       title: 'Kolaborasi Kabinet Cerita Loka untuk Pengembangan Mahasiswa',
       excerpt:
         'Kabinet Cerita Loka memperkuat kolaborasi lintas kementerian untuk menghadirkan program kerja yang memberikan dampak nyata bagi seluruh mahasiswa.',
-      coverImage: '/landing/news/news-3.jpg',
+      coverImage: '/landing/news/test.png',
       category: 'Pengembangan Mahasiswa',
       publishedAt: '2026-06-20'
     },
@@ -53,7 +54,7 @@
       title: 'Kabinet Cerita Loka Meluncurkan Rangkaian Program Unggulan',
       excerpt:
         'Rangkaian program unggulan dirancang untuk memperluas ruang partisipasi mahasiswa serta membangun lingkungan kampus yang aktif, suportif, dan berkelanjutan.',
-      coverImage: '/landing/news/news-4.jpg',
+      coverImage: '/landing/news/test.png',
       category: 'Kabinet Cerita Loka',
       publishedAt: '2026-06-18'
     }
@@ -333,36 +334,31 @@
           "
         >
           <div>
-            <p
-              class="
-                text-xs font-extrabold uppercase
-                tracking-[0.18em] text-blue-700
-              "
-            >
-              Latest Stories
-            </p>
-
-            <h3
-              class="
-                mt-1 text-3xl font-black
-                tracking-[-0.04em] text-slate-950
-                sm:text-4xl
-              "
-            >
-              All News
-            </h3>
           </div>
 
           <a
-            href="/news"
+          href="/news"
+          class="
+            group inline-flex shrink-0
+            items-center gap-2
+            text-sm font-bold
+            text-blue-700
+            transition-colors
+            hover:text-blue-950
+          "
+        >
+          <span>Lihat Semua Berita</span>
+
+          <ArrowRightIcon
+            size={18}
+            strokeWidth={2.5}
             class="
-              shrink-0 text-sm font-bold
-              text-blue-700 transition-colors
-              hover:text-blue-950
+              -rotate-45
+              transition-transform duration-300
+              group-hover:-translate-y-1
             "
-          >
-            View all news
-          </a>
+          />
+        </a>
         </div>
 
         <div

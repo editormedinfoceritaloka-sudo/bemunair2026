@@ -72,15 +72,6 @@
     </div>
 
     <div class="flex flex-col justify-center py-1 md:py-4">
-      <p
-        class="
-          mb-3 text-xs font-extrabold uppercase
-          tracking-[0.16em] text-blue-700
-        "
-      >
-        Featured News
-      </p>
-
       <h3
         class="
           text-3xl leading-[1.08] font-extrabold
