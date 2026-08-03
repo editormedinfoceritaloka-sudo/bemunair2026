@@ -405,23 +405,4 @@
       {/each}
     </div>
   </div>
-
-  <div class="mt-1 flex items-center justify-center gap-2">
-    {#each cabinetItems as item, index (item.id)}
-      <button
-        type="button"
-        aria-label={`Buka ${item.title}`}
-        aria-current={activeIndex === index ? 'true' : undefined}
-        onclick={() => goToSlide(index)}
-        class={`
-          h-2 rounded-full transition-all duration-300
-          ${
-            activeIndex === index
-              ? 'w-8 bg-blue-700'
-              : 'w-2 bg-blue-300 hover:bg-blue-500'
-          }
-        `}
-      ></button>
-    {/each}
-  </div>
 </div>

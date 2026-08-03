@@ -1,18 +1,16 @@
 <script lang="ts">
-  import CalendarGrid from './calender/CalendarGrid.svelte';
-  import CalendarNavigation from './calender/CalendarNavigation.svelte';
+  import CalendarGrid from './CalendarGrid.svelte';
+  import CalendarNavigation from './CalendarNavigation.svelte';
 
   import {
     addMonths,
     parseDate,
     startOfMonth
-  } from './calender/calendar-utils';
+  } from './calendar-utils';
 
-  import type { CalendarEvent } from './calender/types';
+  import type { CalendarEvent } from './types';
 
-  const logo = '/logo/logo-kabinet.png';
-
-  const events: CalendarEvent[] = [
+  const exampleEvents: CalendarEvent[] = [
     {
       id: 'company-profile',
       title: 'Company Profile',
@@ -60,8 +58,18 @@
     }
   ];
 
+  let {
+    events = exampleEvents,
+    logo = '/logo/logo-kabinet.png',
+    initialMonth = '2026-06-01'
+  }: {
+    events?: CalendarEvent[];
+    logo?: string;
+    initialMonth?: string;
+  } = $props();
+
   let currentMonth = $state(
-    startOfMonth(parseDate('2026-06-01'))
+    startOfMonth(parseDate(initialMonth))
   );
 
   function showPreviousMonth(): void {
@@ -77,7 +85,8 @@
   id="calendar"
   aria-labelledby="calendar-heading"
   class="
-    relative min-h-screen overflow-hidden
+    relative min-h-screen
+    overflow-hidden
     bg-gradient-to-b
     from-[#8fb2d8]
     via-[#dce8f5]

@@ -8,8 +8,8 @@
   class="
     min-h-screen w-full overflow-hidden
     bg-linear-to-b from-blue-100 via-blue-50 to-white
-    px-4 py-20
-    sm:px-6 sm:py-24
+    py-20
+    sm:py-24
     md:py-28
   "
 >

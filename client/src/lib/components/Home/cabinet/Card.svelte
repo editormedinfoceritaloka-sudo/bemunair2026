@@ -19,33 +19,81 @@
   } = $props();
 
   let cardElement!: HTMLDivElement;
-  let flipAnimation: gsap.core.Tween | undefined;
+  let frontFace!: HTMLDivElement;
+  let backFace!: HTMLDivElement;
+  let frontTitle!: HTMLDivElement;
+
+  let flipAnimation: gsap.core.Timeline | undefined;
   let reduceMotion = false;
 
   function showDetail(): void {
-    if (!active) {
+    if (!active || !cardElement) {
       return;
     }
 
     flipAnimation?.kill();
 
-    flipAnimation = gsap.to(cardElement, {
-      rotationY: 180,
-      duration: reduceMotion ? 0.01 : 0.75,
-      ease: 'power3.inOut',
-      overwrite: true
+    flipAnimation = gsap.timeline({
+      defaults: {
+        overwrite: true
+      }
     });
+
+    flipAnimation
+      .to(
+        frontTitle,
+        {
+          autoAlpha: 0,
+          scale: 0.92,
+          duration: reduceMotion ? 0.01 : 0.16,
+          ease: 'power2.out'
+        },
+        0
+      )
+      .to(
+        cardElement,
+        {
+          rotationY: 180,
+          duration: reduceMotion ? 0.01 : 0.75,
+          ease: 'power3.inOut'
+        },
+        reduceMotion ? 0 : 0.08
+      );
   }
 
   function hideDetail(): void {
+    if (!cardElement) {
+      return;
+    }
+
     flipAnimation?.kill();
 
-    flipAnimation = gsap.to(cardElement, {
-      rotationY: 0,
-      duration: reduceMotion ? 0.01 : 0.65,
-      ease: 'power3.inOut',
-      overwrite: true
+    flipAnimation = gsap.timeline({
+      defaults: {
+        overwrite: true
+      }
     });
+
+    flipAnimation
+      .to(
+        cardElement,
+        {
+          rotationY: 0,
+          duration: reduceMotion ? 0.01 : 0.65,
+          ease: 'power3.inOut'
+        },
+        0
+      )
+      .set(frontTitle, {
+        autoAlpha: 0,
+        scale: 0.92
+      })
+      .to(frontTitle, {
+        autoAlpha: 1,
+        scale: 1,
+        duration: reduceMotion ? 0.01 : 0.18,
+        ease: 'power2.out'
+      });
   }
 
   function handleClick(event: MouseEvent): void {
@@ -68,18 +116,44 @@
     gsap.set(cardElement, {
       rotationY: 0,
       transformOrigin: 'center center',
-      transformStyle: 'preserve-3d'
+      transformStyle: 'preserve-3d',
+      force3D: true
+    });
+
+    gsap.set(frontFace, {
+      rotationY: 0,
+      backfaceVisibility: 'hidden',
+      transformStyle: 'preserve-3d',
+      force3D: true
+    });
+
+    gsap.set(backFace, {
+      rotationY: 180,
+      backfaceVisibility: 'hidden',
+      transformStyle: 'preserve-3d',
+      force3D: true
+    });
+
+    gsap.set(frontTitle, {
+      autoAlpha: 1,
+      scale: 1
     });
 
     return () => {
       flipAnimation?.kill();
-      gsap.killTweensOf(cardElement);
+
+      gsap.killTweensOf([
+        cardElement,
+        frontFace,
+        backFace,
+        frontTitle
+      ]);
     };
   });
 </script>
 
 <a
-  href={`/cabinet/${id}`}
+  href={`/cabinet/${encodeURIComponent(id)}`}
   aria-label={`Lihat detail ${title}`}
   aria-disabled={!active}
   tabindex={active ? 0 : -1}
@@ -89,16 +163,12 @@
   onfocusin={showDetail}
   onfocusout={hideDetail}
   class={`
-    block h-full w-full rounded-[28px] outline-none
+    block h-full w-full rounded-[30px] outline-none
     transition-[filter] duration-500
-    ${
-      active
-        ? 'cursor-pointer drop-shadow-[0_38px_48px_rgba(15,54,100,0.52)]'
-        : 'cursor-default drop-shadow-[0_22px_30px_rgba(15,54,100,0.3)]'
-    }
+    ${active ? 'cursor-pointer' : 'cursor-default'}
   `}
 >
-  <div class="h-full w-full [perspective:2200px]">
+  <div class="relative h-full w-full [perspective:2200px]">
     <div
       bind:this={cardElement}
       class="
@@ -108,10 +178,12 @@
       "
     >
       <div
+        bind:this={frontFace}
         class="
-          absolute inset-0 overflow-hidden rounded-[28px]
+          absolute inset-0 overflow-hidden rounded-[30px]
           [backface-visibility:hidden]
           [-webkit-backface-visibility:hidden]
+          [transform:rotateY(0deg)_translateZ(0)]
         "
       >
         <img
@@ -122,18 +194,19 @@
         />
 
         <div
+          bind:this={frontTitle}
           class="
             relative z-10 flex h-full w-full
             flex-col items-center justify-center
             px-6 text-center
+            will-change-[opacity,transform]
           "
         >
           <h3
             class="
-              max-w-[82%]
+              max-w-[84%]
               text-xl leading-[0.92] font-black uppercase
               tracking-[-0.05em] text-blue-700
-              drop-shadow-[0_2px_1px_rgba(255,255,255,0.95)]
               sm:text-2xl
               md:text-3xl
               xl:text-4xl
@@ -158,12 +231,12 @@
       </div>
 
       <div
+        bind:this={backFace}
         class="
-          absolute inset-0 overflow-hidden rounded-[28px]
+          absolute inset-0 overflow-hidden rounded-[30px]
           [backface-visibility:hidden]
           [-webkit-backface-visibility:hidden]
-          [transform:rotateY(180deg)]
-          [-webkit-transform:rotateY(180deg)]
+          [transform:rotateY(180deg)_translateZ(0)]
         "
       >
         <img
@@ -177,12 +250,12 @@
           class="
             absolute inset-x-0 top-[5%] z-30
             flex flex-col items-center
-            px-6 text-center
+            px-5 text-center
           "
         >
           <h3
             class="
-              max-w-[88%]
+              mt-16 max-w-[88%]
               text-lg leading-[0.92] font-black uppercase
               tracking-[-0.045em] text-blue-800
               drop-shadow-[0_2px_1px_rgba(255,255,255,0.95)]
@@ -208,21 +281,26 @@
           {/if}
         </div>
 
-        <img
-          src={image}
-          alt=""
-          draggable="false"
+        <div
           class="
             pointer-events-none absolute
             inset-x-0 bottom-0 z-20
-            mx-auto h-[98%] w-auto max-w-[115%]
-            object-contain object-bottom
-            drop-shadow-[0_26px_36px_rgba(15,23,42,0.48)]
-            sm:h-[102%]
-            md:h-[106%]
-            lg:h-[110%]
+            flex h-[70%] w-full
+            items-end justify-center
+            overflow-hidden
           "
-        />
+        >
+          <img
+            src={image}
+            alt={title}
+            draggable="false"
+            class="
+              block h-full w-auto
+              max-w-full
+              object-contain object-bottom
+            "
+          />
+        </div>
       </div>
     </div>
   </div>
