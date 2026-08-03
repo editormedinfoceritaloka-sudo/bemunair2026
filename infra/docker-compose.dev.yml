@@ -39,6 +39,38 @@ services:
     networks:
       - bemunair_net
 
+  migrate:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+
+    env_file:
+      - ../server/.env
+
+    environment:
+      APP_ENV: development
+      DB_HOST: db
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command:
+      - go
+      - run
+      - ./cmd
+      - setup
+
+    volumes:
+      - ../server:/app
+      - server_go_modules:/go/pkg/mod
+      - server_go_build_cache:/root/.cache/go-build
+
+    restart: "no"
+
+    networks:
+      - bemunair_net
+
   server:
     build:
       context: ../server
@@ -79,38 +111,6 @@ services:
     networks:
       - bemunair_net
 
-  migrate:
-    build:
-      context: ../server
-      dockerfile: Dockerfile.dev
-
-    env_file:
-      - ../server/.env
-
-    environment:
-      APP_ENV: development
-      DB_HOST: db
-
-    depends_on:
-      db:
-        condition: service_healthy
-
-    command:
-      - go
-      - run
-      - ./cmd
-      - setup
-
-    volumes:
-      - ../server:/app
-      - server_go_modules:/go/pkg/mod
-      - server_go_build_cache:/root/.cache/go-build
-
-    restart: "no"
-
-    networks:
-      - bemunair_net
-
   client:
     build:
       context: ../client
@@ -129,6 +129,7 @@ services:
       API_INTERNAL_URL: http://server:8080/api/v1
       WA_INTERNAL_URL: http://wa-engine:3001
       PNPM_STORE_DIR: /pnpm/store
+
     depends_on:
       - server
 
@@ -189,7 +190,6 @@ services:
 
   nginx:
     image: nginx:alpine
-
     container_name: bemunair_nginx_dev
 
     depends_on:
@@ -197,7 +197,7 @@ services:
       - server
 
     ports:
-      - "8081:80"
+      - "127.0.0.1:8002:80"
 
     volumes:
       - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
