@@ -59,7 +59,7 @@
   ] as const;
 </script>
 
-<footer class="bg-linear-to-b from-white via-blue-300 to-blue-900 text-white">
+<footer class="bg-linear-to-b from-blue-50 via-blue-300 to-blue-900 text-white">
   <div class="mx-auto w-full max-w-7xl px-5 pb-8 pt-24 sm:px-8 lg:px-10">
     <div
       class="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.5fr_0.7fr_0.8fr] lg:items-center"

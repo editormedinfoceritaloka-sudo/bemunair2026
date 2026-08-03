@@ -153,7 +153,7 @@
 </script>
 
 <a
-  href={`/cabinet/${encodeURIComponent(id)}`}
+  href={`/kemenkoan/${encodeURIComponent(id)}`}
   aria-label={`Lihat detail ${title}`}
   aria-disabled={!active}
   tabindex={active ? 0 : -1}

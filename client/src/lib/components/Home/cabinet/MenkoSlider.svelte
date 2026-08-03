@@ -195,22 +195,6 @@
     restartAutoplay();
   }
 
-  function goToSlide(index: number): void {
-    if (isAnimating || index === activeIndex) {
-      return;
-    }
-
-    currentIndex = cabinetItems.length + index;
-
-    centerCard(
-      currentIndex,
-      true,
-      normalizePosition
-    );
-
-    restartAutoplay();
-  }
-
   function stopAutoplay(): void {
     if (!autoplayTimer) {
       return;
@@ -369,7 +353,7 @@
           class={`
             relative shrink-0
             h-80 w-64
-            -mr-24
+            -mr-24ef
             transition-[transform,opacity,filter] duration-500
 
             sm:h-105 sm:w-[70vw] sm:max-w-[420px] sm:-mr-36
