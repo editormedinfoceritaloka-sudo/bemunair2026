@@ -2,7 +2,8 @@
 -- 010_media_assets.sql
 -- Part 1 - MENKO
 -- ==========================================
-
+DELETE FROM organization_members WHERE photo_media_id IN (SELECT id FROM media_assets WHERE purpose = 'ORGANIZATION_MEMBER');
+DELETE FROM media_assets WHERE purpose = 'ORGANIZATION_MEMBER';
 INSERT INTO media_assets (
     uploaded_by,
     imagekit_file_id,

@@ -202,9 +202,25 @@ func splitSQLStatements(sqlText string) []string {
 	var current strings.Builder
 	var quote rune
 	escaped := false
+	lineComment := false
 
-	for _, char := range sqlText {
-		current.WriteRune(char)
+	for i := 0; i < len(sqlText); i++ {
+		char := sqlText[i]
+
+		// lewati komentar baris (-- ...) sampai newline, termasuk baris dekoratif "----"
+		if lineComment {
+			if char == '\n' {
+				lineComment = false
+			}
+			continue
+		}
+
+		if quote == 0 && char == '-' && i+1 < len(sqlText) && sqlText[i+1] == '-' {
+			lineComment = true
+			continue
+		}
+
+		current.WriteByte(char)
 
 		if quote != 0 {
 			if escaped {
@@ -215,7 +231,7 @@ func splitSQLStatements(sqlText string) []string {
 				escaped = true
 				continue
 			}
-			if char == quote {
+			if char == byte(quote) {
 				quote = 0
 			}
 			continue
@@ -223,7 +239,7 @@ func splitSQLStatements(sqlText string) []string {
 
 		switch char {
 		case '\'', '"', '`':
-			quote = char
+			quote = rune(char)
 		case ';':
 			statement := strings.TrimSpace(strings.TrimSuffix(current.String(), ";"))
 			if statement != "" {

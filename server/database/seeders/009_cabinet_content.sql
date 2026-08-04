@@ -19,7 +19,10 @@ ON DUPLICATE KEY UPDATE name = VALUES(name), tagline = VALUES(tagline), descript
 
 INSERT INTO ministries (id, code, name, cabinet_term_id, unit_type, slug, short_name, description, display_order, is_active, is_published, logo_media_id) VALUES
   (910001, 'KEMENKO_INTERNAL', 'Kemenko Internal', 910000, 'KEMENKOAN', 'kemenko-internal', 'Internal', 'Kemenkoan yang mengoordinasikan pengembangan internal organisasi.', 1, TRUE, TRUE, 910105),
-  (910002, 'KEMENKO_PENGABDIAN', 'Kemenko Pengabdian', 910000, 'KEMENKOAN', 'kemenko-pengabdian', 'Pengabdian', 'Kemenkoan yang mengoordinasikan kerja pengabdian dan dampak sosial.', 2, TRUE, TRUE, 910106)
+  (910002, 'KEMENKO_PENGABDIAN', 'Kemenko Pengabdian', 910000, 'KEMENKOAN', 'kemenko-pengabdian', 'Pengabdian', 'Kemenkoan yang mengoordinasikan kerja pengabdian dan dampak sosial.', 2, TRUE, TRUE, 910106),
+  (910003, 'BENDAHARA_KABINET', 'Bendahara Kabinet', 910000, 'KEMENTERIAN', 'bendahara-kabinet', 'Bendahara', 'Biro bendahara kabinet.', 3, TRUE, TRUE, 910101),
+  (910004, 'SEKRETARIS_KABINET', 'Sekretaris Kabinet', 910000, 'KEMENTERIAN', 'sekretaris-kabinet', 'Sekretaris', 'Biro sekretariat kabinet.', 4, TRUE, TRUE, 910101),
+  (910005, 'PENDAYAGUNAAN_APARATUR', 'Pendayagunaan Aparatur Kabinet', 910000, 'KEMENTERIAN', 'pendayagunaan-aparatur-kabinet', 'Pendayagunaan', 'Biro pendayagunaan aparatur kabinet.', 5, TRUE, TRUE, 910101)
 ON DUPLICATE KEY UPDATE name = VALUES(name), cabinet_term_id = VALUES(cabinet_term_id), unit_type = VALUES(unit_type), slug = VALUES(slug), is_active = VALUES(is_active), is_published = VALUES(is_published), logo_media_id = VALUES(logo_media_id);
 
 UPDATE ministries SET cabinet_term_id = 910000, unit_type = 'KEMENTERIAN', is_active = TRUE, is_published = TRUE, display_order = CASE code WHEN 'MEDINFO' THEN 1 WHEN 'PSDM' THEN 2 WHEN 'KESMA' THEN 3 WHEN 'SOSMAS' THEN 1 ELSE display_order END, slug = CASE code WHEN 'MEDINFO' THEN 'media-dan-informasi' WHEN 'PSDM' THEN 'pengembangan-sumber-daya-mahasiswa' WHEN 'KESMA' THEN 'kesejahteraan-mahasiswa' WHEN 'SOSMAS' THEN 'sosial-masyarakat' ELSE slug END, logo_media_id = 910101 WHERE code IN ('MEDINFO', 'PSDM', 'KESMA', 'SOSMAS');
