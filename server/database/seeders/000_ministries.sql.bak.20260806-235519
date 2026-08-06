@@ -13,8 +13,6 @@
 -- Target: MySQL 8
 -- ============================================================
 
-SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 START TRANSACTION;
 
 -- ============================================================
@@ -86,10 +84,7 @@ CREATE TEMPORARY TABLE seed_organization_units (
     display_order     INT UNSIGNED NOT NULL DEFAULT 0,
     logo_asset_key    VARCHAR(100) NULL,
     logo_path         VARCHAR(1000) NULL
-)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+);
 
 INSERT INTO seed_organization_units (
     code,
@@ -537,8 +532,7 @@ SELECT
     NOW()
 FROM seed_organization_units AS unit
 LEFT JOIN media_assets AS media
-    ON media.imagekit_file_id COLLATE utf8mb4_unicode_ci
-     = unit.logo_asset_key COLLATE utf8mb4_unicode_ci
+    ON media.imagekit_file_id = unit.logo_asset_key
 WHERE unit.parent_code IS NULL
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
@@ -616,11 +610,9 @@ SELECT
     NOW()
 FROM seed_organization_units AS unit
 INNER JOIN ministries AS parent
-    ON parent.code COLLATE utf8mb4_unicode_ci
-     = unit.parent_code COLLATE utf8mb4_unicode_ci
+    ON parent.code = unit.parent_code
 LEFT JOIN media_assets AS logo
-    ON logo.imagekit_file_id COLLATE utf8mb4_unicode_ci
-     = unit.logo_asset_key COLLATE utf8mb4_unicode_ci
+    ON logo.imagekit_file_id = unit.logo_asset_key
 WHERE unit.parent_code IS NOT NULL
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
@@ -656,10 +648,7 @@ CREATE TEMPORARY TABLE seed_organization_members (
     display_order     INT UNSIGNED NOT NULL DEFAULT 0,
     is_leader         BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (unit_code, position)
-)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+);
 
 INSERT INTO seed_organization_members (
     unit_code,
@@ -1386,8 +1375,7 @@ WHERE
     AND NOT EXISTS (
         SELECT 1
         FROM seed_organization_units AS unit
-        WHERE unit.logo_asset_key COLLATE utf8mb4_unicode_ci
-              = member.photo_asset_key COLLATE utf8mb4_unicode_ci
+        WHERE unit.logo_asset_key = member.photo_asset_key
     )
 ON DUPLICATE KEY UPDATE
     file_path = VALUES(file_path),
@@ -1412,13 +1400,10 @@ UPDATE organization_members AS organization_member
 INNER JOIN ministries AS ministry
     ON ministry.id = organization_member.ministry_id
 INNER JOIN seed_organization_members AS seed_member
-    ON seed_member.unit_code COLLATE utf8mb4_unicode_ci
-     = ministry.code COLLATE utf8mb4_unicode_ci
-    AND seed_member.position COLLATE utf8mb4_unicode_ci
-     = organization_member.position COLLATE utf8mb4_unicode_ci
+    ON seed_member.unit_code = ministry.code
+    AND seed_member.position = organization_member.position
 LEFT JOIN media_assets AS photo
-    ON photo.imagekit_file_id COLLATE utf8mb4_unicode_ci
-     = seed_member.photo_asset_key COLLATE utf8mb4_unicode_ci
+    ON photo.imagekit_file_id = seed_member.photo_asset_key
 SET
     organization_member.name = seed_member.name,
     organization_member.position_type = seed_member.position_type,
@@ -1473,18 +1458,15 @@ SELECT
     NOW()
 FROM seed_organization_members AS seed_member
 INNER JOIN ministries AS ministry
-    ON ministry.code COLLATE utf8mb4_unicode_ci
-     = seed_member.unit_code COLLATE utf8mb4_unicode_ci
+    ON ministry.code = seed_member.unit_code
 LEFT JOIN media_assets AS photo
-    ON photo.imagekit_file_id COLLATE utf8mb4_unicode_ci
-     = seed_member.photo_asset_key COLLATE utf8mb4_unicode_ci
+    ON photo.imagekit_file_id = seed_member.photo_asset_key
 WHERE NOT EXISTS (
     SELECT 1
     FROM organization_members AS existing_member
     WHERE
         existing_member.ministry_id = ministry.id
-        AND existing_member.position COLLATE utf8mb4_unicode_ci
-         = seed_member.position COLLATE utf8mb4_unicode_ci
+        AND existing_member.position = seed_member.position
 );
 
 -- ============================================================
