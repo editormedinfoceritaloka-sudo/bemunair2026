@@ -12,6 +12,7 @@ type Ministry struct {
 	Parent        *Ministry            `gorm:"foreignKey:ParentID;references:ID;constraint:OnDelete:RESTRICT" json:"-"`
 	Children      []Ministry           `gorm:"foreignKey:ParentID" json:"children,omitempty"`
 	Members       []OrganizationMember `gorm:"foreignKey:MinistryID" json:"members,omitempty"`
+	Programs      []WorkProgram        `gorm:"foreignKey:MinistryID" json:"programs,omitempty"`
 	UnitType      string               `gorm:"type:varchar(20);not null;default:'KEMENTERIAN';index" json:"unit_type"`
 	Slug          string               `gorm:"type:varchar(160);index" json:"slug"`
 	ShortName     *string              `gorm:"type:varchar(80)" json:"short_name,omitempty"`

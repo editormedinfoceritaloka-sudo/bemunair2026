@@ -51,10 +51,14 @@ func New(repo repository.Repository) Service { return &cabinetService{repo: repo
 
 func (s *cabinetService) PublicCabinet() (*dto.CabinetResponse, error) {
 	cabinet, err := s.repo.ActiveCabinet()
-	if err != nil || cabinet == nil {
+	if err != nil {
 		return nil, err
 	}
-	return s.cabinetResponse(cabinet, true)
+	if cabinet == nil {
+		return nil, nil
+	}
+	response := dto.NewCabinetResponse(*cabinet)
+	return &response, nil
 }
 
 func (s *cabinetService) PublicCabinetBySlug(slug string) (*dto.CabinetResponse, error) {
@@ -637,9 +641,16 @@ func memberToDTO(value entities.OrganizationMember) dto.MemberResponse {
 	return dto.MemberResponse{ID: value.ID, Name: value.Name, Position: value.Position, PositionType: value.PositionType, Biography: value.Biography, Quote: value.Quote, Photo: mediaToDTO(value.PhotoMedia), DisplayOrder: value.DisplayOrder, IsLeader: value.IsLeader}
 }
 func unitToDTO(value entities.Ministry) dto.UnitResponse {
-	result := dto.UnitResponse{ID: value.ID, CabinetTermID: value.CabinetTermID, ParentID: value.ParentID, Code: value.Code, Name: value.Name, UnitType: value.UnitType, Slug: value.Slug, ShortName: value.ShortName, Description: value.Description, Vision: value.Vision, Mission: value.Mission, Logo: mediaToDTO(value.LogoMedia), Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsActive: value.IsActive, IsPublished: value.IsPublished}
+	result := dto.UnitResponse{ID: value.ID, CabinetTermID: value.CabinetTermID, ParentID: value.ParentID, Code: value.Code, Name: value.Name, UnitType: value.UnitType, Slug: value.Slug, ShortName: value.ShortName, Description: value.Description, Vision: value.Vision, Mission: value.Mission, Logo: mediaToDTO(value.LogoMedia), Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsActive: value.IsActive, IsPublished: value.IsPublished, Members: make([]dto.MemberResponse, 0, len(value.Members)), Programs: make([]dto.ProgramResponse, 0, len(value.Programs)), Children: make([]dto.UnitResponse, 0, len(value.Children))}
 	for _, member := range value.Members {
 		result.Members = append(result.Members, memberToDTO(member))
+	}
+	for _, program := range value.Programs {
+		response := programToDTO(program)
+		if response.MinistryName == "" {
+			response.MinistryName = value.Name
+		}
+		result.Programs = append(result.Programs, response)
 	}
 	for _, child := range value.Children {
 		result.Children = append(result.Children, unitToDTO(child))
@@ -647,7 +658,7 @@ func unitToDTO(value entities.Ministry) dto.UnitResponse {
 	return result
 }
 func programToDTO(value entities.WorkProgram) dto.ProgramResponse {
-	result := dto.ProgramResponse{ID: value.ID, MinistryID: value.MinistryID, Name: value.Name, Slug: value.Slug, ShortDescription: value.ShortDescription, Description: value.Description, Objectives: value.Objectives, TargetAudience: value.TargetAudience, ExecutionMonth: value.ExecutionMonth, Status: value.LifecycleStatus, Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsFeatured: value.IsFeatured, IsPublished: value.IsPublished, PublishedAt: value.PublishedAt, Milestones: make([]dto.MilestoneResponse, 0, len(value.Milestones)), Documentations: make([]dto.DocumentationResponse, 0, len(value.Documentations))}
+	result := dto.ProgramResponse{ID: value.ID, MinistryID: value.MinistryID, Name: value.Name, Slug: value.Slug, ShortDescription: value.ShortDescription, Description: value.Description, Objectives: value.Objectives, TargetAudience: value.TargetAudience, StartDate: value.StartDate, EndDate: value.EndDate, ExecutionMonth: value.ExecutionMonth, Status: value.LifecycleStatus, Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsFeatured: value.IsFeatured, IsPublished: value.IsPublished, PublishedAt: value.PublishedAt, Milestones: make([]dto.MilestoneResponse, 0, len(value.Milestones)), Documentations: make([]dto.DocumentationResponse, 0, len(value.Documentations))}
 	if value.Ministry != nil {
 		result.MinistryName = value.Ministry.Name
 	}

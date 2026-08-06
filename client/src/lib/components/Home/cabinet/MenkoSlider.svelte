@@ -49,7 +49,7 @@
     kemenkoan = []
   }: {
     autoplayDelay?: number;
-    kemenkoan?: Kemenkoan[];
+    kemenkoan?: any[];
   } = $props();
 
   const cabinetItems =

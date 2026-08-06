@@ -48,8 +48,104 @@ func New(db *gorm.DB) Repository { return &cabinetRepository{db: db} }
 
 func (r *cabinetRepository) DB() *gorm.DB { return r.db }
 
+func association(prefix, name string) string {
+	if prefix == "" {
+		return name
+	}
+
+	return prefix + "." + name
+}
+
+func memberPreload(public bool) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		query := db.Order("display_order ASC, id ASC")
+
+		if public {
+			query = query.Where("is_active = ?", true)
+		}
+
+		return query
+	}
+}
+
+func unitPreload(public bool) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		query := db.Order("display_order ASC, id ASC")
+
+		if public {
+			query = query.Where("is_active = ? AND is_published = ?", true, true)
+		}
+
+		return query
+	}
+}
+
+func programPreload(public bool) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		query := db.Order("display_order ASC, id ASC")
+
+		if public {
+			query = query.Where("is_published = ?", true)
+		}
+
+		return query
+	}
+}
+
+func orderedPreload(db *gorm.DB) *gorm.DB {
+	return db.Order("display_order ASC, id ASC")
+}
+
+func preloadUnitRelations(query *gorm.DB, prefix string, public bool) *gorm.DB {
+	query = query.
+		Preload(association(prefix, "LogoMedia")).
+		Preload(association(prefix, "CoverMedia")).
+		Preload(association(prefix, "Members"), memberPreload(public)).
+		Preload(association(prefix, "Members.PhotoMedia")).
+		Preload(association(prefix, "Programs"), programPreload(public)).
+		Preload(association(prefix, "Programs.CoverMedia")).
+		Preload(association(prefix, "Programs.Milestones"), orderedPreload).
+		Preload(association(prefix, "Programs.Documentations"), orderedPreload).
+		Preload(association(prefix, "Programs.Documentations.MediaAsset")).
+		Preload(association(prefix, "Children"), unitPreload(public)).
+		Preload(association(prefix, "Children.LogoMedia")).
+		Preload(association(prefix, "Children.CoverMedia")).
+		Preload(association(prefix, "Children.Members"), memberPreload(public)).
+		Preload(association(prefix, "Children.Members.PhotoMedia")).
+		Preload(association(prefix, "Children.Programs"), programPreload(public)).
+		Preload(association(prefix, "Children.Programs.CoverMedia")).
+		Preload(association(prefix, "Children.Programs.Milestones"), orderedPreload).
+		Preload(association(prefix, "Children.Programs.Documentations"), orderedPreload).
+		Preload(association(prefix, "Children.Programs.Documentations.MediaAsset"))
+
+	return query
+}
+
 func (r *cabinetRepository) ActiveCabinet() (*entities.CabinetTerm, error) {
-	return r.findCabinet(r.db.Where("is_active = ? AND is_published = ?", true, true))
+	var value entities.CabinetTerm
+
+	query := r.db.
+		Where("is_active = ? AND is_published = ?", true, true).
+		Preload("LogoMedia").
+		Preload("HeroMedia").
+		Preload("Ministries", unitPreload(true))
+
+	query = preloadUnitRelations(query, "Ministries", true)
+
+	err := query.
+		Order("period_start DESC, id DESC").
+		First(&value).
+		Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &value, nil
 }
 
 func (r *cabinetRepository) CabinetBySlug(slug string, public bool) (*entities.CabinetTerm, error) {
@@ -91,52 +187,60 @@ func (r *cabinetRepository) UpdateCabinet(value *entities.CabinetTerm) error {
 
 func (r *cabinetRepository) Units(cabinetID uint64, unitType string, public bool) ([]entities.Ministry, error) {
 	query := r.db.Where("cabinet_term_id = ?", cabinetID)
+
 	if unitType != "" {
 		query = query.Where("unit_type = ?", unitType)
 	}
+
 	if public {
 		query = query.Where("is_active = ? AND is_published = ?", true, true)
 	}
+
+	query = preloadUnitRelations(query, "", public)
+
 	var values []entities.Ministry
-	err := query.Preload("LogoMedia").Preload("CoverMedia").Preload("Members", func(db *gorm.DB) *gorm.DB {
-		q := db.Order("display_order ASC, id ASC")
-		if public {
-			q = q.Where("is_active = ?", true)
-		}
-		return q
-	}).Preload("Members.PhotoMedia").Preload("Children", func(db *gorm.DB) *gorm.DB {
-		q := db.Order("display_order ASC, id ASC")
-		if public {
-			q = q.Where("is_active = ? AND is_published = ?", true, true)
-		}
-		return q
-	}).Preload("Children.LogoMedia").Order("display_order ASC, id ASC").Find(&values).Error
+
+	err := query.
+		Order("display_order ASC, id ASC").
+		Find(&values).
+		Error
+
 	return values, err
 }
 
 func (r *cabinetRepository) UnitBySlug(slug string, public bool) (*entities.Ministry, error) {
 	query := r.db.Where("ministries.slug = ?", slug)
+
 	if public {
-		query = query.Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ?", true, true, true, true)
+		query = query.
+			Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").
+			Where(
+				`ministries.is_active = ?
+				AND ministries.is_published = ?
+				AND cabinet_terms.is_active = ?
+				AND cabinet_terms.is_published = ?`,
+				true,
+				true,
+				true,
+				true,
+			)
 	}
+
+	query = preloadUnitRelations(query, "", public)
+
 	var value entities.Ministry
-	err := query.Preload("LogoMedia").Preload("CoverMedia").Preload("Members", func(db *gorm.DB) *gorm.DB {
-		q := db.Order("display_order ASC, id ASC")
-		if public {
-			q = q.Where("is_active = ?", true)
-		}
-		return q
-	}).Preload("Members.PhotoMedia").Preload("Children", func(db *gorm.DB) *gorm.DB {
-		q := db.Order("display_order ASC, id ASC")
-		if public {
-			q = q.Where("is_active = ? AND is_published = ?", true, true)
-		}
-		return q
-	}).Preload("Children.LogoMedia").First(&value).Error
+
+	err := query.First(&value).Error
+
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-	return &value, err
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &value, nil
 }
 
 func (r *cabinetRepository) CreateUnit(value *entities.Ministry) error {

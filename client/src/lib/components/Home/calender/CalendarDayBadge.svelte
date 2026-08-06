@@ -3,49 +3,63 @@
   import type { CalendarEvent } from './types';
 
   let {
-    event,
-    logo
+    event
   }: {
     event: CalendarEvent;
-    logo: string;
   } = $props();
 </script>
 
 <a
   href={buildProgramWorkHref(event)}
-  aria-label={`Lihat program kerja ${event.title}`}
-  title={event.title}
+  aria-label={`Lihat program kerja ${event.title} dari ${event.ministryName}`}
+  title={`${event.title} — ${event.ministryName}`}
   class="
-    flex min-w-0 items-center gap-1.5
-    rounded-full
-    bg-gradient-to-r
-    from-orange-500 to-orange-400
-    px-2 py-1
-    text-[9px] leading-none
-    font-extrabold text-white
+    group flex min-h-9
+    min-w-0 items-center
+    gap-2 rounded-xl
+    border border-blue-900/10
+    bg-white px-2 py-1.5
     shadow-sm
     transition duration-200
     hover:-translate-y-px
-    hover:from-orange-600
-    hover:to-orange-500
+    hover:border-orange-400
+    hover:shadow-md
+    focus-visible:outline-2
+    focus-visible:outline-offset-1
+    focus-visible:outline-orange-500
   "
 >
   <span
     class="
-      flex size-4 shrink-0
+      flex size-6 shrink-0
       items-center justify-center
-      rounded-full bg-white
+      rounded-lg bg-blue-50
+      p-0.5
     "
   >
     <img
-      src={logo}
-      alt=""
+      src={event.logo}
+      alt={event.logoAlt}
       draggable="false"
-      class="size-3.5 object-contain"
+      loading="lazy"
+      class="
+        h-full w-full
+        object-contain
+      "
     />
   </span>
 
-  <span class="truncate text-white">
+  <span
+    class="
+      min-w-0 truncate
+      text-[10px] leading-tight
+      font-extrabold
+      text-[#164f88]
+      transition-colors
+      group-hover:text-orange-600
+      sm:text-[11px]
+    "
+  >
     {event.title}
   </span>
 </a>

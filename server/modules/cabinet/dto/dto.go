@@ -131,24 +131,25 @@ type MemberResponse struct {
 }
 
 type UnitResponse struct {
-	ID            uint64           `json:"id"`
-	CabinetTermID *uint64          `json:"cabinet_term_id,omitempty"`
-	ParentID      *uint64          `json:"parent_id,omitempty"`
-	Code          string           `json:"code"`
-	Name          string           `json:"name"`
-	UnitType      string           `json:"unit_type"`
-	Slug          string           `json:"slug"`
-	ShortName     *string          `json:"short_name,omitempty"`
-	Description   *string          `json:"description,omitempty"`
-	Vision        *string          `json:"vision,omitempty"`
-	Mission       *string          `json:"mission,omitempty"`
-	Logo          *MediaResponse   `json:"logo,omitempty"`
-	Cover         *MediaResponse   `json:"cover,omitempty"`
-	DisplayOrder  uint             `json:"display_order"`
-	IsActive      bool             `json:"is_active"`
-	IsPublished   bool             `json:"is_published"`
-	Members       []MemberResponse `json:"members,omitempty"`
-	Children      []UnitResponse   `json:"children,omitempty"`
+	ID            uint64            `json:"id"`
+	CabinetTermID *uint64           `json:"cabinet_term_id,omitempty"`
+	ParentID      *uint64           `json:"parent_id,omitempty"`
+	Code          string            `json:"code"`
+	Name          string            `json:"name"`
+	UnitType      string            `json:"unit_type"`
+	Slug          string            `json:"slug"`
+	ShortName     *string           `json:"short_name,omitempty"`
+	Description   *string           `json:"description,omitempty"`
+	Vision        *string           `json:"vision,omitempty"`
+	Mission       *string           `json:"mission,omitempty"`
+	Logo          *MediaResponse    `json:"logo,omitempty"`
+	Cover         *MediaResponse    `json:"cover,omitempty"`
+	DisplayOrder  uint              `json:"display_order"`
+	IsActive      bool              `json:"is_active"`
+	IsPublished   bool              `json:"is_published"`
+	Members       []MemberResponse  `json:"members"`
+	Programs      []ProgramResponse `json:"programs"`
+	Children      []UnitResponse    `json:"children"`
 }
 
 type MilestoneResponse struct {
@@ -181,6 +182,8 @@ type ProgramResponse struct {
 	Description      *string                 `json:"description,omitempty"`
 	Objectives       *string                 `json:"objectives,omitempty"`
 	TargetAudience   *string                 `json:"target_audience,omitempty"`
+	StartDate        *time.Time              `json:"start_date,omitempty"`
+	EndDate          *time.Time              `json:"end_date,omitempty"`
 	ExecutionMonth   *string                 `json:"execution_month,omitempty"`
 	Status           string                  `json:"status"`
 	Cover            *MediaResponse          `json:"cover,omitempty"`
@@ -221,36 +224,116 @@ func memberResponse(value entities.OrganizationMember) MemberResponse {
 }
 
 func unitResponse(value entities.Ministry) UnitResponse {
-	result := UnitResponse{ID: value.ID, CabinetTermID: value.CabinetTermID, ParentID: value.ParentID, Code: value.Code, Name: value.Name, UnitType: value.UnitType, Slug: value.Slug, ShortName: value.ShortName, Description: value.Description, Vision: value.Vision, Mission: value.Mission, Logo: mediaResponse(value.LogoMedia), Cover: mediaResponse(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsActive: value.IsActive, IsPublished: value.IsPublished}
+	result := UnitResponse{
+		ID:            value.ID,
+		CabinetTermID: value.CabinetTermID,
+		ParentID:      value.ParentID,
+		Code:          value.Code,
+		Name:          value.Name,
+		UnitType:      value.UnitType,
+		Slug:          value.Slug,
+		ShortName:     value.ShortName,
+		Description:   value.Description,
+		Vision:        value.Vision,
+		Mission:       value.Mission,
+		Logo:          mediaResponse(value.LogoMedia),
+		Cover:         mediaResponse(value.CoverMedia),
+		DisplayOrder:  value.DisplayOrder,
+		IsActive:      value.IsActive,
+		IsPublished:   value.IsPublished,
+		Members:       make([]MemberResponse, 0, len(value.Members)),
+		Programs:      make([]ProgramResponse, 0, len(value.Programs)),
+		Children:      make([]UnitResponse, 0, len(value.Children)),
+	}
+
 	for _, member := range value.Members {
 		result.Members = append(result.Members, memberResponse(member))
 	}
+
+	for _, program := range value.Programs {
+		response := programResponse(program)
+
+		if response.MinistryName == "" {
+			response.MinistryName = value.Name
+		}
+
+		result.Programs = append(result.Programs, response)
+	}
+
 	for _, child := range value.Children {
 		result.Children = append(result.Children, unitResponse(child))
 	}
+
 	return result
 }
 
 func programResponse(value entities.WorkProgram) ProgramResponse {
-	result := ProgramResponse{ID: value.ID, MinistryID: value.MinistryID, Name: value.Name, Slug: value.Slug, ShortDescription: value.ShortDescription, Description: value.Description, Objectives: value.Objectives, TargetAudience: value.TargetAudience, ExecutionMonth: value.ExecutionMonth, Status: value.LifecycleStatus, Cover: mediaResponse(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsFeatured: value.IsFeatured, IsPublished: value.IsPublished, PublishedAt: value.PublishedAt, Milestones: make([]MilestoneResponse, 0, len(value.Milestones)), Documentations: make([]DocumentationResponse, 0, len(value.Documentations))}
+	result := ProgramResponse{
+		ID:               value.ID,
+		MinistryID:       value.MinistryID,
+		Name:             value.Name,
+		Slug:             value.Slug,
+		ShortDescription: value.ShortDescription,
+		Description:      value.Description,
+		Objectives:       value.Objectives,
+		TargetAudience:   value.TargetAudience,
+		StartDate:        value.StartDate,
+		EndDate:          value.EndDate,
+		ExecutionMonth:   value.ExecutionMonth,
+		Status:           value.LifecycleStatus,
+		Cover:            mediaResponse(value.CoverMedia),
+		DisplayOrder:     value.DisplayOrder,
+		IsFeatured:       value.IsFeatured,
+		IsPublished:      value.IsPublished,
+		PublishedAt:      value.PublishedAt,
+		Milestones:       make([]MilestoneResponse, 0, len(value.Milestones)),
+		Documentations:   make([]DocumentationResponse, 0, len(value.Documentations)),
+	}
+
 	if value.Ministry != nil {
 		result.MinistryName = value.Ministry.Name
 	}
+
 	for _, milestone := range value.Milestones {
 		result.Milestones = append(result.Milestones, MilestoneResponse{ID: milestone.ID, Title: milestone.Title, Description: milestone.Description, StartDate: milestone.StartDate, EndDate: milestone.EndDate, Status: milestone.Status, DisplayOrder: milestone.DisplayOrder})
 	}
+
 	for _, documentation := range value.Documentations {
 		result.Documentations = append(result.Documentations, DocumentationResponse{ID: documentation.ID, Media: mediaResponse(documentation.MediaAsset), Title: documentation.Title, Caption: documentation.Caption, TakenAt: documentation.TakenAt, DisplayOrder: documentation.DisplayOrder, IsCover: documentation.IsCover})
 	}
+
 	return result
 }
 
+func NewCabinetResponse(value entities.CabinetTerm) CabinetResponse {
+	return cabinetResponse(value, value.Ministries)
+}
+
 func cabinetResponse(value entities.CabinetTerm, units []entities.Ministry) CabinetResponse {
-	result := CabinetResponse{ID: value.ID, Name: value.Name, Slug: value.Slug, Tagline: value.Tagline, Description: value.Description, Logo: mediaResponse(value.LogoMedia), Hero: mediaResponse(value.HeroMedia), PeriodStart: value.PeriodStart, PeriodEnd: value.PeriodEnd, IsActive: value.IsActive, IsPublished: value.IsPublished, MetaTitle: value.MetaTitle, MetaDescription: value.MetaDescription}
-	for _, unit := range units {
-		if unit.ParentID == nil {
-			result.Kemenkoan = append(result.Kemenkoan, unitResponse(unit))
-		}
+	result := CabinetResponse{
+		ID:              value.ID,
+		Name:            value.Name,
+		Slug:            value.Slug,
+		Tagline:         value.Tagline,
+		Description:     value.Description,
+		Logo:            mediaResponse(value.LogoMedia),
+		Hero:            mediaResponse(value.HeroMedia),
+		PeriodStart:     value.PeriodStart,
+		PeriodEnd:       value.PeriodEnd,
+		IsActive:        value.IsActive,
+		IsPublished:     value.IsPublished,
+		MetaTitle:       value.MetaTitle,
+		MetaDescription: value.MetaDescription,
+		Kemenkoan:       make([]UnitResponse, 0),
 	}
+
+	for _, unit := range units {
+		if unit.ParentID != nil {
+			continue
+		}
+
+		result.Kemenkoan = append(result.Kemenkoan, unitResponse(unit))
+	}
+
 	return result
 }

@@ -1,199 +1,233 @@
 <script lang="ts">
   import CalendarDayBadge from './CalendarDayBadge.svelte';
-  import CalendarRangeBadge from './CalendarRangeBadge.svelte';
 
   import {
     buildCalendarWeeks,
-    buildWeekSegments,
     dateKey,
-    getSingleDayEvents,
+    getEventsForDay,
+    getEventsForMonth,
     isCurrentMonth,
     isToday
   } from './calendar-utils';
 
-  import type {
-    CalendarEvent,
-    WeekView
-  } from './types';
+  import type { CalendarEvent } from './types';
 
   let {
     currentMonth,
-    events,
-    logo
+    events
   }: {
     currentMonth: Date;
     events: CalendarEvent[];
-    logo: string;
   } = $props();
 
   const weekDayLabels = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
 
-  const weekViews = $derived.by((): WeekView[] => {
-    return buildCalendarWeeks(currentMonth).map(
-      (days) => {
-        const segments = buildWeekSegments(
-          days,
-          events
-        );
+  const weeks = $derived(
+    buildCalendarWeeks(
+      currentMonth
+    )
+  );
 
-        const laneCount =
-          segments.length > 0
-            ? Math.max(
-                ...segments.map(
-                  (segment) => segment.lane
-                )
-              ) + 1
-            : 0;
+  const monthEvents = $derived(
+    getEventsForMonth(
+      currentMonth,
+      events
+    )
+  );
 
-        const maximumSingleEvents = Math.max(
-          ...days.map(
-            (day) =>
-              getSingleDayEvents(day, events).length
-          ),
-          0
-        );
-
-        const rangeTop =
-          48 + maximumSingleEvents * 28;
-
-        const contentHeight =
-          rangeTop +
-          Math.max(laneCount, 1) * 31 +
-          12;
-
-        return {
-          days,
-          segments,
-          rangeTop,
-          height: Math.max(116, contentHeight)
-        };
+  function dayAriaLabel(
+    date: Date
+  ): string {
+    return new Intl.DateTimeFormat(
+      'id-ID',
+      {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
       }
-    );
-  });
+    ).format(date);
+  }
 </script>
 
 <div
   class="
-    mt-10 overflow-hidden
-    rounded-[28px]
-    border border-white/70
-    bg-white/25
-    shadow-sm
-    backdrop-blur-md
+    mt-8 overflow-hidden
+    rounded-3xl
+    border border-blue-900/15
+    bg-white
+    shadow-xl
+    shadow-blue-950/10
   "
 >
-  <div class="overflow-x-auto">
-    <div class="min-w-[900px]">
+  <div
+    class="
+      overflow-x-auto
+      overscroll-x-contain
+    "
+  >
+    <div
+      role="grid"
+      aria-label="Kalender program kerja Kabinet Cerita Loka"
+      class="min-w-245"
+    >
       <div
+        role="row"
         class="
           grid grid-cols-7
-          border-b border-blue-900/15
-          bg-gradient-to-r
-          from-[#327fbd]
-          via-[#5ba0d5]
-          to-[#327fbd]
+          border-b
+          border-blue-950/20
+          bg-[#164f88]
         "
       >
-        {#each weekDayLabels as label}
+        {#each weekDayLabels as label, index}
           <div
-            class="
-              border-r border-white/30
-              px-2 py-3 text-center
-              text-xs font-black uppercase
-              tracking-[0.12em]
+            role="columnheader"
+            class={`
+              border-r
+              border-white/15
+              px-3 py-4
+              text-center
+              text-xs font-black
+              uppercase
+              tracking-[0.1em]
               text-white
               last:border-r-0
-              sm:text-sm
-            "
+
+              ${
+                index >= 5
+                  ? 'bg-[#0f4578]'
+                  : ''
+              }
+            `}
           >
             {label}
           </div>
         {/each}
       </div>
 
-      {#each weekViews as week (dateKey(week.days[0]))}
+      {#each weeks as week (dateKey(week[0]))}
         <div
+          role="row"
           class="
-            relative grid grid-cols-7
-            border-b border-blue-900/15
+            grid min-h-54
+            grid-cols-7
+            border-b
+            border-blue-950/10
             last:border-b-0
           "
-          style={`height: ${week.height}px;`}
         >
-          {#each week.days as day (dateKey(day))}
-            {@const singleDayEvents =
-              getSingleDayEvents(day, events)}
+          {#each week as day, dayIndex (dateKey(day))}
+            {@const dayEvents =
+              getEventsForDay(
+                day,
+                events
+              )}
+
+            {@const currentMonthDay =
+              isCurrentMonth(
+                day,
+                currentMonth
+              )}
 
             <div
+              role="gridcell"
+              aria-label={dayAriaLabel(day)}
               class={`
-                relative
-                border-r border-blue-800/20
-                px-2 py-2
+                min-w-0
+                border-r
+                border-blue-950/10
+                p-2.5
                 last:border-r-0
+
                 ${
-                  isCurrentMonth(day, currentMonth)
-                    ? 'bg-white/25'
-                    : 'bg-blue-300/15'
+                  currentMonthDay
+                    ? dayIndex >= 5
+                      ? 'bg-blue-50'
+                      : 'bg-white'
+                    : 'bg-slate-100'
                 }
               `}
             >
-              <span
-                class={`
-                  flex size-7
-                  items-center justify-center
-                  rounded-full
-                  text-xs font-extrabold
-                  ${
-                    isToday(day)
-                      ? 'bg-orange-500 text-white shadow-sm'
-                      : isCurrentMonth(
-                            day,
-                            currentMonth
-                          )
-                        ? 'text-blue-950'
-                        : 'text-blue-800/35'
-                  }
-                `}
+              <div
+                class="
+                  flex items-center
+                  justify-between gap-2
+                "
               >
-                {day.getDate()}
-              </span>
+                <span
+                  class={`
+                    flex size-8
+                    items-center
+                    justify-center
+                    rounded-xl
+                    text-xs font-black
 
-              {#if singleDayEvents.length > 0}
-                <div class="mt-2 flex flex-col gap-1">
-                  {#each singleDayEvents as event (event.id)}
+                    ${
+                      isToday(day)
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : currentMonthDay
+                          ? 'bg-blue-100 text-[#164f88]'
+                          : 'text-blue-950/25'
+                    }
+                  `}
+                >
+                  {day.getDate()}
+                </span>
+              </div>
+
+              {#if dayEvents.length > 0}
+                <div
+                  class="
+                    mt-2.5 flex
+                    max-h-40
+                    flex-col gap-1.5
+                    overflow-y-auto
+                    pr-1
+                    [scrollbar-color:#164f88_transparent]
+                    [scrollbar-width:thin]
+                  "
+                >
+                  {#each dayEvents as event (event.id)}
                     <CalendarDayBadge
                       {event}
-                      {logo}
                     />
                   {/each}
                 </div>
               {/if}
             </div>
           {/each}
-
-          {#each week.segments as segment (`${dateKey(week.days[0])}-${segment.event.id}`)}
-            <CalendarRangeBadge
-              event={segment.event}
-              {logo}
-              continuesBefore={segment.continuesBefore}
-              continuesAfter={segment.continuesAfter}
-              positionStyle={`
-                left: calc(${(segment.startColumn / 7) * 100}% + 5px);
-                width: calc(${(segment.span / 7) * 100}% - 10px);
-                top: ${week.rangeTop + segment.lane * 31}px;
-              `}
-            />
-          {/each}
         </div>
       {/each}
     </div>
   </div>
+
+  {#if monthEvents.length === 0}
+    <div
+      class="
+        border-t
+        border-blue-950/10
+        bg-blue-50
+        px-6 py-8
+        text-center
+      "
+    >
+      <p
+        class="
+          text-sm font-bold
+          text-[#164f88]/65
+        "
+      >
+        Belum ada program kerja yang dimulai pada bulan ini.
+      </p>
+    </div>
+  {/if}
 </div>

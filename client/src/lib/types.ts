@@ -89,11 +89,12 @@ export interface OrganizationUnit {
   is_active: boolean;
   is_published: boolean;
   members?: OrganizationMember[];
+  programs?: WorkProgram[];
   children?: OrganizationUnit[];
 }
 export interface Milestone { id: number; title: string; description?: string; start_date?: string; end_date?: string; status: string; display_order: number }
 export interface Documentation { id: number; media?: MediaAsset; title?: string; caption?: string; taken_at?: string; display_order: number; is_cover: boolean }
-export interface WorkProgram { id: number; ministry_id: number; ministry_name?: string; name: string; slug: string; short_description?: string; description?: string; objectives?: string; target_audience?: string; execution_month?: string; status: string; cover?: MediaAsset; display_order: number; is_featured: boolean; is_published: boolean; published_at?: string; milestones?: Milestone[]; documentations?: Documentation[] }
+export interface WorkProgram { id: number; ministry_id: number; ministry_name?: string; name: string; slug: string; short_description?: string; description?: string; objectives?: string; target_audience?: string; start_date?: string; end_date?: string; execution_month?: string; status: string; cover?: MediaAsset; display_order: number; is_featured: boolean; is_published: boolean; published_at?: string; milestones?: Milestone[]; documentations?: Documentation[] }
 export interface Cabinet { id: number; name: string; slug: string; tagline?: string; description?: string; logo?: MediaAsset; hero?: MediaAsset; period_start?: string; period_end?: string; is_active: boolean; is_published: boolean; meta_title?: string; meta_description?: string; kemenkoan?: OrganizationUnit[] }
 export interface MediaSubmissionSetting { ServiceType?: string; service_type?: string; SOPURL?: string; sop_url?: string; MinistryTemplateURL?: string; ministry_template_url?: string; BriefTemplateURL?: string; brief_template_url?: string; CaptionTemplateURL?: string; caption_template_url?: string; PICName?: string; pic_name?: string; PICWhatsApp?: string; pic_whatsapp?: string; MinimumLeadDays?: number; minimum_lead_days?: number; PublishTimeStart?: string; publish_time_start?: string; PublishTimeEnd?: string; publish_time_end?: string; SlotIntervalMinutes?: number; slot_interval_minutes?: number; terms: string[] }
 export interface SubmissionHistory { id: number; event_type?: "STATUS_CHANGED" | "PJ_ASSIGNED" | "PJ_REASSIGNED"; actor?: UserSummary; from_status?: string; to_status?: string; from_pj?: UserSummary; to_pj?: UserSummary; note?: string; created_at: string }

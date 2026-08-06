@@ -14,27 +14,34 @@
 
 <div
   class="
-    mt-10 flex items-center
-    justify-center gap-5
-    sm:mt-12 sm:gap-10
+    mt-8 grid
+    grid-cols-[52px_minmax(0,1fr)_52px]
+    items-center gap-3
+    sm:mt-10
+    sm:grid-cols-[60px_minmax(0,1fr)_60px]
+    sm:gap-5
   "
 >
   <button
     type="button"
-    aria-label="Bulan sebelumnya"
+    aria-label="Tampilkan bulan sebelumnya"
     onclick={onPrevious}
     class="
-      group flex size-11
+      group flex size-13
       items-center justify-center
       rounded-2xl
-      border border-white/70
-      bg-white/30
-      text-orange-500
-      shadow-sm
-      backdrop-blur-md
+      bg-[#164f88]
+      text-white
+      shadow-md
       transition duration-200
-      hover:bg-white/50
-      sm:size-12
+      hover:-translate-y-0.5
+      hover:bg-[#0d3f70]
+      hover:shadow-lg
+      focus-visible:outline-2
+      focus-visible:outline-offset-3
+      focus-visible:outline-orange-500
+      active:translate-y-0
+      sm:size-15
     "
   >
     <svg
@@ -42,14 +49,15 @@
       fill="none"
       aria-hidden="true"
       class="
-        size-6 transition-transform
+        size-6
+        transition-transform
         group-hover:-translate-x-0.5
       "
     >
       <path
         d="M15 5L8 12L15 19"
         stroke="currentColor"
-        stroke-width="3"
+        stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
@@ -58,20 +66,19 @@
 
   <div
     class="
-      min-w-44 rounded-2xl
-      border border-orange-300/70
-      bg-gradient-to-b
-      from-orange-400 to-orange-300
-      px-7 py-3 text-center
-      shadow-sm
-      sm:min-w-56
+      min-w-0 text-center
     "
   >
     <p
       class="
-        text-2xl leading-none
-        font-black text-white
-        sm:text-3xl
+        truncate text-3xl
+        leading-none font-black
+        capitalize
+        tracking-[-0.045em]
+        px-8 py-2.5 rounded-md
+        bg-amber-600 text-white
+        sm:text-4xl
+        md:text-5xl
       "
     >
       {monthLabel(currentMonth)}
@@ -79,8 +86,11 @@
 
     <p
       class="
-        mt-1 text-xs font-extrabold
-        tracking-[0.16em] text-white
+        mt-1.5
+        text-xs font-black
+        tracking-[0.2em]
+        text-orange-600
+        sm:text-sm
       "
     >
       {currentMonth.getFullYear()}
@@ -89,20 +99,24 @@
 
   <button
     type="button"
-    aria-label="Bulan berikutnya"
+    aria-label="Tampilkan bulan berikutnya"
     onclick={onNext}
     class="
-      group flex size-11
+      group flex size-13
       items-center justify-center
       rounded-2xl
-      border border-white/70
-      bg-white/30
-      text-orange-500
-      shadow-sm
-      backdrop-blur-md
+      bg-[#164f88]
+      text-white
+      shadow-md
       transition duration-200
-      hover:bg-white/50
-      sm:size-12
+      hover:-translate-y-0.5
+      hover:bg-[#0d3f70]
+      hover:shadow-lg
+      focus-visible:outline-2
+      focus-visible:outline-offset-3
+      focus-visible:outline-orange-500
+      active:translate-y-0
+      sm:size-15
     "
   >
     <svg
@@ -110,14 +124,15 @@
       fill="none"
       aria-hidden="true"
       class="
-        size-6 transition-transform
+        size-6
+        transition-transform
         group-hover:translate-x-0.5
       "
     >
       <path
         d="M9 5L16 12L9 19"
         stroke="currentColor"
-        stroke-width="3"
+        stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />

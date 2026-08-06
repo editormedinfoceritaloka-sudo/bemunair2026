@@ -14,197 +14,368 @@
 
   import type { CalendarEvent } from './calender/types';
 
-  const exampleEvents: CalendarEvent[] = [
-    {
-      id: 'company-profile',
-      title: 'Company Profile',
-      startDate: '2026-06-06',
-      endDate: '2026-06-20',
-      ministrySlug: 'komunikasi-dan-informasi',
-      programSlug: 'company-profile'
-    },
-    {
-      id: 'festival-cerita-loka',
-      title: 'Festival Cerita Loka',
-      startDate: '2026-06-13',
-      endDate: '2026-06-27',
-      ministrySlug: 'seni-dan-budaya',
-      programSlug: 'festival-cerita-loka'
-    },
-    {
-      id: 'cerita-loka-mengabdi',
-      title: 'Cerita Loka Mengabdi',
-      startDate: '2026-06-08',
-      endDate: '2026-06-18',
-      ministrySlug: 'pengabdian-masyarakat',
-      programSlug: 'cerita-loka-mengabdi'
-    },
-    {
-      id: 'launching-news',
-      title: 'Launching News',
-      startDate: '2026-06-07',
-      ministrySlug: 'komunikasi-dan-informasi',
-      programSlug: 'launching-news'
-    },
-    {
-      id: 'forum-aspirasi',
-      title: 'Forum Aspirasi',
-      startDate: '2026-06-15',
-      ministrySlug: 'sosial-dan-politik',
-      programSlug: 'forum-aspirasi'
-    },
-    {
-      id: 'anniversary',
-      title: 'Cerita Loka Anniversary',
-      startDate: '2026-06-24',
-      ministrySlug: 'sekretariat-kabinet',
-      programSlug: 'cerita-loka-anniversary'
+  import type {
+    Cabinet,
+    OrganizationUnit,
+    WorkProgram
+  } from '$lib/types';
+
+  function programToEvent(
+    program: WorkProgram,
+    unit: OrganizationUnit,
+    fallbackLogo: string
+  ): CalendarEvent | null {
+    if (
+      !program.start_date ||
+      program.is_published === false
+    ) {
+      return null;
     }
-  ];
+
+    const ministryName =
+      unit.short_name ??
+      unit.name;
+
+    return {
+      id: `program-${program.id}`,
+      title: program.name,
+      startDate:
+        program.start_date.slice(
+          0,
+          10
+        ),
+      ministryName,
+      ministrySlug: unit.slug,
+      programSlug: program.slug,
+      logo:
+        unit.logo?.url ??
+        unit.logo?.thumbnail_url ??
+        fallbackLogo,
+      logoAlt:
+        unit.logo?.alt_text ??
+        `Logo ${unit.name}`
+    };
+  }
+
+  function addUnitPrograms(
+    result: CalendarEvent[],
+    seen: Set<string>,
+    unit: OrganizationUnit,
+    fallbackLogo: string
+  ): void {
+    if (
+      unit.is_active === false ||
+      unit.is_published === false
+    ) {
+      return;
+    }
+
+    for (
+      const program of
+      unit.programs ?? []
+    ) {
+      const event = programToEvent(
+        program,
+        unit,
+        fallbackLogo
+      );
+
+      if (
+        !event ||
+        seen.has(event.id)
+      ) {
+        continue;
+      }
+
+      seen.add(event.id);
+      result.push(event);
+    }
+
+    for (
+      const child of
+      unit.children ?? []
+    ) {
+      addUnitPrograms(
+        result,
+        seen,
+        child,
+        fallbackLogo
+      );
+    }
+  }
+
+  function cabinetToEvents(
+    cabinet: Cabinet,
+    fallbackLogo: string
+  ): CalendarEvent[] {
+    const result: CalendarEvent[] = [];
+    const seen = new Set<string>();
+
+    for (
+      const unit of
+      cabinet.kemenkoan ?? []
+    ) {
+      addUnitPrograms(
+        result,
+        seen,
+        unit,
+        fallbackLogo
+      );
+    }
+
+    return result.sort(
+      (first, second) => {
+        const dateComparison =
+          first.startDate.localeCompare(
+            second.startDate
+          );
+
+        if (
+          dateComparison !== 0
+        ) {
+          return dateComparison;
+        }
+
+        return first.title.localeCompare(
+          second.title,
+          'id-ID'
+        );
+      }
+    );
+  }
 
   let {
-    events = exampleEvents,
+    events = [],
     logo = '/logo/logo-kabinet.png',
-    initialMonth = '2026-06-01'
+    initialMonth,
+    cabinet = null
   }: {
     events?: CalendarEvent[];
     logo?: string;
     initialMonth?: string;
+    cabinet?: Cabinet | null;
   } = $props();
 
+  const resolvedEvents =
+    $derived.by<CalendarEvent[]>(() => {
+      if (cabinet) {
+        return cabinetToEvents(
+          cabinet,
+          logo
+        );
+      }
+
+      return [...events].sort(
+        (first, second) =>
+          first.startDate.localeCompare(
+            second.startDate
+          )
+      );
+    });
+
   let currentMonth = $state(
-    startOfMonth(parseDate(initialMonth))
+    startOfMonth(
+      initialMonth
+        ? parseDate(initialMonth)
+        : new Date()
+    )
   );
 
-  let sectionElement: HTMLElement;
-  let glowElement: HTMLDivElement;
-  let headingElement: HTMLHeadingElement;
-  let navigationElement: HTMLDivElement;
-  let gridElement: HTMLDivElement;
+  let sectionElement = $state<
+    HTMLElement | undefined
+  >(undefined);
 
-  function showPreviousMonth(): void {
-    currentMonth = addMonths(currentMonth, -1);
-  }
+  let headingElement = $state<
+    HTMLHeadingElement | undefined
+  >(undefined);
 
-  function showNextMonth(): void {
-    currentMonth = addMonths(currentMonth, 1);
-  }
+  let navigationElement = $state<
+    HTMLDivElement | undefined
+  >(undefined);
 
-  onMount(() => {
-    gsap.registerPlugin(ScrollTrigger);
+  let gridElement = $state<
+    HTMLDivElement | undefined
+  >(undefined);
 
-    const reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+  function changeMonth(
+    amount: number
+  ): void {
+    const grid = gridElement;
 
-    if (reduceMotion) {
-      gsap.set(
-        [
-          glowElement,
-          headingElement,
-          navigationElement,
-          gridElement
-        ],
-        {
-          clearProps: 'all'
-        }
+    if (!grid) {
+      currentMonth = addMonths(
+        currentMonth,
+        amount
       );
 
       return;
     }
 
-    const context = gsap.context(() => {
-      gsap.set(glowElement, {
-        opacity: 0,
-        scale: 0.65
-      });
+    const reduceMotion =
+      window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
 
-      gsap.set(headingElement, {
-        y: 70,
-        opacity: 0,
-        scale: 0.94,
-        filter: 'blur(10px)'
-      });
+    if (reduceMotion) {
+      currentMonth = addMonths(
+        currentMonth,
+        amount
+      );
 
-      gsap.set(navigationElement, {
-        y: 40,
-        opacity: 0
-      });
+      return;
+    }
 
-      gsap.set(gridElement, {
-        y: 80,
-        opacity: 0,
-        scale: 0.97,
-        transformOrigin: 'center top'
-      });
+    gsap.killTweensOf(grid);
 
-      const timeline = gsap.timeline({
-        defaults: {
-          ease: 'power3.out'
-        },
-        scrollTrigger: {
-          trigger: sectionElement,
-          start: 'top 72%',
-          once: true
-        }
-      });
+    gsap.to(grid, {
+      x: amount > 0 ? -30 : 30,
+      opacity: 0,
+      duration: 0.18,
+      ease: 'power2.in',
+      onComplete: () => {
+        currentMonth = addMonths(
+          currentMonth,
+          amount
+        );
 
-      timeline
-        .to(
-          glowElement,
+        gsap.fromTo(
+          grid,
           {
-            opacity: 1,
-            scale: 1,
-            duration: 1.4,
-            ease: 'power2.out'
+            x: amount > 0 ? 30 : -30,
+            opacity: 0
           },
-          0
-        )
-        .to(
-          headingElement,
           {
-            y: 0,
+            x: 0,
             opacity: 1,
-            scale: 1,
-            filter: 'blur(0px)',
-            duration: 1
-          },
-          0.1
-        )
-        .to(
-          navigationElement,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.75
-          },
-          0.45
-        )
-        .to(
-          gridElement,
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 1.05
-          },
-          0.65
-        )
-        .set(
-          [
-            glowElement,
-            headingElement,
-            navigationElement,
-            gridElement
-          ],
-          {
-            clearProps: 'willChange,transform,filter,opacity'
+            duration: 0.3,
+            ease: 'power2.out',
+            clearProps:
+              'transform,opacity'
           }
         );
-    }, sectionElement);
+      }
+    });
+  }
+
+  function showPreviousMonth(): void {
+    changeMonth(-1);
+  }
+
+  function showNextMonth(): void {
+    changeMonth(1);
+  }
+
+  onMount(() => {
+    gsap.registerPlugin(
+      ScrollTrigger
+    );
+
+    const section =
+      sectionElement;
+
+    const heading =
+      headingElement;
+
+    const navigation =
+      navigationElement;
+
+    const grid =
+      gridElement;
+
+    if (
+      !section ||
+      !heading ||
+      !navigation ||
+      !grid
+    ) {
+      return;
+    }
+
+    const reduceMotion =
+      window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+
+    if (reduceMotion) {
+      return;
+    }
+
+    const context = gsap.context(
+      () => {
+        gsap.set(heading, {
+          y: 55,
+          opacity: 0
+        });
+
+        gsap.set(navigation, {
+          y: 35,
+          opacity: 0
+        });
+
+        gsap.set(grid, {
+          y: 60,
+          opacity: 0
+        });
+
+        const timeline =
+          gsap.timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 75%',
+              once: true
+            }
+          });
+
+        timeline
+          .to(
+            heading,
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.8
+            },
+            0
+          )
+          .to(
+            navigation,
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.65
+            },
+            0.2
+          )
+          .to(
+            grid,
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.85
+            },
+            0.35
+          )
+          .set(
+            [
+              heading,
+              navigation,
+              grid
+            ],
+            {
+              clearProps:
+                'transform,opacity'
+            }
+          );
+      },
+      section
+    );
 
     return () => {
       context.revert();
+
+      gsap.killTweensOf(grid);
     };
   });
 </script>
@@ -216,30 +387,35 @@
   class="
     relative min-h-screen
     overflow-hidden
-    bg-gradient-to-b
+    bg-linear-to-b
     from-[#8fb2d8]
     via-[#dce8f5]
     to-[#8fb2d8]
-    px-4 pb-24 pt-28
-    sm:px-7 sm:pt-32
-    lg:px-12 lg:pb-32 lg:pt-36
+    px-4 pb-24 pt-24
+    sm:px-7 sm:pt-28
+    lg:px-12 lg:pb-32
+    lg:pt-32
   "
 >
   <div
-    bind:this={glowElement}
+    aria-hidden="true"
     class="
       pointer-events-none
-      absolute left-1/2 top-16
-      h-[480px] w-[820px]
-      -translate-x-1/2
-      rounded-full
-      bg-white/30
-      blur-[120px]
-      will-change-transform
+      absolute inset-x-0 top-0
+      h-48
+      bg-linear-to-b
+      from-white/25
+      to-transparent
     "
   ></div>
 
-  <div class="relative mx-auto w-full max-w-7xl">
+  <div
+    class="
+      relative z-10
+      mx-auto w-full
+      max-w-7xl
+    "
+  >
     <header class="text-center">
       <h2
         bind:this={headingElement}
@@ -249,7 +425,6 @@
           font-black
           tracking-[-0.065em]
           text-[#164f88]
-          will-change-transform
           sm:text-6xl
           md:text-7xl
           lg:text-8xl
@@ -261,7 +436,10 @@
 
     <div
       bind:this={navigationElement}
-      class="will-change-transform"
+      class="
+        mx-auto w-full
+        max-w-2xl
+      "
     >
       <CalendarNavigation
         {currentMonth}
@@ -272,12 +450,10 @@
 
     <div
       bind:this={gridElement}
-      class="will-change-transform"
     >
       <CalendarGrid
         {currentMonth}
-        {events}
-        {logo}
+        events={resolvedEvents}
       />
     </div>
   </div>
