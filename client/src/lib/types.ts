@@ -33,9 +33,64 @@ export interface Article {
   status: ArticleStatus; published_at?: string; created_at: string; updated_at: string;
 }
 export interface Ministry { id: number; code: string; name: string; is_active: boolean; created_at: string; updated_at: string }
-export interface MediaAsset { id: number; file_id: string; url: string; thumbnail_url?: string; name: string; alt_text: string; caption?: string; mime_type: string; size_bytes: number; width?: number; height?: number; purpose: string; status: string }
-export interface OrganizationMember { id: number; name: string; position: string; position_type: "MINISTER" | "DIRECTOR_GENERAL"; biography?: string; quote?: string; photo?: MediaAsset; display_order: number; is_leader: boolean }
-export interface OrganizationUnit { id: number; cabinet_term_id?: number; parent_id?: number; code: string; name: string; unit_type: "KEMENKOAN" | "KEMENTERIAN"; slug: string; short_name?: string; description?: string; vision?: string; mission?: string; logo?: MediaAsset; cover?: MediaAsset; display_order: number; is_active: boolean; is_published: boolean; members?: OrganizationMember[]; children?: OrganizationUnit[] }
+export interface MediaAsset {
+  id: number;
+  file_id: string;
+  url: string;
+  thumbnail_url?: string | null;
+  name: string;
+  alt_text?: string | null;
+  caption?: string | null;
+  mime_type: string;
+  size_bytes: number;
+  width?: number | null;
+  height?: number | null;
+  purpose: string;
+  status: string;
+}
+export type OrganizationPositionType =
+  | 'MENKO'
+  | 'MINISTER'
+  | 'DIRECTOR_GENERAL';
+
+export type OrganizationUnitType =
+  | 'MENKO'
+  | 'KEMENTERIAN'
+  | 'BPII';
+
+export interface OrganizationMember {
+  id: number;
+  name: string;
+  position: string;
+  position_type: OrganizationPositionType;
+  biography?: string | null;
+  quote?: string | null;
+  photo?: MediaAsset | null;
+  display_order: number;
+  is_leader: boolean;
+  is_active: boolean;
+}
+
+export interface OrganizationUnit {
+  id: number;
+  cabinet_term_id?: number;
+  parent_id?: number | null;
+  code: string;
+  name: string;
+  unit_type: OrganizationUnitType;
+  slug: string;
+  short_name?: string | null;
+  description?: string | null;
+  vision?: string | null;
+  mission?: string | null;
+  logo?: MediaAsset | null;
+  cover?: MediaAsset | null;
+  display_order: number;
+  is_active: boolean;
+  is_published: boolean;
+  members?: OrganizationMember[];
+  children?: OrganizationUnit[];
+}
 export interface Milestone { id: number; title: string; description?: string; start_date?: string; end_date?: string; status: string; display_order: number }
 export interface Documentation { id: number; media?: MediaAsset; title?: string; caption?: string; taken_at?: string; display_order: number; is_cover: boolean }
 export interface WorkProgram { id: number; ministry_id: number; ministry_name?: string; name: string; slug: string; short_description?: string; description?: string; objectives?: string; target_audience?: string; execution_month?: string; status: string; cover?: MediaAsset; display_order: number; is_featured: boolean; is_published: boolean; published_at?: string; milestones?: Milestone[]; documentations?: Documentation[] }

@@ -1,10 +1,24 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount,  } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
   import MemberCard from '$lib/components/kementrian/MemberCard.svelte';
   import ListProker from '$lib/components/kementrian/ListProker.svelte';
+
+  import type {
+    OrganizationMember,
+    WorkProgram
+  } from '$lib/types';
+  import type { PageData } from './$types';
+
+  let {
+    data
+  }: {
+    data: PageData;
+  } = $props();
+
+  $effect(() => console.log(data));
 
   type DescriptionPart = {
     text: string;
@@ -12,11 +26,11 @@
   };
 
   type Member = {
-    id: string;
+    id: number;
     role: string;
     title: string;
     image: string;
-    featured?: boolean;
+    featured: boolean;
   };
 
   type ProgramKerja = {
@@ -26,166 +40,107 @@
     slug: string;
   };
 
-  let title = $state(
-    'Pendayagunaan Aparatur Kabinet'
+  const unit = $derived(data.unit);
+
+  const title = $derived(
+    unit.name ??
+      unit.short_name ??
+      'Kementerian'
   );
 
-  let description = $state(
-    'Pendayagunaan Aparatur Kabinet (PAK) merupakan salah satu unit strategis dalam Pengurus Inti Badan Eksekutif Mahasiswa (BEM) Universitas Airlangga (UNAIR) 2026 yang berperan mengelola internal organisasi.'
+  const description = $derived(
+    unit.description ??
+      `${title} merupakan bagian dari Kabinet Cerita Loka BEM Universitas Airlangga 2026.`
   );
 
-  const members: Member[] = [
-    {
-      id: 'dirjen-tata-laksana',
-      role: 'Dirjen',
-      title: 'Tata Laksana Kerja',
-      image: '/kementrian/test.png'
-    },
-    {
-      id: 'menteri-pak',
-      role: 'Menteri',
-      title: 'Pendayagunaan Aparatur Kabinet',
-      image: '/kementrian/test.png',
-      featured: true
-    },
-    {
-      id: 'dirjen-audit',
-      role: 'Dirjen',
-      title: 'Audit dan Penjaminan Mutu',
-      image: '/kementrian/test.png'
-    }
-  ];
+  function getMemberImage(
+    member: OrganizationMember
+  ): string {
+    return (
+      member.photo?.url ??
+      member.photo?.thumbnail_url ??
+      '/kementrian/test.png'
+    );
+  }
 
-  const programs: ProgramKerja[] = [
-    {
-      id: 'penyusunan-sop',
-      title: 'Penyusunan Standar Operasional Procedure',
-      description:
-        'Penyusunan Standar Operasional Procedure merupakan program kerja yang bergerak pada bidang penyusunan standardisasi kinerja yang harus diikuti oleh seluruh fungsionaris BEM UNAIR 2026.',
-      slug: 'penyusunan-standar-operasional-procedure'
-    },
-    {
-      id: 'hearing-kementerian',
-      title: 'Hearing Kementerian',
-      description:
-        'Hearing Kementerian merupakan program kerja yang dilakukan dalam skala satu bulan sekali untuk membahas progres, kendala, hambatan, dan evaluasi terhadap program kerja kementerian.',
-      slug: 'hearing-kementerian'
-    },
-    {
-      id: 'monitoring-evaluasi',
-      title: 'Monitoring Evaluasi',
-      description:
-        'Monitoring evaluasi merupakan program kerja yang dilaksanakan tiga bulan sekali dalam satu periode untuk membahas progres ataupun kendala pada setiap kementerian BEM UNAIR 2026.',
-     slug: 'monitoring-evaluasi'
-    },
-    {
-      id: 'audit-internal',
-      title: 'Audit Internal Kabinet',
-      description:
-        'Audit Internal Kabinet merupakan kegiatan peninjauan tata kelola organisasi guna memastikan seluruh kementerian bekerja sesuai standar, target, dan nilai Kabinet Cerita Loka.',
-        slug: 'audit-internal-kabinet'
-    },
-    {
-      id: 'rapat-koordinasi-kabinet',
-      title: 'Rapat Koordinasi Kabinet',
-      description:
-        'Rapat Koordinasi Kabinet menjadi ruang penyelarasan arah kerja, target, dan kebutuhan lintas kementerian agar pelaksanaan program kabinet tetap terintegrasi.',
-        slug: 'rapat-koordinasi-kabinet'
-    },
-    {
-      id: 'evaluasi-tengah-periode',
-      title: 'Evaluasi Tengah Periode',
-      description:
-        'Evaluasi Tengah Periode dilakukan untuk mengukur pencapaian setiap kementerian sekaligus menentukan perbaikan yang diperlukan pada paruh berikutnya.',
-        slug: 'evaluasi-tengah-periode'
-    },
-    {
-      id: 'database-fungsionaris',
-      title: 'Database Fungsionaris',
-      description:
-        'Database Fungsionaris mengelola data internal anggota kabinet secara terstruktur untuk mendukung administrasi, pemetaan sumber daya, dan kebutuhan organisasi.',
-        slug: 'database-fungsionaris'
-    },
-    {
-      id: 'pemetaan-kinerja-kementerian',
-      title: 'Pemetaan Kinerja Kementerian',
-      description:
-        'Pemetaan Kinerja Kementerian menyajikan gambaran capaian, hambatan, dan kebutuhan pengembangan dari masing-masing unit kerja dalam kabinet.',
-        slug: 'pemetaan-kinerja-kementerian'
-    },
-    {
-      id: 'forum-sekretaris-kementerian',
-      title: 'Forum Sekretaris Kementerian',
-      description:
-        'Forum Sekretaris Kementerian menjadi ruang koordinasi administrasi untuk menyelaraskan dokumen, pelaporan, arsip, dan tata kerja seluruh kementerian.',
-        slug: 'forum-sekretaris-kementerian'
-    },
-    {
-      id: 'penyelarasan-administrasi',
-      title: 'Penyelarasan Administrasi',
-      description:
-        'Penyelarasan Administrasi memastikan format dokumen dan alur persetujuan internal diterapkan secara konsisten oleh seluruh unit organisasi.',
-        slug: 'penyelarasan-administrasi'
-    },
-    {
-      id: 'review-indikator-kinerja',
-      title: 'Review Indikator Kinerja',
-      description:
-        'Review Indikator Kinerja dilakukan untuk memastikan setiap target bersifat terukur, relevan, dan sesuai dengan arah strategis Kabinet Cerita Loka.',
-        slug: 'review-indikator-kinerja'
-    },
-    {
-      id: 'sistem-pelaporan-progres',
-      title: 'Sistem Pelaporan Progres',
-      description:
-        'Sistem Pelaporan Progres menyediakan mekanisme pelaporan berkala agar perkembangan program kerja dapat dipantau dan dievaluasi dengan lebih efektif.',
-        slug: 'sistem-pelaporan-progres'
-    },
-    {
-      id: 'pendampingan-tata-kelola',
-      title: 'Pendampingan Tata Kelola',
-      description:
-        'Pendampingan Tata Kelola membantu kementerian menyelesaikan persoalan prosedural, pembagian kerja, administrasi, dan koordinasi internal.',
-        slug: 'pendampingan-tata-kelola'
-    },
-    {
-      id: 'apresiasi-fungsionaris',
-      title: 'Apresiasi Fungsionaris',
-      description:
-        'Apresiasi Fungsionaris memberikan penghargaan terhadap kontribusi anggota kabinet sebagai upaya membangun budaya organisasi yang sehat dan suportif.',
-        slug: 'apresiasi-fungsionaris'
-    },
-    {
-      id: 'evaluasi-akhir-periode',
-      title: 'Evaluasi Akhir Periode',
-      description:
-        'Evaluasi Akhir Periode merangkum keberhasilan, hambatan, dan pembelajaran organisasi sebagai dasar perbaikan untuk kepengurusan berikutnya.',
-        slug: 'evaluasi-akhir-periode'
-    },
-    {
-      id: 'laporan-kinerja-kabinet',
-      title: 'Laporan Kinerja Kabinet',
-      description:
-        'Laporan Kinerja Kabinet menyatukan hasil pelaksanaan program, capaian indikator, serta rekomendasi pengembangan organisasi dalam satu dokumen.',
-        slug: 'laporan-kinerja-kabinet'
-    }
-  ];
+  function getMemberRole(
+    member: OrganizationMember
+  ): string {
+    const roles: Record<string, string> = {
+      MENKO: 'Menteri Koordinator',
+      MENTERI: 'Menteri',
+      MINISTER: 'Menteri',
+      DIRJEN: 'Direktur Jenderal',
+      DIRECTOR_GENERAL: 'Direktur Jenderal',
+      DEPUTI: 'Deputi',
+      KEPALA: 'Kepala',
+      KABIRO: 'Kepala Biro'
+    };
 
-  let sectionElement!: HTMLElement;
-  let glowElement!: HTMLDivElement;
-  let decorationElement!: HTMLDivElement;
+    return (
+      roles[member.position_type] ??
+      member.position_type
+    );
+  }
 
-  let firstTitleElement!: HTMLSpanElement;
-  let secondTitleElement: HTMLSpanElement | undefined;
-  let descriptionElement!: HTMLParagraphElement;
+  const members = $derived.by<Member[]>(() => {
+    return [...(unit.members ?? [])]
+      .filter(
+        (member) =>
+          member.is_active !== false
+      )
+      .sort((first, second) => {
+        if (
+          first.is_leader !==
+          second.is_leader
+        ) {
+          return first.is_leader ? -1 : 1;
+        }
 
-  let membersSectionElement!: HTMLDivElement;
-  let membersHeadingElement!: HTMLHeadingElement;
-  let membersGridElement!: HTMLDivElement;
+        return (
+          (first.display_order ?? 0) -
+          (second.display_order ?? 0)
+        );
+      })
+      .map((member) => ({
+        id: member.id,
+        role: getMemberRole(member),
+        title: member.name,
+        image: getMemberImage(member),
+        featured: member.is_leader
+      }));
+  });
 
-  let programSectionElement!: HTMLDivElement;
-  let programHeadingElement!: HTMLHeadingElement;
-  let programContentElement!: HTMLDivElement;
+  function getProgramDescription(
+    program: WorkProgram
+  ): string {
+    return (
+      program.short_description ??
+      program.description ??
+      'Informasi program kerja akan segera diperbarui.'
+    );
+  }
+
+  const programs =
+    $derived.by<ProgramKerja[]>(() => {
+      return [...(data.programs ?? [])]
+        .filter(
+          (program) =>
+            program.is_published !== false
+        )
+        .sort(
+          (first, second) =>
+            (first.display_order ?? 0) -
+            (second.display_order ?? 0)
+        )
+        .map((program) => ({
+          id: String(program.id),
+          title: program.name,
+          description:
+            getProgramDescription(program),
+          slug: program.slug
+        }));
+    });
 
   const titleLines = $derived.by(() => {
     const words = title
@@ -235,15 +190,21 @@
       }
 
       const lowerDescription =
-        description.toLocaleLowerCase('id-ID');
+        description.toLocaleLowerCase(
+          'id-ID'
+        );
 
       const lowerTitle =
-        normalizedTitle.toLocaleLowerCase('id-ID');
+        normalizedTitle.toLocaleLowerCase(
+          'id-ID'
+        );
 
       const parts: DescriptionPart[] = [];
       let currentIndex = 0;
 
-      while (currentIndex < description.length) {
+      while (
+        currentIndex < description.length
+      ) {
         const matchIndex =
           lowerDescription.indexOf(
             lowerTitle,
@@ -252,7 +213,9 @@
 
         if (matchIndex === -1) {
           parts.push({
-            text: description.slice(currentIndex),
+            text: description.slice(
+              currentIndex
+            ),
             highlighted: false
           });
 
@@ -272,17 +235,55 @@
         parts.push({
           text: description.slice(
             matchIndex,
-            matchIndex + normalizedTitle.length
+            matchIndex +
+              normalizedTitle.length
           ),
           highlighted: true
         });
 
         currentIndex =
-          matchIndex + normalizedTitle.length;
+          matchIndex +
+          normalizedTitle.length;
       }
 
       return parts;
     });
+
+  let sectionElement =
+    $state<HTMLElement>();
+
+  let glowElement =
+    $state<HTMLDivElement>();
+
+  let decorationElement =
+    $state<HTMLDivElement>();
+
+  let firstTitleElement =
+    $state<HTMLSpanElement>();
+
+  let secondTitleElement =
+    $state<HTMLSpanElement>();
+
+  let descriptionElement =
+    $state<HTMLParagraphElement>();
+
+  let membersSectionElement =
+    $state<HTMLDivElement>();
+
+  let membersHeadingElement =
+    $state<HTMLHeadingElement>();
+
+  let membersGridElement =
+    $state<HTMLDivElement>();
+
+  let programSectionElement =
+    $state<HTMLDivElement>();
+
+  let programHeadingElement =
+    $state<HTMLHeadingElement>();
+
+  let programContentElement =
+    $state<HTMLDivElement>();
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -291,13 +292,20 @@
       window.history.scrollRestoration;
 
     const previousScrollBehavior =
-      document.documentElement.style.scrollBehavior;
+      document.documentElement.style
+        .scrollBehavior;
 
-    let context: gsap.Context | undefined;
+    let context:
+      | gsap.Context
+      | undefined;
+
     let secondFrame = 0;
 
-    window.history.scrollRestoration = 'manual';
-    document.documentElement.style.scrollBehavior = 'auto';
+    window.history.scrollRestoration =
+      'manual';
+
+    document.documentElement.style
+      .scrollBehavior = 'auto';
 
     function forceScrollToTop(): void {
       window.scrollTo({
@@ -306,46 +314,88 @@
         behavior: 'auto'
       });
 
-      document.documentElement.scrollTop = 0;
+      document.documentElement.scrollTop =
+        0;
+
       document.body.scrollTop = 0;
     }
 
     function setupAnimations(): void {
-      const reduceMotion = window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches;
+      const section = sectionElement;
+      const glow = glowElement;
+      const decoration = decorationElement;
+      const firstTitle = firstTitleElement;
+      const secondTitle =
+        secondTitleElement;
+      const descriptionText =
+        descriptionElement;
+      const membersSection =
+        membersSectionElement;
+      const membersHeading =
+        membersHeadingElement;
+      const membersGrid =
+        membersGridElement;
+      const programSection =
+        programSectionElement;
+      const programHeading =
+        programHeadingElement;
+      const programContent =
+        programContentElement;
+
+      if (
+        !section ||
+        !glow ||
+        !decoration ||
+        !firstTitle ||
+        !descriptionText ||
+        !membersSection ||
+        !membersHeading ||
+        !membersGrid ||
+        !programSection ||
+        !programHeading ||
+        !programContent
+      ) {
+        return;
+      }
+
+      const reduceMotion =
+        window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches;
 
       context = gsap.context(() => {
         const memberCards =
           gsap.utils.toArray<HTMLElement>(
             '[data-member-card]',
-            membersGridElement
+            membersGrid
           );
 
         const memberCardInners =
           gsap.utils.toArray<HTMLElement>(
             '[data-member-card-inner]',
-            membersGridElement
+            membersGrid
           );
 
         const heroTextElements = [
-          firstTitleElement,
-          secondTitleElement,
-          descriptionElement
+          firstTitle,
+          secondTitle,
+          descriptionText
         ].filter(
-          (element): element is HTMLElement =>
+          (
+            element
+          ): element is HTMLElement =>
             element !== undefined
         );
 
         if (reduceMotion) {
           gsap.set(
             [
-              glowElement,
-              decorationElement,
+              glow,
+              decoration,
               ...heroTextElements,
-              membersHeadingElement,
-              programHeadingElement,
-              programContentElement,
+              membersHeading,
+              programHeading,
+              programContent,
               ...memberCards,
               ...memberCardInners
             ],
@@ -357,27 +407,27 @@
           return;
         }
 
-        gsap.set(glowElement, {
+        gsap.set(glow, {
           opacity: 0,
           scale: 0.65
         });
 
-        gsap.set(decorationElement, {
+        gsap.set(decoration, {
           opacity: 0,
           x: 100,
           rotate: 25,
           scale: 0.8
         });
 
-        gsap.set(firstTitleElement, {
+        gsap.set(firstTitle, {
           y: 70,
           opacity: 0,
           scale: 0.92,
           filter: 'blur(12px)'
         });
 
-        if (secondTitleElement) {
-          gsap.set(secondTitleElement, {
+        if (secondTitle) {
+          gsap.set(secondTitle, {
             y: 75,
             opacity: 0,
             scale: 0.92,
@@ -385,26 +435,27 @@
           });
         }
 
-        gsap.set(descriptionElement, {
+        gsap.set(descriptionText, {
           y: 45,
           opacity: 0,
           filter: 'blur(7px)'
         });
 
-        const heroTimeline = gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
-          scrollTrigger: {
-            trigger: sectionElement,
-            start: 'top 88%',
-            once: true
-          }
-        });
+        const heroTimeline =
+          gsap.timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 88%',
+              once: true
+            }
+          });
 
         heroTimeline
           .to(
-            glowElement,
+            glow,
             {
               opacity: 1,
               scale: 1,
@@ -413,7 +464,7 @@
             0
           )
           .to(
-            decorationElement,
+            decoration,
             {
               opacity: 1,
               x: 0,
@@ -424,7 +475,7 @@
             0
           )
           .to(
-            firstTitleElement,
+            firstTitle,
             {
               y: 0,
               opacity: 1,
@@ -435,9 +486,9 @@
             0.15
           );
 
-        if (secondTitleElement) {
+        if (secondTitle) {
           heroTimeline.to(
-            secondTitleElement,
+            secondTitle,
             {
               y: 0,
               opacity: 1,
@@ -451,7 +502,7 @@
 
         heroTimeline
           .to(
-            descriptionElement,
+            descriptionText,
             {
               y: 0,
               opacity: 1,
@@ -465,7 +516,7 @@
               'opacity,transform,filter'
           });
 
-        gsap.set(membersHeadingElement, {
+        gsap.set(membersHeading, {
           y: 55,
           opacity: 0,
           scale: 0.94,
@@ -480,23 +531,25 @@
 
         gsap.set(memberCardInners, {
           rotateY: 180,
-          transformOrigin: 'center center',
+          transformOrigin:
+            'center center',
           transformPerspective: 1200
         });
 
-        const membersTimeline = gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
-          scrollTrigger: {
-            trigger: membersSectionElement,
-            start: 'top 80%',
-            once: true
-          }
-        });
+        const membersTimeline =
+          gsap.timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: membersSection,
+              start: 'top 80%',
+              once: true
+            }
+          });
 
         membersTimeline
-          .to(membersHeadingElement, {
+          .to(membersHeading, {
             y: 0,
             opacity: 1,
             scale: 1,
@@ -526,7 +579,7 @@
           )
           .set(
             [
-              membersHeadingElement,
+              membersHeading,
               ...memberCards,
               ...memberCardInners
             ],
@@ -536,32 +589,33 @@
             }
           );
 
-        gsap.set(programHeadingElement, {
+        gsap.set(programHeading, {
           y: 55,
           opacity: 0,
           scale: 0.94,
           filter: 'blur(8px)'
         });
 
-        gsap.set(programContentElement, {
+        gsap.set(programContent, {
           y: 70,
           opacity: 0,
           scale: 0.98
         });
 
-        const programTimeline = gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
-          scrollTrigger: {
-            trigger: programSectionElement,
-            start: 'top 80%',
-            once: true
-          }
-        });
+        const programTimeline =
+          gsap.timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: programSection,
+              start: 'top 80%',
+              once: true
+            }
+          });
 
         programTimeline
-          .to(programHeadingElement, {
+          .to(programHeading, {
             y: 0,
             opacity: 1,
             scale: 1,
@@ -569,7 +623,7 @@
             duration: 0.85
           })
           .to(
-            programContentElement,
+            programContent,
             {
               y: 0,
               opacity: 1,
@@ -580,32 +634,35 @@
           )
           .set(
             [
-              programHeadingElement,
-              programContentElement
+              programHeading,
+              programContent
             ],
             {
               clearProps:
                 'opacity,transform,filter'
             }
           );
-      }, sectionElement);
+      }, section);
 
       ScrollTrigger.refresh();
 
-      document.documentElement.style.scrollBehavior =
+      document.documentElement.style
+        .scrollBehavior =
         previousScrollBehavior;
     }
 
     forceScrollToTop();
 
-    const firstFrame = requestAnimationFrame(() => {
-      forceScrollToTop();
-
-      secondFrame = requestAnimationFrame(() => {
+    const firstFrame =
+      requestAnimationFrame(() => {
         forceScrollToTop();
-        setupAnimations();
+
+        secondFrame =
+          requestAnimationFrame(() => {
+            forceScrollToTop();
+            setupAnimations();
+          });
       });
-    });
 
     return () => {
       cancelAnimationFrame(firstFrame);
@@ -616,14 +673,15 @@
       window.history.scrollRestoration =
         previousScrollRestoration;
 
-      document.documentElement.style.scrollBehavior =
+      document.documentElement.style
+        .scrollBehavior =
         previousScrollBehavior;
     };
   });
 </script>
 
 <svelte:head>
-  <title>{title}</title>
+  <title>{title} | BEM UNAIR</title>
 
   <meta
     name="description"
@@ -635,14 +693,13 @@
   bind:this={sectionElement}
   class="
     relative min-h-screen overflow-hidden
-    bg-gradient-to-b
+    bg-linear-to-b
     from-blue-950
     via-blue-400
     to-blue-50
-    pb-28 pt-14
-    sm:pt-20
-    lg:pt-28
-    lg:pb-36 
+    px-5 pb-28 pt-14
+    sm:px-8 sm:pt-20
+    lg:px-12 lg:pb-36 lg:pt-28
   "
 >
   <div
@@ -650,7 +707,7 @@
     class="
       pointer-events-none absolute
       left-1/2 top-8
-      h-[500px] w-[900px]
+      h-125 w-225
       -translate-x-1/2
       rounded-full
       bg-blue-300/10
@@ -721,7 +778,7 @@
       <p
         bind:this={descriptionElement}
         class="
-          mx-auto mt-8 max-w-[70%]
+          mx-auto mt-8 max-w-4xl
           text-sm leading-6 font-medium
           text-white
           drop-shadow-[0_2px_2px_rgba(0,0,0,0.55)]
@@ -773,20 +830,32 @@
           lg:gap-14
         "
       >
-        {#each members as member (member.id)}
-          <div
-            class={member.featured
-              ? 'order-first md:order-none'
-              : ''}
+        {#if members.length > 0}
+          {#each members as member (member.id)}
+            <div
+              class={member.featured
+                ? 'md:col-start-2 md:row-start-1'
+                : ''}
+            >
+              <MemberCard
+                role={member.role}
+                title={member.title}
+                image={member.image}
+                featured={member.featured}
+              />
+            </div>
+          {/each}
+        {:else}
+          <p
+            class="
+              col-span-full py-12
+              text-base font-semibold
+              text-white
+            "
           >
-            <MemberCard
-              role={member.role}
-              title={member.title}
-              image={member.image}
-              featured={member.featured}
-            />
-          </div>
-        {/each}
+            Data struktur kementerian belum tersedia.
+          </p>
+        {/if}
       </div>
     </div>
 
@@ -814,16 +883,57 @@
         bind:this={programContentElement}
         class="mt-12 w-full"
       >
-        <ListProker
-          {programs}
-          pageSize={8}
-          queryKey="prokerPage"
-        />
+        {#if programs.length > 0}
+          <ListProker
+            {programs}
+            pageSize={8}
+            queryKey="prokerPage"
+          />
+        {:else}
+          <p
+            class="
+              py-16 text-center
+              text-base font-semibold
+              text-blue-950/70
+            "
+          >
+            Program kerja belum tersedia.
+          </p>
+        {/if}
       </div>
     </div>
   </div>
 
-   <img src="/menko/b-3-left.png" alt="bintang 3 left" class="size-28 md:size-40 absolute top-1/3 left-0" />
-  <img src="/menko/b-3-left.png" alt="bintang 3 left" class="size-28 md:size-40 absolute top-2/3 left-0" />
-  <img src="/menko/b-3-right.png" alt="bintang 3 right" class="size-28 md:size-40 absolute top-1/5 right-0" />
+  <img
+    src="/menko/b-3-left.png"
+    alt=""
+    class="
+      pointer-events-none absolute
+      left-0 top-1/3
+      size-28
+      md:size-40
+    "
+  />
+
+  <img
+    src="/menko/b-3-left.png"
+    alt=""
+    class="
+      pointer-events-none absolute
+      left-0 top-2/3
+      size-28
+      md:size-40
+    "
+  />
+
+  <img
+    src="/menko/b-3-right.png"
+    alt=""
+    class="
+      pointer-events-none absolute
+      right-0 top-1/5
+      size-28
+      md:size-40
+    "
+  />
 </section>

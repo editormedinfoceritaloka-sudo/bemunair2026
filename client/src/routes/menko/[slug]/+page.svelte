@@ -2,42 +2,75 @@
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+  import type { PageData } from './$types';
   import MenkoCard from '$lib/components/menko/MenkoCard.svelte';
   import KementrianCard from '$lib/components/menko/KementrianCard.svelte';
 
-  const kementrian = [
-    {
-      title: 'Kementerian Komunikasi dan Informasi',
-      slug: 'komunikasi-dan-informasi',
-      logo: '/logo/logo-kabinet.png'
-    },
-    {
-      title: 'Kementerian Seni dan Budaya',
-      slug: 'seni-dan-budaya',
-      logo: '/logo/logo-kabinet.png'
-    },
-    {
-      title: 'Kementerian Pengabdian Masyarakat',
-      slug: 'pengabdian-masyarakat',
-      logo: '/logo/logo-kabinet.png'
-    },
-    {
-      title: 'Kementerian Sosial dan Politik',
-      slug: 'sosial-dan-politik',
-      logo: '/logo/logo-kabinet.png'
-    },
-    {
-      title: 'Kementerian Pengembangan Mahasiswa',
-      slug: 'pengembangan-mahasiswa',
-      logo: '/logo/logo-kabinet.png'
-    },
-    {
-      title: 'Kementerian Hubungan Luar',
-      slug: 'hubungan-luar',
-      logo: '/logo/logo-kabinet.png'
-    }
-  ];
+  let {
+    data
+  }: {
+    data: PageData;
+  } = $props();
+
+  const unit = $derived(data.unit);
+
+  const leader = $derived(
+    unit.members?.find((member) => member.is_leader) ??
+      unit.members?.[0]
+  );
+
+  const headingPrefix = $derived(
+    unit.unit_type === 'MENKO'
+      ? 'Menteri Koordinator'
+      : unit.short_name ?? unit.name
+  );
+
+  const headingSuffix = $derived(
+    unit.unit_type === 'MENKO'
+      ? unit.name
+          .replace(/^Kementerian Koordinator\s*/i, '')
+          .trim()
+      : ''
+  );
+
+  const leaderName = $derived(
+    leader?.name ?? unit.short_name ?? unit.name
+  );
+
+  const leaderPosition = $derived(
+    leader?.position ?? unit.name
+  );
+
+  const leaderImage = $derived(
+    leader?.photo?.url ??
+      leader?.photo?.thumbnail_url ??
+      unit.logo?.url ??
+      unit.logo?.thumbnail_url ??
+      '/menko/test.png'
+  );
+
+  const kementrian = $derived.by(() => {
+    return [...(unit.children ?? [])]
+      .filter(
+        (child) =>
+          child.is_active !== false &&
+          child.is_published !== false
+      )
+      .sort(
+        (first, second) =>
+          (first.display_order ?? 0) -
+          (second.display_order ?? 0)
+      )
+      .map((child) => ({
+        id: child.id,
+        title: child.name,
+        slug: child.slug,
+        logo:
+          child.logo?.url ??
+          child.logo?.thumbnail_url ??
+          '/logo/logo-kabinet.png'
+      }));
+  });
 
   let sectionElement!: HTMLElement;
   let glowElement!: HTMLDivElement;
@@ -237,16 +270,17 @@
           transformOrigin: 'center bottom'
         });
 
-        gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
-          scrollTrigger: {
-            trigger: menkoElement,
-            start: 'top 82%',
-            once: true
-          }
-        })
+        gsap
+          .timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: menkoElement,
+              start: 'top 82%',
+              once: true
+            }
+          })
           .to(menkoElement, {
             y: 0,
             opacity: 1,
@@ -276,16 +310,17 @@
           transformOrigin: 'center bottom'
         });
 
-        gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
-          scrollTrigger: {
-            trigger: kementrianSectionElement,
-            start: 'top 80%',
-            once: true
-          }
-        })
+        gsap
+          .timeline({
+            defaults: {
+              ease: 'power3.out'
+            },
+            scrollTrigger: {
+              trigger: kementrianSectionElement,
+              start: 'top 80%',
+              once: true
+            }
+          })
           .to(kementrianHeadingElement, {
             y: 0,
             opacity: 1,
@@ -351,22 +386,24 @@
 </script>
 
 <svelte:head>
-  <title>Menteri Koordinator Pergerakan</title>
+  <title>{leaderPosition} | BEM UNAIR</title>
+  <meta
+    name="description"
+    content={unit.description}
+  />
 </svelte:head>
 
 <section
   bind:this={sectionElement}
   class="
     relative min-h-screen overflow-hidden
-    relative
     bg-gradient-to-b
     from-blue-800
     via-blue-600
     to-blue-50
-    pb-28 pt-14
-    sm:pt-20
-    lg:pt-28
-    lg:px-12 lg:pb-36
+    px-5 pb-28 pt-14
+    sm:px-8 sm:pt-20
+    lg:px-12 lg:pb-36 lg:pt-28
   "
 >
   <div
@@ -417,8 +454,13 @@
           lg:text-7xl
         "
       >
-        Menteri Koordinator
-        <span class="block">Pergerakan</span>
+        {headingPrefix}
+
+        {#if headingSuffix}
+          <span class="block">
+            {headingSuffix}
+          </span>
+        {/if}
       </h1>
 
       <p
@@ -431,9 +473,7 @@
           sm:text-base sm:leading-7
         "
       >
-        Pendayagunaan Aparatur Kabinet (PAK) merupakan salah satu unit strategis
-        dalam Pengurus Inti Badan Eksekutif Mahasiswa Universitas Airlangga 2026
-        yang berperan mengelola internal organisasi.
+        {unit.description}
       </p>
     </header>
 
@@ -442,9 +482,9 @@
       class="mt-10 flex justify-center sm:mt-12"
     >
       <MenkoCard
-        name="Teddy Indra Wijaya"
-        position="Menteri Koordinator Pergerakan"
-        image="/menko/test.png"
+        name={leaderName}
+        position={leaderPosition}
+        image={leaderImage}
       />
     </div>
 
@@ -483,7 +523,7 @@
           lg:gap-10
         "
       >
-        {#each kementrian as item (item.slug)}
+        {#each kementrian as item (item.id)}
           <KementrianCard
             title={item.title}
             slug={item.slug}
@@ -497,21 +537,33 @@
   <img
     bind:this={leftStarOneElement}
     src="/menko/b-3-left.png"
-    alt="bintang 3 left"
-    class="size-28 md:size-40 absolute top-1/3 left-0"
+    alt=""
+    class="
+      absolute left-0 top-1/3
+      size-28
+      md:size-40
+    "
   />
 
   <img
     bind:this={leftStarTwoElement}
     src="/menko/b-3-left.png"
-    alt="bintang 3 left"
-    class="size-28 md:size-40 absolute top-2/3 left-0"
+    alt=""
+    class="
+      absolute left-0 top-2/3
+      size-28
+      md:size-40
+    "
   />
 
   <img
     bind:this={rightStarElement}
     src="/menko/b-3-right.png"
-    alt="bintang 3 right"
-    class="size-28 md:size-40 absolute top-1/5 right-0"
+    alt=""
+    class="
+      absolute right-0 top-1/5
+      size-28
+      md:size-40
+    "
   />
 </section>

@@ -3,6 +3,9 @@
   import { gsap } from 'gsap';
   import LogoCarrousel from './cabinet/LogoCarrousel.svelte';
   import MenkoSlider from './cabinet/MenkoSlider.svelte';
+  import type { Cabinet } from '$lib/types';
+
+  let { cabinet }:{ cabinet: Cabinet } = $props();
 
   let sectionElement!: HTMLElement;
   let headingElement!: HTMLDivElement;
@@ -191,7 +194,7 @@
         md:mt-10
       "
     >
-      <LogoCarrousel />
+      <LogoCarrousel kementrian={cabinet} />
     </div>
 
     <div
@@ -203,7 +206,7 @@
         md:mt-16
       "
     >
-      <MenkoSlider autoplayDelay={3000} />
+      <MenkoSlider autoplayDelay={3000}  kemenkoan={cabinet.kemenkoan} />
     </div>
   </div>
 </section>
