@@ -14,6 +14,26 @@
       page.url.pathname.startsWith('/admin/')
   );
 
+  const title = $derived(
+    page.data.seo?.title ??
+      'BEM Universitas Airlangga 2026 | Kabinet Cerita Loka'
+  );
+
+  const description = $derived(
+    page.data.seo?.description ??
+      'Website resmi BEM Universitas Airlangga 2026 Kabinet Cerita Loka.'
+  );
+
+  const image = $derived(
+    page.data.seo?.image
+      ? new URL(page.data.seo.image, page.url.origin).href
+      : `${page.url.origin}/og-image.png`
+  );
+
+  const canonical = $derived(
+    `${page.url.origin}${page.url.pathname}`
+  );
+
   $effect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -46,6 +66,87 @@
     );
   });
 </script>
+
+<svelte:head>
+  <title>{title}</title>
+
+  <meta
+    name="description"
+    content={description}
+  />
+
+  <meta
+    name="robots"
+    content={isAdminRoute ? 'noindex, nofollow' : 'index, follow'}
+  />
+
+  <meta
+    name="theme-color"
+    content="#1d4ed8"
+  />
+
+  {#if !isAdminRoute}
+    <link
+      rel="canonical"
+      href={canonical}
+    />
+
+    <meta
+      property="og:title"
+      content={title}
+    />
+
+    <meta
+      property="og:description"
+      content={description}
+    />
+
+    <meta
+      property="og:type"
+      content="website"
+    />
+
+    <meta
+      property="og:site_name"
+      content="BEM Universitas Airlangga"
+    />
+
+    <meta
+      property="og:locale"
+      content="id_ID"
+    />
+
+    <meta
+      property="og:url"
+      content={canonical}
+    />
+
+    <meta
+      property="og:image"
+      content={image}
+    />
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+
+    <meta
+      name="twitter:title"
+      content={title}
+    />
+
+    <meta
+      name="twitter:description"
+      content={description}
+    />
+
+    <meta
+      name="twitter:image"
+      content={image}
+    />
+  {/if}
+</svelte:head>
 
 <div class="app">
   {#if !isAdminRoute}
