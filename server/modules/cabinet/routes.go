@@ -17,6 +17,7 @@ func RegisterRoutes(api *gin.RouterGroup, dbRepository repository.Repository, jw
 	public.GET("/units/:slug", c.PublicUnit)
 	public.GET("/units/:slug/programs", c.PublicPrograms)
 	public.GET("/units/:slug/programs/:programSlug", c.PublicProgram)
+	public.GET("/programs/:programSlug", c.PublicProgramBySlug)
 
 	authenticated := api.Group("", middlewares.Auth(jwtSecret), middlewares.AuthenticatedAdmin())
 	adminCabinets := authenticated.Group("/admin/cabinet-terms")

@@ -34,6 +34,12 @@ Mengambil detail program kerja yang dipublikasikan, termasuk milestone dan dokum
 
 Program tanpa dokumentasi tetap mengembalikan `documentations: []`; frontend menampilkan empty state “Coming Soon”.
 
+### GET /api/v1/cabinet/programs/:programSlug
+
+Mengambil detail program kerja yang dipublikasikan hanya berdasarkan slug program, tanpa perlu slug unit. Response sama dengan endpoint `GET /api/v1/cabinet/units/:slug/programs/:programSlug` (termasuk milestone dan dokumentasi yang aktif).
+
+Endpoint lama `GET /api/v1/cabinet/units/:slug/programs/:programSlug` tetap dipertahankan untuk kompatibilitas.
+
 ## Response Shape
 
 Unit organisasi memakai `unit_type` `KEMENKOAN` atau `KEMENTERIAN`. Kementerian dapat memiliki profil `MINISTER` dan `DIRECTOR_GENERAL`; UI detail Kementerian menampilkan dua posisi tersebut.
@@ -105,7 +111,7 @@ Status program kerja yang didukung: `DRAFT`, `PLANNED`, `ONGOING`, `COMPLETED`, 
 - Kementerian wajib memiliki parent Kemenkoan dari kabinet yang sama.
 - Hierarchy cycle ditolak.
 - Slug unit unik dalam satu kabinet.
-- Program kerja memiliki slug unik dalam satu unit.
+- Slug program unik di seluruh program kerja (global), divalidasi di service. Saat membuat program tanpa slug, slug dihasilkan otomatis dari nama + timestamp, misal `cerita-visual-20260807-153045`. Saat update dengan slug kosong, slug lama dipertahankan.
 - Data unpublished tidak muncul di public API.
 - Menghapus media yang masih direferensikan perlu dilakukan dengan menghapus relasi terlebih dahulu.
 

@@ -30,6 +30,7 @@ type Repository interface {
 	UpdateMember(value *entities.OrganizationMember) error
 	Programs(unitID uint64, page, perPage int, public bool) (ListResult[entities.WorkProgram], error)
 	ProgramBySlug(unitSlug, programSlug string, public bool) (*entities.WorkProgram, error)
+	ProgramBySlugOnly(programSlug string, public bool) (*entities.WorkProgram, error)
 	CreateProgram(value *entities.WorkProgram) error
 	UpdateProgram(value *entities.WorkProgram) error
 	CreateMilestone(value *entities.WorkProgramMilestone) error
@@ -284,6 +285,19 @@ func (r *cabinetRepository) Programs(unitID uint64, page, perPage int, public bo
 
 func (r *cabinetRepository) ProgramBySlug(unitSlug, programSlug string, public bool) (*entities.WorkProgram, error) {
 	query := r.db.Joins("JOIN ministries ON ministries.id = work_programs.ministry_id").Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").Where("ministries.slug = ? AND work_programs.slug = ?", unitSlug, programSlug)
+	if public {
+		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ?", true, true, true, true, true)
+	}
+	var value entities.WorkProgram
+	err := query.Preload("Ministry").Preload("CoverMedia").Preload("Milestones", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations.MediaAsset").First(&value).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &value, err
+}
+
+func (r *cabinetRepository) ProgramBySlugOnly(programSlug string, public bool) (*entities.WorkProgram, error) {
+	query := r.db.Joins("JOIN ministries ON ministries.id = work_programs.ministry_id").Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").Where("work_programs.slug = ?", programSlug)
 	if public {
 		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ?", true, true, true, true, true)
 	}

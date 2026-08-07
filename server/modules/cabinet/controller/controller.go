@@ -56,6 +56,14 @@ func (c *Controller) PublicProgram(ctx *gin.Context) {
 	}
 	response.OK(ctx, "Detail program kerja", value)
 }
+func (c *Controller) PublicProgramBySlug(ctx *gin.Context) {
+	value, err := c.service.PublicProgramBySlug(ctx.Param("programSlug"))
+	if err != nil || value == nil {
+		response.Error(ctx, http.StatusNotFound, response.NotFound, "Program kerja tidak ditemukan")
+		return
+	}
+	response.OK(ctx, "Detail program kerja", value)
+}
 
 func (c *Controller) ListCabinets(ctx *gin.Context) {
 	result, err := c.service.Cabinets(queryInt(ctx, "page", 1), queryInt(ctx, "per_page", 20))

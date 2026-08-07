@@ -23,6 +23,7 @@ type Service interface {
 	PublicUnit(slug string) (*dto.UnitResponse, error)
 	PublicPrograms(slug string, page int) (repository.ListResult[dto.ProgramResponse], error)
 	PublicProgram(unitSlug, programSlug string) (*dto.ProgramResponse, error)
+	PublicProgramBySlug(programSlug string) (*dto.ProgramResponse, error)
 	Cabinets(page, perPage int) (repository.ListResult[dto.CabinetResponse], error)
 	CreateCabinet(req dto.CabinetRequest) (*dto.CabinetResponse, error)
 	UpdateCabinet(id uint64, req dto.CabinetRequest) (*dto.CabinetResponse, error)
@@ -108,6 +109,15 @@ func (s *cabinetService) PublicPrograms(slug string, page int) (repository.ListR
 
 func (s *cabinetService) PublicProgram(unitSlug, programSlug string) (*dto.ProgramResponse, error) {
 	program, err := s.repo.ProgramBySlug(unitSlug, programSlug, true)
+	if err != nil || program == nil {
+		return nil, err
+	}
+	result := programToDTO(*program)
+	return &result, nil
+}
+
+func (s *cabinetService) PublicProgramBySlug(programSlug string) (*dto.ProgramResponse, error) {
+	program, err := s.repo.ProgramBySlugOnly(programSlug, true)
 	if err != nil || program == nil {
 		return nil, err
 	}
@@ -369,6 +379,12 @@ func (s *cabinetService) CreateProgram(req dto.ProgramRequest, actor *middleware
 		return nil, err
 	}
 	value := programFromRequest(req)
+	if strings.TrimSpace(req.Slug) == "" {
+		value.Slug = utils.Slugify(value.Name) + "-" + time.Now().Format("20060102-150405")
+	}
+	if err := s.validateProgramSlugUnique(value.Slug, 0); err != nil {
+		return nil, err
+	}
 	if err := s.repo.CreateProgram(value); err != nil {
 		return nil, err
 	}
@@ -395,11 +411,33 @@ func (s *cabinetService) UpdateProgram(id uint64, req dto.ProgramRequest, actor 
 	updated.CreatedAt = value.CreatedAt
 	updated.CreatedBy = value.CreatedBy
 	updated.PublishedAt = value.PublishedAt
+	if strings.TrimSpace(req.Slug) == "" {
+		updated.Slug = value.Slug
+	} else if err := s.validateProgramSlugUnique(updated.Slug, id); err != nil {
+		return nil, err
+	}
 	if err := s.repo.UpdateProgram(updated); err != nil {
 		return nil, err
 	}
 	result := programToDTO(*updated)
 	return &result, nil
+}
+
+// validateProgramSlugUnique memastikan slug program tidak dipakai program lain.
+// excludeID diisi saat update agar program itu sendiri tidak dihitung.
+func (s *cabinetService) validateProgramSlugUnique(slug string, excludeID uint64) error {
+	query := s.repo.DB().Model(&entities.WorkProgram{}).Where("slug = ?", slug)
+	if excludeID > 0 {
+		query = query.Where("id <> ?", excludeID)
+	}
+	var count int64
+	if err := query.Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("slug program sudah digunakan")
+	}
+	return nil
 }
 
 func (s *cabinetService) PublishProgram(id uint64, published bool, actor *middlewares.Claims) (*dto.ProgramResponse, error) {
