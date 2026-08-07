@@ -1,159 +1,261 @@
 <script lang="ts">
-  import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { gsap } from 'gsap';
 
-  import TimelinePelaksanaan from '$lib/components/program-kerja/TimelinePelaksanaan.svelte';
-  import Documentation from '$lib/components/program-kerja/Documentation.svelte';
+	import TimelinePelaksanaan from '$lib/components/program-kerja/TimelinePelaksanaan.svelte';
+	import Documentation from '$lib/components/program-kerja/Documentation.svelte';
 
-  const slug = $derived(
-    page.params.slug
-  );
+	import type { PageData } from './$types';
 
-  let title = $state(
-    'Penyusunan Standart Operational Procedure'
-  );
+	export let data: PageData;
 
-  let description = $state(
-    'Setiap kementerian atau divisi pasti punya cara kerjanya masing-masing. Tanpa adanya standardisasi, ego sektoral mudah muncul, dan koordinasi antar-divisi sering kali terhambat karena perbedaan persepsi alur kerja. Maka dari itu, SOP merupakan salah satu langkah untuk menjaga keberlangsungan roda organisasi BEM UNAIR 2026 selama satu periode kedepan.'
-  );
+	let pageElement: HTMLElement;
+	let titleElement: HTMLHeadingElement;
+	let descriptionElement: HTMLParagraphElement;
+	let timelineElement: HTMLDivElement;
+	let documentationElement: HTMLDivElement;
 
-  let startDate = $state(
-    '2026-01-15'
-  );
+	const monthNames = [
+		'Januari',
+		'Februari',
+		'Maret',
+		'April',
+		'Mei',
+		'Juni',
+		'Juli',
+		'Agustus',
+		'September',
+		'Oktober',
+		'November',
+		'Desember'
+	];
 
-  let endDate = $state<
-    string | null
-  >('2026-01-18');
+	function formatProgramDate(value?: string | null): string {
+		if (!value) {
+			return '';
+		}
 
-  const testImages = [
-    '/program-kerja/test-1.png',
-    '/program-kerja/test-2.png',
-    '/program-kerja/test-3.jpeg'
-  ];
+		const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
 
-  const titleLines = $derived.by(() => {
-    const words = title
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
+		if (!match) {
+			return value;
+		}
 
-    if (words.length === 0) {
-      return {
-        first: '',
-        second: ''
-      };
-    }
+		const month = Number(match[2]);
+		const day = Number(match[3]);
 
-    if (words.length === 1) {
-      return {
-        first: words[0],
-        second: ''
-      };
-    }
+		if (
+			Number.isNaN(day) ||
+			Number.isNaN(month) ||
+			month < 1 ||
+			month > 12
+		) {
+			return value;
+		}
 
-    const splitIndex = Math.floor(
-      words.length / 2
-    );
+		return `${day} ${monthNames[month - 1]}`;
+	}
 
-    return {
-      first: words
-        .slice(0, splitIndex)
-        .join(' '),
+	$: program = data.program;
 
-      second: words
-        .slice(splitIndex)
-        .join(' ')
-    };
-  });
+	$: titleLines = (() => {
+		const words = program.name.trim().split(/\s+/);
+
+		if (words.length <= 2) {
+			return {
+				first: program.name,
+				second: ''
+			};
+		}
+
+		const midpoint = Math.ceil(words.length / 2);
+
+		return {
+			first: words.slice(0, midpoint).join(' '),
+			second: words.slice(midpoint).join(' ')
+		};
+	})();
+
+	$: documentationImages = [...(program.documentations ?? [])]
+		.sort((a, b) => a.display_order - b.display_order)
+		.map((documentation) => documentation.media?.url)
+		.filter((url): url is string => Boolean(url));
+
+	$: startDate = formatProgramDate(program.start_date);
+	$: endDate = formatProgramDate(program.end_date);
+
+	onMount(() => {
+		const reduceMotion = window.matchMedia(
+			'(prefers-reduced-motion: reduce)'
+		).matches;
+
+		if (reduceMotion) {
+			return;
+		}
+
+		const context = gsap.context(() => {
+			const timeline = gsap.timeline({
+				defaults: {
+					ease: 'power3.out'
+				}
+			});
+
+			if (titleElement) {
+				timeline.from(titleElement, {
+					opacity: 0,
+					y: 50,
+					duration: 0.9
+				});
+			}
+
+			if (descriptionElement) {
+				timeline.from(
+					descriptionElement,
+					{
+						opacity: 0,
+						y: 24,
+						duration: 0.7
+					},
+					'-=0.45'
+				);
+			}
+
+			if (timelineElement) {
+				timeline.from(
+					timelineElement,
+					{
+						opacity: 0,
+						y: 35,
+						duration: 0.8
+					},
+					'-=0.35'
+				);
+			}
+
+			if (documentationElement) {
+				timeline.from(
+					documentationElement,
+					{
+						opacity: 0,
+						y: 35,
+						duration: 0.8
+					},
+					'-=0.35'
+				);
+			}
+		}, pageElement);
+
+		return () => {
+			context.revert();
+		};
+	});
 </script>
 
 <svelte:head>
-  <title>{title}</title>
+	<title>{program.name} | BEM UNAIR 2026</title>
 
-  <meta
-    name="description"
-    content={description}
-  />
-
-  <meta
-    name="program-kerja-slug"
-    content={slug}
-  />
+	<meta
+		name="description"
+		content={program.short_description ??
+			program.description ??
+			`Program kerja ${program.name}`}
+	/>
 </svelte:head>
 
-<section
-  class="
-    min-h-screen bg-blue-50
-    pb-28 pt-14
-    sm:pt-20
-    lg:pb-36
-    lg:pt-28
-  "
+<main
+	bind:this={pageElement}
+	class="
+		min-h-screen w-full overflow-hidden
+		bg-linear-to-b
+		from-blue-50 via-white to-blue-50
+	"
 >
-  <div
-    class="
-      mx-auto flex w-full max-w-7xl
-      flex-col items-center
-      px-5 text-center
-      sm:px-8
-      lg:px-12
-    "
-  >
-    <h1
-      class="
-        text-[clamp(1.9rem,5.3vw,4.7rem)]
-        leading-[0.92] font-black
-        tracking-[-0.065em]
-      "
-    >
-      <span
-        class="
-          block text-blue-300
-          [-webkit-text-stroke:2px_white]
-          [paint-order:stroke_fill]
-          drop-shadow-[0_10px_0_rgba(30,64,175,0.55)]
-          sm:[-webkit-text-stroke:3px_white]
-        "
-      >
-        {titleLines.first}
-      </span>
+	<section
+		class="
+			mx-auto flex min-h-screen
+			w-full max-w-7xl
+			flex-col items-center
+			px-6 py-28
+			text-center
+			sm:px-8
+			md:py-32
+			lg:px-12
+		"
+	>
+		<h1
+			bind:this={titleElement}
+			class="
+				max-w-6xl
+				text-[clamp(3rem,8vw,7.5rem)]
+				font-black uppercase
+				leading-[0.85]
+				tracking-[-0.06em]
+			"
+		>
+			<span
+				class="
+					block
+					text-blue-400
+					[-webkit-text-stroke:2px_white]
+					[paint-order:stroke_fill]
+					drop-shadow-[0_10px_0_rgba(5,34,70,0.78)]
+					sm:[-webkit-text-stroke:3px_white]
+				"
+			>
+				{titleLines.first}
+			</span>
 
-      {#if titleLines.second}
-        <span
-          class="
-            relative left-[0.55em]
-            block text-blue-600
-            [-webkit-text-stroke:2px_white]
-            [paint-order:stroke_fill]
-            drop-shadow-[0_10px_0_rgba(5,34,70,0.78)]
-            sm:[-webkit-text-stroke:3px_white]
-          "
-        >
-          {titleLines.second}
-        </span>
-      {/if}
-    </h1>
+			{#if titleLines.second}
+				<span
+					class="
+						relative left-[0.55em]
+						block
+						text-blue-600
+						[-webkit-text-stroke:2px_white]
+						[paint-order:stroke_fill]
+						drop-shadow-[0_10px_0_rgba(5,34,70,0.78)]
+						sm:[-webkit-text-stroke:3px_white]
+					"
+				>
+					{titleLines.second}
+				</span>
+			{/if}
+		</h1>
 
-    <p
-      class="
-        mt-14 max-w-4xl
-        text-lg font-semibold
-        text-blue-950/70
-      "
-    >
-      {description}
-    </p>
+		{#if program.description}
+			<p
+				bind:this={descriptionElement}
+				class="
+					mt-14 max-w-4xl
+					text-base font-semibold
+					leading-relaxed
+					text-blue-950/70
+					sm:text-lg
+				"
+			>
+				{program.description}
+			</p>
+		{/if}
 
-    <div class="mt-16 w-full">
-      <TimelinePelaksanaan
-        {startDate}
-        {endDate}
-      />
-    </div>
+		{#if startDate && endDate}
+			<div
+				bind:this={timelineElement}
+				class="mt-16 w-full"
+			>
+				<TimelinePelaksanaan
+					{startDate}
+					{endDate}
+				/>
+			</div>
+		{/if}
 
-    <div class="mt-20 w-full">
-      <Documentation
-        images={testImages}
-      />
-    </div>
-  </div>
-</section>
+		{#if documentationImages.length > 0}
+			<div
+				bind:this={documentationElement}
+				class="mt-20 w-full"
+			>
+				<Documentation images={documentationImages} />
+			</div>
+		{/if}
+	</section>
+</main>

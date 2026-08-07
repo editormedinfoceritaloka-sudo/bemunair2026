@@ -100,3 +100,28 @@ export interface MediaSubmissionSetting { ServiceType?: string; service_type?: s
 export interface SubmissionHistory { id: number; event_type?: "STATUS_CHANGED" | "PJ_ASSIGNED" | "PJ_REASSIGNED"; actor?: UserSummary; from_status?: string; to_status?: string; from_pj?: UserSummary; to_pj?: UserSummary; note?: string; created_at: string }
 
 export interface LoginResult { token: string; user: User }
+
+
+export interface WorkProgramMedia {
+  id: number;
+  file_id: string;
+  url: string;
+  thumbnail_url?: string | null;
+  name: string;
+  alt_text: string;
+  caption?: string | null;
+  mime_type: string;
+  size_bytes: number;
+  purpose: string;
+  status: string;
+}
+
+export interface WorkProgramDocumentation {
+  id: number;
+  media: WorkProgramMedia;
+  title?: string | null;
+  caption?: string | null;
+  taken_at?: string | null;
+  display_order: number;
+  is_cover: boolean;
+}
