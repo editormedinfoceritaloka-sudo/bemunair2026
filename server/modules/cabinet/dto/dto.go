@@ -128,6 +128,7 @@ type MemberResponse struct {
 	Photo        *MediaResponse `json:"photo,omitempty"`
 	DisplayOrder uint           `json:"display_order"`
 	IsLeader     bool           `json:"is_leader"`
+	IsActive     bool           `json:"is_active"`
 }
 
 type UnitResponse struct {
@@ -220,7 +221,7 @@ func mediaResponse(value *entities.MediaAsset) *MediaResponse {
 }
 
 func memberResponse(value entities.OrganizationMember) MemberResponse {
-	return MemberResponse{ID: value.ID, Name: value.Name, Position: value.Position, PositionType: value.PositionType, Biography: value.Biography, Quote: value.Quote, Photo: mediaResponse(value.PhotoMedia), DisplayOrder: value.DisplayOrder, IsLeader: value.IsLeader}
+	return MemberResponse{ID: value.ID, Name: value.Name, Position: value.Position, PositionType: value.PositionType, Biography: value.Biography, Quote: value.Quote, Photo: mediaResponse(value.PhotoMedia), DisplayOrder: value.DisplayOrder, IsLeader: value.IsLeader, IsActive: value.IsActive}
 }
 
 func unitResponse(value entities.Ministry) UnitResponse {

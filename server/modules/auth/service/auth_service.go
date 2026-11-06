@@ -64,7 +64,9 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, middlewares.Claims{
 		UserID: user.ID, Role: user.Role, MinistryID: user.MinistryID, Ministry: user.Ministry,
-		RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour))},
+		// Short-lived access token: 1h. TODO: add refresh-token issuance +
+		// /auth/refresh endpoint; current session keeps refresh out of scope.
+		RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour))},
 	})
 	signed, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {

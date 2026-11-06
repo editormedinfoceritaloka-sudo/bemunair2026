@@ -39,7 +39,7 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 	c := cron.New(cron.WithLocation(loc))
 	contentRepo := contentRepository.NewContentSubmissionRepository(db)
 	letterRepo := letterRepository.NewLetterSubmissionRepository(db)
-	_, _ = c.AddFunc("0 12 * * *", func() {
+	_, err = c.AddFunc("0 12 * * *", func() {
 		contentRows, err := contentRepo.ListPendingForReminder()
 		if err != nil {
 			log.Printf("cron content reminder error: %v", err)
@@ -76,6 +76,9 @@ func StartDailyCron(db *gorm.DB, wa pkg.WASender, cfg *config.Config) {
 			log.Printf("cron group reminder error: %v", notifyErr)
 		}
 	})
+	if err != nil {
+		log.Fatalf("cron: %v", err)
+	}
 	c.Start()
 }
 

@@ -65,6 +65,15 @@ func main() {
 	}
 
 	router := gin.New()
+	// Gin trusts no proxy by default here: this service is only ever reached
+	// through the nginx edge inside the compose network (never exposed
+	// directly in production), and nothing in this codebase currently relies
+	// on gin's ClientIP() helper for security decisions — the login throttle
+	// reads the raw TCP peer address itself instead. Leaving this unset trusts
+	// every proxy and lets a client's own X-Forwarded-For spoof c.ClientIP().
+	if err := router.SetTrustedProxies(nil); err != nil {
+		log.Fatalf("failed to configure trusted proxies: %v", err)
+	}
 	router.Use(middlewares.RequestLogger(), middlewares.Recovery(), middlewares.CORS())
 
 	userRepo := userRepository.NewUserRepository(db)

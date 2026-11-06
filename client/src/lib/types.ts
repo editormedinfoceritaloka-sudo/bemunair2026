@@ -1,10 +1,9 @@
 export type Role = 'ADMIN' | 'ADMIN_MEDINFO';
 export type SubmissionStatus = 'DRAFT' | 'SUBMITTED' | 'PENDING_REVIEW' | 'REVISION_REQUIRED' | 'REVISION_SUBMITTED' | 'APPROVED' | 'SCHEDULED' | 'PUBLISHED' | 'REJECTED' | 'COMPLETED' | 'PENDING' | 'IN_REVIEW';
-export type ArticleStatus = 'DRAFT' | 'PUBLISHED';
 
 export interface Meta { page: number; per_page: number; total: number; total_pages: number }
 export interface ApiErrorBody { code?: string; details?: unknown }
-export interface ApiEnvelope<T> { status: boolean; success?: boolean; message: string; data: T; meta?: Meta; error?: ApiErrorBody | string }
+export interface ApiEnvelope<T> { status?: boolean; success?: boolean; message: string; data: T; meta?: Meta; error?: ApiErrorBody | string }
 export interface User { id: number; name: string; email: string; role: Role; ministry_id?: number; ministry?: string; phone?: string }
 export type UserSummary = User
 
@@ -27,11 +26,8 @@ export interface LetterSubmission {
 
 export interface QueueItem { id: number; user_id: number; user?: UserSummary; position: number; is_current: boolean; is_busy: boolean; active_task_type?: "CONTENT" | "LETTER"; active_task_id?: number; active_request_code?: string; active_task_title?: string }
 export interface LetterTemplate { id: number; name: string; type: string; subject: string; body: string; media_asset_id?: number; file?: { id: number; url: string; name: string; mime_type: string; size_bytes: number }; download_url?: string; is_active: boolean; display_order: number; created_at: string; updated_at: string }
-export interface Article {
-  id: number; slug: string; title: string; excerpt?: string; body: string;
-  cover_image?: string; author_id: number; author?: { id: number; name: string };
-  status: ArticleStatus; published_at?: string; created_at: string; updated_at: string;
-}
+
+
 export interface Ministry { id: number; code: string; name: string; is_active: boolean; created_at: string; updated_at: string }
 export interface MediaAsset {
   id: number;
@@ -50,13 +46,19 @@ export interface MediaAsset {
 }
 export type OrganizationPositionType =
   | 'MENKO'
+  | 'MENTERI'
+  | 'DIRJEN'
+  | 'KABIRO'
+  | 'KEPALA'
+  | 'DEPUTI'
   | 'MINISTER'
   | 'DIRECTOR_GENERAL';
 
 export type OrganizationUnitType =
   | 'MENKO'
   | 'KEMENTERIAN'
-  | 'BPII';
+  | 'BPII'
+  | 'KEMENKOAN';
 
 export interface OrganizationMember {
   id: number;
@@ -96,7 +98,33 @@ export interface Milestone { id: number; title: string; description?: string; st
 export interface Documentation { id: number; media?: MediaAsset; title?: string; caption?: string; taken_at?: string; display_order: number; is_cover: boolean }
 export interface WorkProgram { id: number; ministry_id: number; ministry_name?: string; name: string; slug: string; short_description?: string; description?: string; objectives?: string; target_audience?: string; start_date?: string; end_date?: string; execution_month?: string; status: string; cover?: MediaAsset; display_order: number; is_featured: boolean; is_published: boolean; published_at?: string; milestones?: Milestone[]; documentations?: Documentation[] }
 export interface Cabinet { id: number; name: string; slug: string; tagline?: string; description?: string; logo?: MediaAsset; hero?: MediaAsset; period_start?: string; period_end?: string; is_active: boolean; is_published: boolean; meta_title?: string; meta_description?: string; kemenkoan?: OrganizationUnit[] }
-export interface MediaSubmissionSetting { ServiceType?: string; service_type?: string; SOPURL?: string; sop_url?: string; MinistryTemplateURL?: string; ministry_template_url?: string; BriefTemplateURL?: string; brief_template_url?: string; CaptionTemplateURL?: string; caption_template_url?: string; PICName?: string; pic_name?: string; PICWhatsApp?: string; pic_whatsapp?: string; MinimumLeadDays?: number; minimum_lead_days?: number; PublishTimeStart?: string; publish_time_start?: string; PublishTimeEnd?: string; publish_time_end?: string; SlotIntervalMinutes?: number; slot_interval_minutes?: number; terms: string[] }
+export interface MediaSubmissionSetting {
+  // Canonical snake_case fields
+  service_type?: string;
+  sop_url?: string;
+  ministry_template_url?: string;
+  brief_template_url?: string;
+  caption_template_url?: string;
+  pic_name?: string;
+  pic_whatsapp?: string;
+  minimum_lead_days?: number;
+  publish_time_start?: string;
+  publish_time_end?: string;
+  slot_interval_minutes?: number;
+  // Legacy PascalCase fields (kept for backward compat)
+  ServiceType?: string;
+  SOPURL?: string;
+  MinistryTemplateURL?: string;
+  BriefTemplateURL?: string;
+  CaptionTemplateURL?: string;
+  PICName?: string;
+  PICWhatsApp?: string;
+  MinimumLeadDays?: number;
+  PublishTimeStart?: string;
+  PublishTimeEnd?: string;
+  SlotIntervalMinutes?: number;
+  terms: string[];
+}
 export interface SubmissionHistory { id: number; event_type?: "STATUS_CHANGED" | "PJ_ASSIGNED" | "PJ_REASSIGNED"; actor?: UserSummary; from_status?: string; to_status?: string; from_pj?: UserSummary; to_pj?: UserSummary; note?: string; created_at: string }
 
 export interface LoginResult { token: string; user: User }
@@ -124,4 +152,29 @@ export interface WorkProgramDocumentation {
   taken_at?: string | null;
   display_order: number;
   is_cover: boolean;
+}
+
+export type ArticleStatus = 'DRAFT' | 'PUBLISHED';
+
+export interface ArticleAuthor {
+  id: number;
+  name: string;
+}
+
+export interface ArticleListItem {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_image: string | null;
+  author_id: number;
+  author: ArticleAuthor;
+  status: ArticleStatus;
+  published_at: string | null;
+}
+
+export interface Article extends ArticleListItem {
+  body: string;
+  created_at: string;
+  updated_at: string;
 }

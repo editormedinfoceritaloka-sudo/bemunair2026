@@ -381,7 +381,7 @@
         "
       >
         <img
-          src="/logo/logo-kabinet.png"
+          src="/logo/logo-kabinet.webp"
           alt="Logo Kabinet Cerita Loka"
           class="h-[74%] w-[74%] object-contain"
         />

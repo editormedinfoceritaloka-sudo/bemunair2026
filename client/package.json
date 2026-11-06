@@ -40,7 +40,6 @@
 		"vite": "^8.0.7"
 	},
 	"dependencies": {
-		"gsap": "^3.13.0",
 		"@imagekit/nodejs": "^7.10.0",
 		"@internationalized/date": "^3.12.2",
 		"@sveltejs/adapter-node": "^5.5.4",
@@ -55,6 +54,8 @@
 		"@tiptap/starter-kit": "^3.29.0",
 		"@tiptap/suggestion": "^3.29.0",
 		"bits-ui": "^2.18.1",
+		"gsap": "^3.13.0",
+		"isomorphic-dompurify": "^4.2.0",
 		"layerchart": "^2.0.2",
 		"mode-watcher": "^1.1.0",
 		"svelte-sonner": "^1.1.1",

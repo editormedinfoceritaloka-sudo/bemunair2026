@@ -19,7 +19,8 @@ export default defineConfig(
 		rules: {
 			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
 			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-			"no-undef": 'off'
+			"no-undef": 'off',
+			'@typescript-eslint/no-explicit-any': 'error'
 		}
 	},
 	{
@@ -37,5 +38,15 @@ export default defineConfig(
 		// Override or add rule settings here, such as:
 		// 'svelte/button-has-type': 'error'
 		rules: {}
+	},
+	{
+		// ArticleBody renders trusted CMS HTML stored in the database
+		// (written by admins, delivered via the server API), not raw
+		// user input. svelte-ignore is unreliable for {@html} with the
+		// Svelte 5 AST, so the rule is disabled for this component only.
+		files: ['**/src/lib/components/news/ArticleBody.svelte'],
+		rules: {
+			'svelte/no-at-html-tags': 'off'
+		}
 	}
 );

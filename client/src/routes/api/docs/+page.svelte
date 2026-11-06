@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BookOpen, Braces, Check, ChevronRight, Copy, Menu, Search, Server, X } from '@lucide/svelte';
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
 
   type DocItem = { slug: string; title: string; order: number; group?: string };
   type Heading = { id: string; text: string; level: number };
@@ -17,28 +17,28 @@
   ];
 
   let docs: DocItem[] = fallbackDocs;
-  let active = 'overview';
-  let markdown = '';
-  let query = '';
-  let loading = true;
-  let error = '';
-  let drawerOpen = false;
-  let copied = '';
-  let headings: Heading[] = [];
+  let active = $state('overview');
+  let markdown = $state('');
+  let query = $state('');
+  let loading = $state(true);
+  let error = $state('');
+  let drawerOpen = $state(false);
+  let copyTimer: ReturnType<typeof setTimeout> | undefined;
+  let headings = $state<Heading[]>([]);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
-  $: activeDoc = docs.find((item) => item.slug === active);
-  $: filtered = docs.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
-  $: grouped = groupDocs(filtered);
-  $: endpointCount = (markdown.match(/^##\s+(GET|POST|PUT|DELETE|PATCH)\s+/gm) ?? []).length;
-  $: methodCounts = {
+  const activeDoc = $derived(docs.find((item) => item.slug === active));
+  const filtered = $derived(docs.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())));
+  const grouped = $derived(groupDocs(filtered));
+  const endpointCount = $derived((markdown.match(/^##\s+(GET|POST|PUT|DELETE|PATCH)\s+/gm) ?? []).length);
+  const methodCounts = $derived({
     GET: countMethod('GET'),
     POST: countMethod('POST'),
     PUT: countMethod('PUT'),
     DELETE: countMethod('DELETE')
-  };
-  $: html = renderMarkdown(markdown);
+  });
+  const html = $derived(renderMarkdown(markdown));
 
   async function loadIndex() {
     loading = true;
@@ -145,14 +145,18 @@
       const value = decodeURIComponent(button.dataset.copy);
       navigator.clipboard.writeText(value);
       copied = value.slice(0, 18);
-      setTimeout(() => (copied = ''), 1400);
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => (copied = ''), 1400);
     }
   }
 
   loadIndex();
-  onMount(() => {
+  $effect(() => {
     document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+      if (copyTimer) clearTimeout(copyTimer);
+    };
   });
 </script>
 

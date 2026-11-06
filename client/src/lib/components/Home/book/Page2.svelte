@@ -219,7 +219,7 @@
     class="pointer-events-none absolute inset-0 overflow-hidden"
   >
     <img
-      src="/landing/speech/star-8.png"
+      src="/landing/speech/star-8.webp"
       alt=""
       draggable="false"
       class="
@@ -230,7 +230,7 @@
     />
 
     <img
-      src="/landing/speech/star-8.png"
+      src="/landing/speech/star-8.webp"
       alt=""
       draggable="false"
       class="
@@ -241,7 +241,7 @@
     />
 
     <img
-      src="/landing/speech/star-4.png"
+      src="/landing/speech/star-4.webp"
       alt=""
       draggable="false"
       class="
@@ -252,7 +252,7 @@
     />
 
     <img
-      src="/landing/speech/star-4.png"
+      src="/landing/speech/star-4.webp"
       alt=""
       draggable="false"
       class="
@@ -266,7 +266,7 @@
   <div class="relative z-10 h-full w-full">
     <img
       bind:this={portrait}
-      src="/landing/speech/w.png"
+      src="/landing/speech/w.webp"
       alt="Wakil Presiden BEM UNAIR 2026"
       draggable="false"
       class="

@@ -9,7 +9,7 @@
     class="pointer-events-none absolute inset-0 overflow-hidden"
   >
     <img
-      src="/landing/speech/star-8.png"
+      src="/landing/speech/star-8.webp"
       alt=""
       class="
         absolute top-0 right-0
@@ -20,7 +20,7 @@
     />
 
     <img
-      src="/landing/speech/star-8.png"
+      src="/landing/speech/star-8.webp"
       alt=""
       class="
         absolute bottom-0 left-0
@@ -31,7 +31,7 @@
     />
 
     <img
-      src="/landing/speech/star-4.png"
+      src="/landing/speech/star-4.webp"
       alt=""
       class="
         absolute bottom-20 left-[18%]
@@ -43,7 +43,7 @@
     />
 
     <img
-      src="/landing/speech/star-4.png"
+      src="/landing/speech/star-4.webp"
       alt=""
       class="
         absolute top-[20%] right-[17%]
@@ -75,13 +75,13 @@
       <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
         <img
           class="size-9 object-contain sm:size-12 md:size-16"
-          src="/logo/logo-bem.png"
+          src="/logo/logo-bem.webp"
           alt="Logo BEM UNAIR"
         />
 
         <img
           class="size-9 object-contain sm:size-12 md:size-16"
-          src="/logo/logo-kabinet.png"
+          src="/logo/logo-kabinet.webp"
           alt="Logo Kabinet Cerita Loka"
         />
       </div>

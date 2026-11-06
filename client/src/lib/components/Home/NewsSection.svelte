@@ -3,9 +3,12 @@
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+  import { ArrowRightIcon } from '@lucide/svelte';
+
   import CardNews from './news/CardNews.svelte';
   import CoverNews from './news/CoverNews.svelte';
-  import { ArrowRightIcon } from '@lucide/svelte';
+
+  import type { ArticleListItem } from '$lib/types';
 
   type NewsItem = {
     id: string;
@@ -17,61 +20,70 @@
     publishedAt: string;
   };
 
-  const exampleNews: NewsItem[] = [
-    {
-      id: 'news-1',
-      slug: 'festival-bunga-cerita-loka',
-      title: 'Festival Bunga Cerita Loka: Merawat Budaya dan Lingkungan',
-      excerpt:
-        'Kabinet Cerita Loka menghadirkan festival budaya dan lingkungan sebagai ruang kolaborasi mahasiswa dalam merawat kreativitas, keberagaman, serta kepedulian terhadap alam.',
-      coverImage: '/landing/news/test.png',
-      category: 'Sosial dan Politik',
-      publishedAt: '2026-06-24'
-    },
-    {
-      id: 'news-2',
-      slug: 'ruang-ekspresi-mahasiswa',
-      title: 'Ruang Ekspresi Mahasiswa Hadir dengan Konsep yang Lebih Segar',
-      excerpt:
-        'Program ini menjadi wadah bagi mahasiswa Universitas Airlangga untuk menyampaikan gagasan, karya, dan aspirasi melalui aktivitas yang kreatif dan inklusif.',
-      coverImage: '/landing/news/test.png',
-      category: 'Seni dan Budaya',
-      publishedAt: '2026-06-22'
-    },
-    {
-      id: 'news-3',
-      slug: 'kolaborasi-kabinet-cerita-loka',
-      title: 'Kolaborasi Kabinet Cerita Loka untuk Pengembangan Mahasiswa',
-      excerpt:
-        'Kabinet Cerita Loka memperkuat kolaborasi lintas kementerian untuk menghadirkan program kerja yang memberikan dampak nyata bagi seluruh mahasiswa.',
-      coverImage: '/landing/news/test.png',
-      category: 'Pengembangan Mahasiswa',
-      publishedAt: '2026-06-20'
-    },
-    {
-      id: 'news-4',
-      slug: 'peluncuran-program-unggulan',
-      title: 'Kabinet Cerita Loka Meluncurkan Rangkaian Program Unggulan',
-      excerpt:
-        'Rangkaian program unggulan dirancang untuk memperluas ruang partisipasi mahasiswa serta membangun lingkungan kampus yang aktif, suportif, dan berkelanjutan.',
-      coverImage: '/landing/news/test.png',
-      category: 'Kabinet Cerita Loka',
-      publishedAt: '2026-06-18'
-    }
-  ];
-
   let {
-    news = exampleNews,
-    logo = '/logo/logo-kabinet.png',
+    articles = [],
+    logo = '/logo/logo-kabinet.webp',
     organization = 'Kabinet Cerita Loka'
   }: {
-    news?: NewsItem[];
+    articles?: ArticleListItem[];
     logo?: string;
     organization?: string;
   } = $props();
 
-  const featuredNews = $derived(news[0]);
-  const latestNews = $derived(news.slice(1, 4));
+  const dateFormatter = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  const formatCache = new Map<string, string>();
+
+  function formatPublishedAt(value: string | null): string {
+    if (!value) {
+      return '';
+    }
+
+    const cached = formatCache.get(value);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      formatCache.set(value, value);
+      return value;
+    }
+
+    const formatted = dateFormatter.format(date);
+    formatCache.set(value, formatted);
+    return formatted;
+  }
+
+  const news = $derived(
+    articles.map(
+      (article): NewsItem => ({
+        id: String(article.id),
+        slug: article.slug,
+        title: article.title,
+        excerpt: article.excerpt ?? '',
+        coverImage:
+          article.cover_image ??
+          '/landing/news/test.webp',
+        category: 'Berita',
+        publishedAt: formatPublishedAt(
+          article.published_at
+        )
+      })
+    )
+  );
+
+  const featuredNews = $derived(
+    news[0]
+  );
+
+  const latestNews = $derived(
+    news.slice(1, 4)
+  );
 
   let sectionElement!: HTMLElement;
   let glowElement!: HTMLDivElement;
@@ -96,152 +108,125 @@
     const context = gsap.context(() => {
       gsap.set(glowElement, {
         opacity: 0,
-        scale: 0.7
+        scale: 0.75
       });
 
-      gsap.set(headingElement, {
-        y: 70,
-        opacity: 0,
-        scale: 0.9,
-        filter: 'blur(10px)'
-      });
-
-      gsap.set(descriptionElement, {
-        y: 35,
-        opacity: 0,
-        filter: 'blur(6px)'
-      });
+      gsap.set(
+        [
+          headingElement,
+          descriptionElement
+        ],
+        {
+          opacity: 0,
+          y: 40
+        }
+      );
 
       if (featuredElement) {
         gsap.set(featuredElement, {
-          y: 80,
           opacity: 0,
-          scale: 0.97,
-          transformOrigin: 'center top'
+          y: 50,
+          scale: 0.98
         });
       }
 
-      const introTimeline = gsap.timeline({
-        defaults: {
-          ease: 'power3.out'
-        },
+      if (latestHeaderElement) {
+        gsap.set(latestHeaderElement, {
+          opacity: 0,
+          y: 35
+        });
+      }
+
+      if (cardsElement) {
+        gsap.set(
+          cardsElement.querySelectorAll(
+            '[data-news-card]'
+          ),
+          {
+            opacity: 0,
+            y: 45
+          }
+        );
+      }
+
+      gsap.to(glowElement, {
+        opacity: 1,
+        scale: 1,
+        duration: 1.4,
+        ease: 'power3.out',
         scrollTrigger: {
           trigger: sectionElement,
-          start: 'top 72%',
+          start: 'top 80%',
           once: true
         }
       });
 
-      introTimeline
-        .to(
-          glowElement,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 1.3
-          },
-          0
-        )
-        .to(
-          headingElement,
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            filter: 'blur(0px)',
-            duration: 0.9
-          },
-          0.1
-        )
-        .to(
-          descriptionElement,
-          {
-            y: 0,
-            opacity: 1,
-            filter: 'blur(0px)',
-            duration: 0.75
-          },
-          0.35
-        );
-
-      if (featuredElement) {
-        introTimeline.to(
-          featuredElement,
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 1
-          },
-          0.55
-        );
-      }
-
-      introTimeline.set(
+      gsap.to(
         [
-          glowElement,
           headingElement,
-          descriptionElement,
-          featuredElement
-        ].filter(Boolean),
+          descriptionElement
+        ],
         {
-          clearProps: 'opacity,transform,filter'
+          opacity: 1,
+          y: 0,
+          duration: 0.85,
+          stagger: 0.12,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: sectionElement,
+            start: 'top 75%',
+            once: true
+          }
         }
       );
 
-      if (
-        latestSectionElement &&
-        latestHeaderElement &&
-        cardsElement
-      ) {
-        const cards = gsap.utils.toArray<HTMLElement>(
-          '[data-news-card]',
-          cardsElement
-        );
-
-        gsap.set(latestHeaderElement, {
-          y: 45,
-          opacity: 0
-        });
-
-        gsap.set(cards, {
-          y: 70,
-          opacity: 0,
-          scale: 0.96,
-          transformOrigin: 'center top'
-        });
-
-        const latestTimeline = gsap.timeline({
-          defaults: {
-            ease: 'power3.out'
-          },
+      if (featuredElement) {
+        gsap.to(featuredElement, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.95,
+          ease: 'power3.out',
           scrollTrigger: {
-            trigger: latestSectionElement,
-            start: 'top 78%',
+            trigger: featuredElement,
+            start: 'top 86%',
             once: true
           }
         });
+      }
 
-        latestTimeline
-          .to(latestHeaderElement, {
-            y: 0,
+      if (latestHeaderElement) {
+        gsap.to(latestHeaderElement, {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: latestSectionElement,
+            start: 'top 86%',
+            once: true
+          }
+        });
+      }
+
+      if (cardsElement) {
+        gsap.to(
+          cardsElement.querySelectorAll(
+            '[data-news-card]'
+          ),
+          {
             opacity: 1,
-            duration: 0.75
-          })
-          .to(
-            cards,
-            {
-              y: 0,
-              opacity: 1,
-              scale: 1,
-              duration: 0.85,
-              stagger: 0.16
-            },
-            0.25
-          )
-          .set([latestHeaderElement, ...cards], {
-            clearProps: 'opacity,transform'
-          });
+            y: 0,
+            duration: 0.8,
+            stagger: 0.14,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: cardsElement,
+              start: 'top 88%',
+              once: true
+            }
+          }
+        );
       }
     }, sectionElement);
 
@@ -252,65 +237,112 @@
 </script>
 
 <section
-  bind:this={sectionElement}
   id="news"
-  aria-labelledby="news-heading"
+  bind:this={sectionElement}
   class="
-    relative min-h-screen overflow-hidden
-    bg-blue-50 px-5 pb-24 pt-28
-    sm:px-8 sm:pt-32
-    lg:px-12 lg:pb-32 lg:pt-36
+    relative min-h-screen
+    w-full overflow-hidden
+    bg-linear-to-b
+    from-white
+    via-blue-50/60
+    to-blue-100
+    py-24
+    sm:py-28
+    lg:py-32
   "
 >
   <div
     bind:this={glowElement}
+    aria-hidden="true"
     class="
-      pointer-events-none absolute
-      left-1/2 top-24
-      h-[420px] w-[720px]
-      -translate-x-1/2 rounded-full
-      bg-blue-200/20 blur-[120px]
+      pointer-events-none
+      absolute
+      left-1/2 top-16
+      size-[34rem]
+      -translate-x-1/2
+      rounded-full
+      bg-orange-200/20
+      blur-[130px]
       will-change-transform
+      sm:size-[44rem]
+      lg:size-[54rem]
     "
   ></div>
 
-  <div class="relative mx-auto w-full max-w-6xl">
-    <header class="mx-auto max-w-4xl text-center">
+  <div
+    aria-hidden="true"
+    class="
+      pointer-events-none
+      absolute
+      -left-32 top-1/2
+      size-80
+      rounded-full
+      bg-blue-200/20
+      blur-[110px]
+    "
+  ></div>
+
+  <div
+    aria-hidden="true"
+    class="
+      pointer-events-none
+      absolute
+      -right-36 bottom-20
+      size-96
+      rounded-full
+      bg-orange-200/20
+      blur-[120px]
+    "
+  ></div>
+
+  <div
+    class="
+      relative z-10
+      mx-auto
+      w-full max-w-7xl
+      px-5
+      sm:px-8
+      lg:px-12
+    "
+  >
+    <header
+      class="
+        mx-auto
+        flex max-w-5xl
+        flex-col
+        items-center
+        text-center
+      "
+    >
       <h2
         bind:this={headingElement}
-        id="news-heading"
         class="
-          text-6xl leading-none font-black
-          tracking-[-0.065em] text-orange-600
-          drop-shadow-[0_4px_0_rgba(255,255,255,0.95)]
+          text-[clamp(4rem,10vw,8rem)]
+          leading-[0.82]
+          font-black
+          uppercase
+          tracking-[-0.07em]
+          text-orange-500
+          [-webkit-text-stroke:2px_white]
+          [paint-order:stroke_fill]
+          drop-shadow-[0_9px_0_rgba(163,61,10,0.45)]
           will-change-transform
-          sm:text-7xl
-          lg:text-8xl
+          sm:[-webkit-text-stroke:3px_white]
         "
       >
         News
       </h2>
 
-      <p
-        bind:this={descriptionElement}
-        class="
-          mx-auto mt-4 max-w-3xl
-          text-base leading-7 font-semibold
-          text-slate-900
-          will-change-transform
-          sm:text-lg
-          lg:text-xl
-        "
-      >
-        Explore the latest programs, research developments, and cultural
-        festivals organized by Cabinet Cerita Loka
-      </p>
     </header>
 
     {#if featuredNews}
       <div
         bind:this={featuredElement}
-        class="mt-12 will-change-transform sm:mt-16"
+        class="
+          mt-12
+          will-change-transform
+          sm:mt-16
+        "
       >
         <CoverNews
           item={featuredNews}
@@ -323,49 +355,82 @@
     {#if latestNews.length > 0}
       <div
         bind:this={latestSectionElement}
-        class="mt-16 sm:mt-20"
+        class="
+          mt-16
+          sm:mt-20
+          lg:mt-24
+        "
       >
         <div
           bind:this={latestHeaderElement}
           class="
-            mb-8 flex items-end justify-between gap-5
-            border-b border-blue-900/15 pb-4
+            mb-8
+            flex items-end
+            justify-between
+            gap-5
+            border-b
+            border-blue-900/15
+            pb-4
             will-change-transform
+            sm:mb-10
           "
         >
           <div>
+            <h3
+              class="
+                text-2xl
+                leading-none
+                font-black
+                tracking-[-0.04em]
+                text-blue-950
+                sm:text-3xl
+              "
+            >
+              Berita Terbaru
+            </h3>
           </div>
 
           <a
-          href="/news"
-          class="
-            group inline-flex shrink-0
-            items-center gap-2
-            text-sm font-bold
-            text-blue-700
-            transition-colors
-            hover:text-blue-950
-          "
-        >
-          <span>Lihat Semua Berita</span>
-
-          <ArrowRightIcon
-            size={18}
-            strokeWidth={2.5}
+            href="/news"
+            aria-label="Lihat semua berita"
             class="
-              -rotate-45
-              transition-transform duration-300
-              group-hover:-translate-y-1
+              group
+              inline-flex shrink-0
+              items-center gap-2
+              text-xs
+              font-bold
+              text-orange-600
+              transition-colors
+              duration-300
+              hover:text-orange-800
+              sm:text-sm
             "
-          />
-        </a>
+          >
+            <span>
+              Lihat Semua Berita
+            </span>
+
+            <ArrowRightIcon
+              size={18}
+              strokeWidth={2.5}
+              class="
+                -rotate-45
+                transition-transform
+                duration-300
+                group-hover:-translate-y-1
+                group-hover:translate-x-1
+              "
+            />
+          </a>
         </div>
 
         <div
           bind:this={cardsElement}
           class="
-            grid grid-cols-1
-            gap-x-7 gap-y-12
+            grid
+            grid-cols-1
+            gap-x-7
+            gap-y-12
             md:grid-cols-2
             lg:grid-cols-3
           "
@@ -383,6 +448,55 @@
             </div>
           {/each}
         </div>
+      </div>
+    {/if}
+
+    {#if news.length === 0}
+      <div
+        class="
+          mx-auto
+          mt-14
+          flex max-w-2xl
+          flex-col
+          items-center
+          justify-center
+          rounded-[28px]
+          border
+          border-orange-900/10
+          bg-white/55
+          px-6
+          py-16
+          text-center
+          backdrop-blur-sm
+          sm:px-10
+        "
+      >
+        <h3
+          class="
+            text-2xl
+            font-black
+            tracking-[-0.04em]
+            text-orange-600
+            sm:text-3xl
+          "
+        >
+          Belum Ada Berita
+        </h3>
+
+        <p
+          class="
+            mt-3
+            max-w-md
+            text-sm
+            leading-6
+            font-medium
+            text-slate-600
+            sm:text-base
+          "
+        >
+          Berita dan cerita terbaru Kabinet Cerita Loka
+          akan hadir di sini.
+        </p>
       </div>
     {/if}
   </div>

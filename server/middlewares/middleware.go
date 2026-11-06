@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"errors"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -21,12 +23,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// CanonicalRole returns the effective role for authorization checks.
+// Mentri is treated as Admin for read/admin route gating.
+// Original Role is preserved (no in-place mutation on the struct).
 func (c *Claims) CanonicalRole() string {
-	if c != nil && c.Role == constants.RoleMentri {
-		return constants.RoleAdmin
-	}
 	if c == nil {
 		return ""
+	}
+	if c.Role == constants.RoleMentri {
+		return constants.RoleAdmin
 	}
 	return c.Role
 }
@@ -61,6 +66,11 @@ func RequestLogger() gin.HandlerFunc {
 		requestID := c.GetHeader("X-Request-Id")
 		if requestID == "" {
 			requestID = time.Now().Format("20060102150405.000000000")
+		} else {
+			requestID = sanitizeRequestID(requestID)
+			if requestID == "" {
+				requestID = time.Now().Format("20060102150405.000000000")
+			}
 		}
 		c.Header("X-Request-Id", requestID)
 		c.Set("request_id", requestID)
@@ -68,6 +78,22 @@ func RequestLogger() gin.HandlerFunc {
 		c.Next()
 		gin.DefaultWriter.Write([]byte(c.Request.Method + " " + c.Request.URL.Path + " " + time.Since(start).String() + "\n"))
 	}
+}
+
+// sanitizeRequestID strips non-printable ASCII and truncates to 64 chars.
+// Empty result means the header was invalid; caller should fall back to a fresh ID.
+func sanitizeRequestID(raw string) string {
+	cleaned := make([]rune, 0, len(raw))
+	for _, r := range raw {
+		if r < 0x20 || r == 0x7f {
+			continue
+		}
+		cleaned = append(cleaned, r)
+		if len(cleaned) >= 64 {
+			break
+		}
+	}
+	return string(cleaned)
 }
 
 func Recovery() gin.HandlerFunc {
@@ -86,15 +112,18 @@ func Auth(secret string) gin.HandlerFunc {
 		}
 		claims := &Claims{}
 		token, err := jwt.ParseWithClaims(strings.TrimPrefix(header, "Bearer "), claims, func(token *jwt.Token) (any, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrTokenSignatureInvalid
+			}
 			return []byte(secret), nil
-		})
+		}, jwt.WithValidMethods([]string{"HS256"}))
 		if err != nil || !token.Valid {
+			if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
+				log.Printf("auth: jwt parse failed: %v", err)
+			}
 			response.Error(c, http.StatusUnauthorized, response.Unauthenticated, "Token tidak valid")
 			c.Abort()
 			return
-		}
-		if claims.Role == constants.RoleMentri {
-			claims.Role = constants.RoleAdmin
 		}
 		c.Set("claims", claims)
 		c.Next()

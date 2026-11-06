@@ -140,6 +140,9 @@ func AssignNext(tx *gorm.DB) (*entities.User, error) {
 	if err := tx.Model(&entities.MedinfoPJQueue{}).Where("id = ?", next.ID).Update("is_current", true).Error; err != nil {
 		return nil, err
 	}
+	if selected.User == nil {
+		return nil, errors.New("medinfo pj queue: selected user is nil")
+	}
 	return selected.User, nil
 }
 

@@ -59,7 +59,7 @@
     return (
       member.photo?.url ??
       member.photo?.thumbnail_url ??
-      '/kementrian/test.png'
+      '/kementrian/test.webp'
     );
   }
 
@@ -741,7 +741,7 @@
     >
       <h1
         class="
-          text-[clamp(2.8rem,8vw,7rem)]
+          text-[clamp(2rem,5vw,5rem)]
           leading-[0.92] font-black
           tracking-[-0.065em]
         "
@@ -905,7 +905,7 @@
   </div>
 
   <img
-    src="/menko/b-3-left.png"
+    src="/menko/b-3-left.webp"
     alt=""
     class="
       pointer-events-none absolute
@@ -916,7 +916,7 @@
   />
 
   <img
-    src="/menko/b-3-left.png"
+    src="/menko/b-3-left.webp"
     alt=""
     class="
       pointer-events-none absolute
@@ -927,7 +927,7 @@
   />
 
   <img
-    src="/menko/b-3-right.png"
+    src="/menko/b-3-right.webp"
     alt=""
     class="
       pointer-events-none absolute

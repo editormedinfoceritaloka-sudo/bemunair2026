@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -149,5 +150,40 @@ func TestUpdateProgramPreserveSlug(t *testing.T) {
 	}
 	if value.Slug != "cerita-baru" {
 		t.Fatalf("expected new slug applied, got %q", value.Slug)
+	}
+}
+
+func TestSeederOrganizationTypesAccepted(t *testing.T) {
+	for _, unitType := range []string{"MENKO", "BPII", "KEMENTERIAN"} {
+		req := dto.UnitRequest{Code: "TEST", Name: "Unit Test", UnitType: unitType}
+		if err := validateUnit(req); err != nil {
+			t.Fatalf("expected seeder unit type %s to be accepted: %v", unitType, err)
+		}
+	}
+}
+
+func TestSeederPositionTypesAccepted(t *testing.T) {
+	for _, positionType := range []string{"MENKO", "MENTERI", "DIRJEN", "KABIRO", "KEPALA", "DEPUTI"} {
+		req := dto.MemberRequest{Name: "Anggota", Position: "Jabatan", PositionType: positionType}
+		if err := validateMember(req); err != nil {
+			t.Fatalf("expected seeder position type %s to be accepted: %v", positionType, err)
+		}
+	}
+}
+
+func TestDeleteUnitRequiresMedinfo(t *testing.T) {
+	svc := New(repository.New(newTestDB(t, "svc_delete_access")))
+	actor := &middlewares.Claims{Role: constants.RoleAdmin}
+
+	deleted, err := svc.DeleteUnit(1, actor)
+	if deleted || !errors.Is(err, ErrUnitAccessDenied) {
+		t.Fatalf("expected access denied, got deleted=%v err=%v", deleted, err)
+	}
+}
+
+func TestMemberToDTOIncludesActiveStatus(t *testing.T) {
+	value := memberToDTO(entities.OrganizationMember{ID: 1, Name: "Anggota", IsActive: true})
+	if !value.IsActive {
+		t.Fatal("expected active status in member response")
 	}
 }

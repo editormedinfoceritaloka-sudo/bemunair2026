@@ -1,6 +1,7 @@
 <script lang="ts">
   import PageHeader from '$lib/admin/PageHeader.svelte'; import EmptyState from '$lib/admin/EmptyState.svelte'; import { Button } from '$lib/components/ui/button'; import { Input } from '$lib/components/ui/input'; import { Badge } from '$lib/components/ui/badge'; import * as Table from '$lib/components/ui/table'; import * as Dialog from '$lib/components/ui/dialog'; import { Label } from '$lib/components/ui/label'; import { Alert, AlertDescription } from '$lib/components/ui/alert'; import { Plus, Search, Pencil, Trash2 } from '@lucide/svelte'; import { enhance } from '$app/forms'; import { invalidateAll } from '$app/navigation'; import { toast } from 'svelte-sonner';
-  let { data, form } = $props(); let query=$state(''); let open=$state(false); let editing=$state<any>(null);
+  import type { User } from '$lib/types';
+  let { data, form } = $props(); let query=$state(''); let open=$state(false); let editing=$state<User|null>(null);
   let filtered=$derived(data.users.filter((u:any)=>`${u.name} ${u.email} ${u.ministry||''}`.toLowerCase().includes(query.toLowerCase())));
   const done=()=>async({update}:any)=>{await update({reset:false});await invalidateAll();toast.success('Perubahan tersimpan');open=false;editing=null;};
 </script>

@@ -8,7 +8,7 @@
     subtitle,
     image,
     active = false,
-    backgroundImage = '/landing/cabinet/bg-card.png'
+    backgroundImage = '/landing/cabinet/bg-card.webp'
   }: {
     id: string;
     title: string;

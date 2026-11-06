@@ -42,7 +42,7 @@ Endpoint lama `GET /api/v1/cabinet/units/:slug/programs/:programSlug` tetap dipe
 
 ## Response Shape
 
-Unit organisasi memakai `unit_type` `KEMENKOAN` atau `KEMENTERIAN`. Kementerian dapat memiliki profil `MINISTER` dan `DIRECTOR_GENERAL`; UI detail Kementerian menampilkan dua posisi tersebut.
+Unit organisasi hasil seeder memakai `unit_type` `MENKO`, `BPII`, atau `KEMENTERIAN`; nilai lama `KEMENKOAN` tetap diterima untuk kompatibilitas. Tipe posisi pimpinan yang didukung adalah `MENKO`, `MENTERI`, `DIRJEN`, `KABIRO`, `KEPALA`, `DEPUTI`, serta nilai lama `MINISTER` dan `DIRECTOR_GENERAL`.
 
 Media menyimpan metadata file ImageKit, bukan binary file.
 
@@ -72,8 +72,10 @@ Endpoint admin memerlukan JWT dan role admin. `ADMIN_MEDINFO` dapat mengelola se
 | `POST` | `/api/v1/admin/cabinet-terms` | `ADMIN_MEDINFO` | Membuat kabinet |
 | `PUT` | `/api/v1/admin/cabinet-terms/:id` | `ADMIN_MEDINFO` | Memperbarui kabinet |
 | `GET` | `/api/v1/admin/organizations` | Admin | Daftar unit |
+| `GET` | `/api/v1/admin/organizations/:id` | Admin | Detail lengkap unit |
 | `POST` | `/api/v1/admin/organizations` | Admin sesuai scope | Membuat unit |
 | `PUT` | `/api/v1/admin/organizations/:id` | Admin sesuai scope | Memperbarui unit |
+| `DELETE` | `/api/v1/admin/organizations/:id` | `ADMIN_MEDINFO` | Menghapus unit yang belum direferensikan |
 | `GET` | `/api/v1/admin/organizations/:id/members` | Admin | Daftar Menteri/Dirjen |
 | `POST` | `/api/v1/admin/organizations/:id/members` | Admin sesuai scope | Membuat profil pimpinan |
 | `PUT` | `/api/v1/admin/organizations/members/:id` | Admin sesuai scope | Memperbarui profil pimpinan |
@@ -107,11 +109,12 @@ Upload file memakai mekanisme ImageKit yang sudah tersedia. Setelah upload berha
 
 Status program kerja yang didukung: `DRAFT`, `PLANNED`, `ONGOING`, `COMPLETED`, `POSTPONED`, `CANCELLED`, dan `ARCHIVED`.
 
-- Kemenkoan tidak memiliki parent.
-- Kementerian wajib memiliki parent Kemenkoan dari kabinet yang sama.
+- Unit induk `MENKO`, `BPII`, atau `KEMENKOAN` tidak memiliki parent.
+- Kementerian wajib memiliki parent unit induk dari kabinet yang sama.
 - Hierarchy cycle ditolak.
 - Slug unit unik dalam satu kabinet.
 - Slug program unik di seluruh program kerja (global), divalidasi di service. Saat membuat program tanpa slug, slug dihasilkan otomatis dari nama + timestamp, misal `cerita-visual-20260807-153045`. Saat update dengan slug kosong, slug lama dipertahankan.
 - Data unpublished tidak muncul di public API.
+- Penghapusan unit ditolak dengan status `409` bila unit masih memiliki anak, pengguna, pimpinan, role organisasi, program kerja, pengajuan konten, atau pengajuan surat. Nonaktifkan unit bila riwayatnya perlu dipertahankan.
 - Menghapus media yang masih direferensikan perlu dilakukan dengan menghapus relasi terlebih dahulu.
 

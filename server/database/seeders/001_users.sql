@@ -25,13 +25,12 @@ INSERT INTO users (
 
 -- ============================================================
 -- ADMIN UTAMA
--- Password: 53066444
 -- ============================================================
 
 (
     'Admin BEM UNAIR',
     'admin@bem.unair.ac.id',
-    '$2a$10$ixhu.4fm5xE4cnTD2u0Z0ufQDc0JpTYmJhx/RASEi5Pv/5JvF6UMG',
+    '$2a$10$r1pia3hWuIcj/mUOE4WYiuLQ.H9Nd5KwgR6xoxY/Nct3sEe1b.VXG',
     'ADMIN_MEDINFO',
     NULL,
     NULL,
@@ -43,13 +42,12 @@ INSERT INTO users (
 -- ============================================================
 -- MENKO KEMAHASISWAAN
 -- Johanes Richard Darmawan
--- Password: 51975298
 -- ============================================================
 
 (
     'Johanes Richard Darmawan',
     'menko.kemahasiswaan@bem.unair.ac.id',
-    '$2a$10$0VnW1WGgWrjC3Esjr0x7m.sBy76GhomOCuqs2sp3yR44eBl4emFou',
+    '$2a$10$Oef94oZusjkGYHbVjf6awuaMFenWPN/TiPqKFnsfqBB6Ylzyuk.R6',
     'ADMIN',
     'MENKO_KEMAHASISWAAN',
     (
@@ -66,13 +64,12 @@ INSERT INTO users (
 -- ============================================================
 -- MENKO KEMASYARAKATAN
 -- Muhammad Ziyaad Difa Ul Haq
--- Password: 42038708
 -- ============================================================
 
 (
     'Muhammad Ziyaad Difa Ul Haq',
     'menko.kemasyarakatan@bem.unair.ac.id',
-    '$2a$10$CRGHA5/IHNdHXlDJ72xGB.jOft7PELu5m95O.KE.45Gj1qDxtg1NO',
+    '$2a$10$qPX/06lAa93rbbxAu19e3.c6I3tgyYfcxdKizoUIlFDrwxGbW.3D.',
     'ADMIN',
     'MENKO_KEMASYARAKATAN',
     (
@@ -89,13 +86,12 @@ INSERT INTO users (
 -- ============================================================
 -- MENKO KOMINFO
 -- Andrean Marcellino
--- Password: 26770499
 -- ============================================================
 
 (
     'Andrean Marcellino',
     'menko.kominfo@bem.unair.ac.id',
-    '$2a$10$HLFWEEd3p6yNLPbmonrCk.k/e9Uta9X5gV7P0/9pUGmGavuB6zjby',
+    '$2a$10$GntLR1rdqq/BI63lxRuY3u639ZiqEc8BBY6gkmcDupIBOfFdvFTnS',
     'ADMIN',
     'MENKO_KOMINFO',
     (
@@ -112,13 +108,12 @@ INSERT INTO users (
 -- ============================================================
 -- MENKO PERGERAKAN
 -- Dewa Pranata Putra Pratama
--- Password: 33605240
 -- ============================================================
 
 (
     'Dewa Pranata Putra Pratama',
     'menko.pergerakan@bem.unair.ac.id',
-    '$2a$10$N1y9JpkjQdBFV5Ey5o987uI42KaAqQRtDYKhbkl/69f7hyFfIZeu6',
+    '$2a$10$IKXudAcmNi6W08WuWbAnW.Sc2kxuv1ur19d2e6mi6d4ew5./A4FNi',
     'ADMIN',
     'MENKO_PERGERAKAN',
     (
@@ -135,13 +130,12 @@ INSERT INTO users (
 -- ============================================================
 -- MENKO PPK
 -- Nasua Okta Kusuma Dewi Rofiq
--- Password: 62270982
 -- ============================================================
 
 (
     'Nasua Okta Kusuma Dewi Rofiq',
     'menko.ppk@bem.unair.ac.id',
-    '$2a$10$LqHfhO7euPvBodvg/KfF6OQEcjvc5Gm/tKEvpD4f4VlD8QGHnc0hG',
+    '$2a$10$iuVHVMdgzbZM96cFc/ymUOMfn2um8W9e4x1G4qlyenU7on21rs0xC',
     'ADMIN',
     'MENKO_PPK',
     (
@@ -158,13 +152,12 @@ INSERT INTO users (
 -- ============================================================
 -- ADKESMA
 -- Elsa Putri Aprizalni
--- Password: 66400846
 -- ============================================================
 
 (
     'Elsa Putri Aprizalni',
     'menteri.adkesma@bem.unair.ac.id',
-    '$2a$10$3CXsAlxvagYIjTNYJgiw3OTzyIB30HZZX/fynScMXTNggs43nwgeG',
+    '$2a$10$A3hkE1tdTfYzh74p5mQliOmfpCK0tfhC2SXlxxLBj5W3EeU.92cGu',
     'ADMIN',
     'ADKESMA',
     (
@@ -181,13 +174,12 @@ INSERT INTO users (
 -- ============================================================
 -- PENGEMBANGAN PROFESI
 -- M. Rifqy Yusuf
--- Password: 30654122
 -- ============================================================
 
 (
     'M. Rifqy Yusuf',
     'menteri.pengprof@bem.unair.ac.id',
-    '$2a$10$4b7dcS8UMdOJ6tXIDdZgzuZspgv44hjwEjZPnm0TDutEMnhZzn2Ne',
+    '$2a$10$RZe5.8ttuYvP/ShWwjxlmuphHUTLUE2XzhNeSH6uQDmG5cZ.GkKqG',
     'ADMIN',
     'PENGPROF',
     (
@@ -204,13 +196,12 @@ INSERT INTO users (
 -- ============================================================
 -- PSDM
 -- Labib Azka Asysyafiq
--- Password: 17576656
 -- ============================================================
 
 (
     'Labib Azka Asysyafiq',
     'menteri.psdm@bem.unair.ac.id',
-    '$2a$10$DH147wtZAInQWDv1r7rXz.JQ2C86DA/fHMTo6MRUj5gziqYLh1yfG',
+    '$2a$10$Y62KUut2z841yA3yHMqKUu2kzBJ26kZDbgVz9R5j5oTuTwKRbYGjK',
     'ADMIN',
     'PSDM',
     (
@@ -227,13 +218,12 @@ INSERT INTO users (
 -- ============================================================
 -- LINGKUNGAN HIDUP
 -- Zaskia Darojah
--- Password: 43526893
 -- ============================================================
 
 (
     'Zaskia Darojah',
     'menteri.lh@bem.unair.ac.id',
-    '$2a$10$wZ0DRlig0tiTZHUqL9AX1uw4QcGxsOWOToLAT98npAxvCjiir3xqe',
+    '$2a$10$usU8RNR7etoS/Fzru9G9auA5Xb/ZwQVO4SOpIaHi76w3mgqVt6j32',
     'ADMIN',
     'LH',
     (
@@ -250,13 +240,12 @@ INSERT INTO users (
 -- ============================================================
 -- KEMENTERIAN KESEHATAN
 -- An Nadhofah Adlin
--- Password: 91823126
 -- ============================================================
 
 (
     'An Nadhofah Adlin',
     'menteri.kemenkes@bem.unair.ac.id',
-    '$2a$10$awANxxNJcVGmQuRc83t9fORNHNLqN2AdTBJ1IH8VNCjdr1w1eSx3.',
+    '$2a$10$StDMNiWfJoIdgIGuXzkuIOzDRQC.n/JcF5vktLvP8BUKa/4m5HBmC',
     'ADMIN',
     'KEMENKES',
     (
@@ -273,13 +262,12 @@ INSERT INTO users (
 -- ============================================================
 -- PENGABDIAN MASYARAKAT
 -- Sahrul Efendi
--- Password: 75669751
 -- ============================================================
 
 (
     'Sahrul Efendi',
     'menteri.pengmas@bem.unair.ac.id',
-    '$2a$10$lc8no1gy2BT.4EuBl.Mp8uvBtqs0IoTQ8CdgcrO3muxM8MaP4DhSi',
+    '$2a$10$WaPpjkgExDiCy3qa2fqWteEcAhw.QeSPjCcLeE1Jh3jVe5BH/3Bfi',
     'ADMIN',
     'PENGMAS',
     (
@@ -296,13 +284,12 @@ INSERT INTO users (
 -- ============================================================
 -- HUBUNGAN LUAR
 -- Zalfaa Putri Arfiliesia
--- Password: 57911111
 -- ============================================================
 
 (
     'Zalfaa Putri Arfiliesia',
     'menteri.hublu@bem.unair.ac.id',
-    '$2a$10$nCKezeNBhdUO4zhR5IrjduyJdhof4dd2VFOkNY3.Mr3xDTRP8cqcO',
+    '$2a$10$1BMQrrYZNy1MVkho9B9V1uiYzIlQre2Hs9uBKrPb6bb4iygySAjJ2',
     'ADMIN',
     'HUBLU',
     (
@@ -319,13 +306,12 @@ INSERT INTO users (
 -- ============================================================
 -- MEDINFO: CACA
 -- Menteri Media dan Informasi
--- Password: 62218191
 -- ============================================================
 
 (
     'Ganesya Intantalia (Caca)',
     'caca.medinfo@bem.unair.ac.id',
-    '$2a$10$rKzrvdy6kxPxylEdXXHjceCjJpYP0hRyA3D1DmU6TKQ2PT.4U0bNK',
+    '$2a$10$70EjhwZ5Uj.aHmZkOmHMCe.3RDX2B14ib6VzmbXfAS70DNwO8qB22',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -342,13 +328,12 @@ INSERT INTO users (
 -- ============================================================
 -- MEDINFO: OCHA
 -- Direktur Jenderal Publikasi
--- Password: 86586573
 -- ============================================================
 
 (
     'Ocha Della Fitriani',
     'ocha.medinfo@bem.unair.ac.id',
-    '$2a$10$R.l.8UYcVP.yvNeC6NfhH.t7cGhiuTueebeqgWHF.fuGiwUL/SU5S',
+    '$2a$10$KWUt9zk1GjjGl0ao6b25oeviFQKW41UiI3bAHRA0XGzxWOQAIZXB6',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -365,13 +350,12 @@ INSERT INTO users (
 -- ============================================================
 -- MEDINFO: FEBI
 -- Direktur Jenderal Visual
--- Password: 63545998
 -- ============================================================
 
 (
     'Febiola Al Jannah',
     'febi.medinfo@bem.unair.ac.id',
-    '$2a$10$jpW7zCkocSxty1uOdvGZrud7OPg8dqJoP547unh2TvBPcfEjl8cHW',
+    '$2a$10$pRzCfPCEEd984QVcqtRfjuO5lJUF9rJg.FcCunJTxVhfijPlXpM7q',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -388,13 +372,12 @@ INSERT INTO users (
 -- ============================================================
 -- SINERGITAS MAHASISWA
 -- Eugenius Nathaniel
--- Password: 23671369
 -- ============================================================
 
 (
     'Eugenius Nathaniel',
     'menteri.sinema@bem.unair.ac.id',
-    '$2a$10$XRgOwS3JpYBRHkMghiVK0eeGF/MRuNkD7tuP81allFlelz0dWV9Vu',
+    '$2a$10$sFQ1isIdimtF2Zp6SgoJYeeZinRAsw/XmfHrQjqyHplHr598t8Z3.',
     'ADMIN',
     'SINEMA',
     (
@@ -411,13 +394,12 @@ INSERT INTO users (
 -- ============================================================
 -- KEADILAN DAN KESETARAAN GENDER
 -- Farrel Ardisto Samai
--- Password: 57023964
 -- ============================================================
 
 (
     'Farrel Ardisto Samai',
     'menteri.kkg@bem.unair.ac.id',
-    '$2a$10$8WIQmyc7Khv52wHs29qEwulkm8IrYT3dCKdgIUmnlNyd6lTTW1b9O',
+    '$2a$10$K24gBVYvv4Rpxscp4Ou9HOLBbqacqAshCnmo7jppYvNQLjGwDVauG',
     'ADMIN',
     'KKG',
     (
@@ -434,13 +416,12 @@ INSERT INTO users (
 -- ============================================================
 -- SOSIAL DAN POLITIK
 -- Daniel Nikon Martua Situmorang
--- Password: 52746829
 -- ============================================================
 
 (
     'Daniel Nikon Martua Situmorang',
     'menteri.sospol@bem.unair.ac.id',
-    '$2a$10$qrXu/n0LeJerzkm/ZJ6Nn.LDU86Bcwy.t4BqRQ8XMHJ7vJiTKBn/S',
+    '$2a$10$Ydb9OprRJA5NAgljUPvIx.5BmRzUBY8muLG3t6eV4uD4/dyp0SXo2',
     'ADMIN',
     'SOSPOL',
     (
@@ -457,13 +438,12 @@ INSERT INTO users (
 -- ============================================================
 -- EKONOMI DIGITAL DAN PRODUK KREATIF
 -- Farhan Kamil
--- Password: 87287946
 -- ============================================================
 
 (
     'Farhan Kamil',
     'menteri.edigpro@bem.unair.ac.id',
-    '$2a$10$DRqi3JrKyOvZ1y4SRoiq7u/2GT30fL39j8g6.MgfJwXMYK1XeY6jG',
+    '$2a$10$8sj0DXJpkS/M0LYirsmode5pszF1Pvj0lLDHwRgquP/yP2qSnhQw6',
     'ADMIN',
     'EDIGPRO',
     (
@@ -480,13 +460,12 @@ INSERT INTO users (
 -- ============================================================
 -- RISET DAN KEILMUAN
 -- Farrel Bisma Abyakta
--- Password: 35608695
 -- ============================================================
 
 (
     'Farrel Bisma Abyakta',
     'menteri.riskel@bem.unair.ac.id',
-    '$2a$10$zHl5b7933VhIVqgYvDy3c.NdAoz8R8PM8ACSSYSHit3kClCuyBYOu',
+    '$2a$10$niEcMv2Ri4hW9zhkwKlQ8OwqtfcOMQMWs1T/zSYq8.B5w10vrdr/S',
     'ADMIN',
     'RISKEL',
     (
@@ -503,13 +482,12 @@ INSERT INTO users (
 -- ============================================================
 -- SENI DAN OLAHRAGA
 -- Alaina Atwa Awali Harahap
--- Password: 91646330
 -- ============================================================
 
 (
     'Alaina Atwa Awali Harahap',
     'menteri.seniiora@bem.unair.ac.id',
-    '$2a$10$h3nSH06JoY5BqLoHvDUQOeehSUCaOySPkHLJEXZCrsogtog6cbd5m',
+    '$2a$10$xK3wmlQfLc64qfxEtdGWhuDCdenHiG8ZXS2avEY6TJ5RK6xgj3sRq',
     'ADMIN',
     'SENIIORA',
     (
@@ -526,13 +504,12 @@ INSERT INTO users (
 -- ============================================================
 -- BENDAHARA KABINET
 -- Inez Faradina Kasih
--- Password: 71318325
 -- ============================================================
 
 (
     'Inez Faradina Kasih',
     'menteri.benkab@bem.unair.ac.id',
-    '$2a$10$SN8TJDvcpNOS3CrYGbkufuTjuN7RcOVYFc6PdasX1WZSmiECGKv1G',
+    '$2a$10$RjwIRno/Pi2tCJeyb6tlUuKIqWyp41fbmWP4uklGBzkAOLrbR/qse',
     'ADMIN',
     'BENKAB',
     (
@@ -549,13 +526,12 @@ INSERT INTO users (
 -- ============================================================
 -- PENDAYAGUNAAN APARATUR KABINET
 -- Deri Bayu Setiawan
--- Password: 36909827
 -- ============================================================
 
 (
     'Deri Bayu Setiawan',
     'kepala.pak@bem.unair.ac.id',
-    '$2a$10$tiVA1VGOx9D.mEoZxevJDOnfo2O2r6MjMcNuH2uVR4wq/HRViUIcy',
+    '$2a$10$tX6E8G95KQf4SumaeUTpXe8.s5smME7/nwb5Hsd2Y29lYA.wrnfxa',
     'ADMIN',
     'PAK',
     (
@@ -572,13 +548,12 @@ INSERT INTO users (
 -- ============================================================
 -- SEKRETARIS KABINET
 -- Gheahaq Danty El Zahra
--- Password: 49594396
 -- ============================================================
 
 (
     'Gheahaq Danty El Zahra',
     'menteri.seskab@bem.unair.ac.id',
-    '$2a$10$A2xTO3gNuvNO9qf.MXHKkuS8.3B.iRhYdsSM.oJq2ubiae.v6310m',
+    '$2a$10$0MvAsSSBOnHUys7bk6SSTOUo9qwhMSDJNy6P2424zURWeH1OFDCfO',
     'ADMIN',
     'SESKAB',
     (

@@ -27,8 +27,10 @@ func RegisterRoutes(api *gin.RouterGroup, dbRepository repository.Repository, jw
 
 	adminOrganizations := authenticated.Group("/admin/organizations")
 	adminOrganizations.GET("", c.ListUnits)
+	adminOrganizations.GET("/:id", c.AdminUnit)
 	adminOrganizations.POST("", c.CreateUnit)
 	adminOrganizations.PUT("/:id", c.UpdateUnit)
+	adminOrganizations.DELETE("/:id", middlewares.MedinfoOnly(), c.DeleteUnit)
 	adminOrganizations.GET("/:id/members", c.ListMembers)
 	adminOrganizations.POST("/:id/members", c.CreateMember)
 	adminOrganizations.PUT("/members/:id", c.UpdateMember)

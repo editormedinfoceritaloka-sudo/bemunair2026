@@ -57,6 +57,7 @@ Login user dan mengembalikan JWT.
 |---:|---|---|
 | 422 | `VALIDATION_ERROR` | Email/password kosong |
 | 401 | `UNAUTHENTICATED` | Email tidak ditemukan atau password salah |
+| 429 | `RATE_LIMITED` | Terlalu banyak percobaan gagal untuk kombinasi IP+email ini; lihat header `Retry-After` (detik) |
 
 ```json
 {
@@ -65,6 +66,15 @@ Login user dan mengembalikan JWT.
   "error": { "code": "UNAUTHENTICATED" }
 }
 ```
+
+### Rate limiting
+
+Dua lapisan independen melindungi endpoint ini dari brute force:
+
+- **nginx** (`limit_req zone=login_zone`): dibatasi per alamat IP koneksi nyata (`$remote_addr`, bukan header `X-Forwarded-For` yang bisa dipalsukan klien).
+- **Server Go** (`middlewares.LoginThrottle`): maksimum 5 percobaan gagal per 10 menit untuk kombinasi IP asli (TCP peer, independen dari header apa pun) + email yang dicoba. Percobaan yang gagal (401) menambah hitungan; login berhasil (200) mereset hitungan untuk kombinasi tersebut.
+
+Kedua lapisan sengaja tidak memakai `X-Forwarded-For` dari klien sebagai kunci, agar tidak bisa dilewati dengan memalsukan header tersebut.
 
 ### Curl
 

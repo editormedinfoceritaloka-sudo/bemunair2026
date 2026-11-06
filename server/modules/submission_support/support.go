@@ -125,7 +125,10 @@ func (c *controller) updateMinistry(ctx *gin.Context) {
 		return
 	}
 	var row entities.Ministry
-	c.db.First(&row, id)
+	if err := c.db.First(&row, id).Error; err != nil {
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, err.Error())
+		return
+	}
 	response.OK(ctx, "Kementerian diperbarui", row)
 }
 
@@ -140,7 +143,12 @@ func (c *controller) getSetting(ctx *gin.Context) {
 		response.Error(ctx, http.StatusNotFound, response.NotFound, "Pengaturan tidak ditemukan")
 		return
 	}
-	response.OK(ctx, "Pengaturan pengajuan media", toSettingResponse(row))
+	resp, err := toSettingResponse(row)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, err.Error())
+		return
+	}
+	response.OK(ctx, "Pengaturan pengajuan media", resp)
 }
 
 func (c *controller) updateSetting(ctx *gin.Context) {
@@ -154,7 +162,11 @@ func (c *controller) updateSetting(ctx *gin.Context) {
 		response.Error(ctx, http.StatusUnprocessableEntity, response.ValidationError, "Payload pengaturan tidak valid")
 		return
 	}
-	terms, _ := json.Marshal(req.Terms)
+	terms, err := json.Marshal(req.Terms)
+	if err != nil {
+		response.Error(ctx, http.StatusUnprocessableEntity, response.ValidationError, "terms tidak valid")
+		return
+	}
 	updates := map[string]any{
 		"sop_url": req.SOPURL, "ministry_template_url": req.MinistryTemplateURL,
 		"brief_template_url": req.BriefTemplateURL, "caption_template_url": req.CaptionTemplateURL,
@@ -168,12 +180,22 @@ func (c *controller) updateSetting(ctx *gin.Context) {
 		return
 	}
 	var row entities.MediaSubmissionSetting
-	c.db.Where("service_type = ?", serviceType).First(&row)
-	response.OK(ctx, "Pengaturan diperbarui", toSettingResponse(row))
+	if err := c.db.Where("service_type = ?", serviceType).First(&row).Error; err != nil {
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, err.Error())
+		return
+	}
+	resp, err := toSettingResponse(row)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, err.Error())
+		return
+	}
+	response.OK(ctx, "Pengaturan diperbarui", resp)
 }
 
-func toSettingResponse(row entities.MediaSubmissionSetting) settingResponse {
+func toSettingResponse(row entities.MediaSubmissionSetting) (settingResponse, error) {
 	var terms []string
-	_ = json.Unmarshal(row.TermsJSON, &terms)
-	return settingResponse{MediaSubmissionSetting: row, Terms: terms}
+	if err := json.Unmarshal(row.TermsJSON, &terms); err != nil {
+		return settingResponse{}, err
+	}
+	return settingResponse{MediaSubmissionSetting: row, Terms: terms}, nil
 }

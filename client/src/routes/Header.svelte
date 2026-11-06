@@ -145,13 +145,13 @@
       >
         <img
           class="size-4 object-contain sm:size-6 md:size-8"
-          src="/logo/logo-bem.png"
+          src="/logo/logo-bem.webp"
           alt="Logo BEM UNAIR"
         />
 
         <img
           class="size-4 object-contain sm:size-6 md:size-8"
-          src="/logo/logo-kabinet.png"
+          src="/logo/logo-kabinet.webp"
           alt="Logo Kabinet Cerita Loka"
         />
       </div>

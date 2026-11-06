@@ -56,3 +56,6 @@ docker-compose.override.yml
 
 # Go workspace
 go.work.sum
+
+
+./graphify-out

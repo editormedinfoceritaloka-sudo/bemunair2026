@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { gsap } from 'gsap';
 
 	import TimelinePelaksanaan from '$lib/components/program-kerja/TimelinePelaksanaan.svelte';
 	import Documentation from '$lib/components/program-kerja/Documentation.svelte';
 
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let {
+		data
+	}: { data: PageData } = $props();
 
 	let pageElement: HTMLElement;
 	let titleElement: HTMLHeadingElement;
@@ -56,16 +57,11 @@
 		return `${day} ${monthNames[month - 1]}`;
 	}
 
-	$: program = data.program;
-
-	$: titleLines = (() => {
-		const words = program.name.trim().split(/\s+/);
+	function splitTitleLines(name: string): { first: string; second: string } {
+		const words = name.trim().split(/\s+/);
 
 		if (words.length <= 2) {
-			return {
-				first: program.name,
-				second: ''
-			};
+			return { first: name, second: '' };
 		}
 
 		const midpoint = Math.ceil(words.length / 2);
@@ -74,15 +70,18 @@
 			first: words.slice(0, midpoint).join(' '),
 			second: words.slice(midpoint).join(' ')
 		};
-	})();
+	}
 
-	$: documentationImages = [...(program.documentations ?? [])]
-		.sort((a, b) => a.display_order - b.display_order)
-		.map((documentation) => documentation.media?.url)
-		.filter((url): url is string => Boolean(url));
-
-	$: startDate = formatProgramDate(program.start_date);
-	$: endDate = formatProgramDate(program.end_date);
+	const program = $derived(data.program);
+	const titleLines = $derived(splitTitleLines(program.name));
+	const documentationImages = $derived(
+		[...(program.documentations ?? [])]
+			.sort((a, b) => a.display_order - b.display_order)
+			.map((documentation) => documentation.media?.url)
+			.filter((url): url is string => Boolean(url))
+	);
+	const startDate = $derived(formatProgramDate(program.start_date));
+	const endDate = $derived(formatProgramDate(program.end_date));
 
 	onMount(() => {
 		const reduceMotion = window.matchMedia(
@@ -93,60 +92,52 @@
 			return;
 		}
 
-		const context = gsap.context(() => {
-			const timeline = gsap.timeline({
-				defaults: {
-					ease: 'power3.out'
-				}
-			});
+		let cleanup: (() => void) | undefined;
 
-			if (titleElement) {
-				timeline.from(titleElement, {
-					opacity: 0,
-					y: 50,
-					duration: 0.9
+		import('gsap').then(({ gsap }) => {
+			const context = gsap.context(() => {
+				const timeline = gsap.timeline({
+					defaults: { ease: 'power3.out' }
 				});
-			}
 
-			if (descriptionElement) {
-				timeline.from(
-					descriptionElement,
-					{
+				if (titleElement) {
+					timeline.from(titleElement, {
 						opacity: 0,
-						y: 24,
-						duration: 0.7
-					},
-					'-=0.45'
-				);
-			}
+						y: 50,
+						duration: 0.9
+					});
+				}
 
-			if (timelineElement) {
-				timeline.from(
-					timelineElement,
-					{
-						opacity: 0,
-						y: 35,
-						duration: 0.8
-					},
-					'-=0.35'
-				);
-			}
+				if (descriptionElement) {
+					timeline.from(
+						descriptionElement,
+						{ opacity: 0, y: 24, duration: 0.7 },
+						'-=0.45'
+					);
+				}
 
-			if (documentationElement) {
-				timeline.from(
-					documentationElement,
-					{
-						opacity: 0,
-						y: 35,
-						duration: 0.8
-					},
-					'-=0.35'
-				);
-			}
-		}, pageElement);
+				if (timelineElement) {
+					timeline.from(
+						timelineElement,
+						{ opacity: 0, y: 35, duration: 0.8 },
+						'-=0.35'
+					);
+				}
+
+				if (documentationElement) {
+					timeline.from(
+						documentationElement,
+						{ opacity: 0, y: 35, duration: 0.8 },
+						'-=0.35'
+					);
+				}
+			}, pageElement);
+
+			cleanup = () => context.revert();
+		});
 
 		return () => {
-			context.revert();
+			cleanup?.();
 		};
 	});
 </script>
@@ -186,7 +177,7 @@
 			bind:this={titleElement}
 			class="
 				max-w-6xl
-				text-[clamp(3rem,8vw,7.5rem)]
+				text-[clamp(2rem,5vw,5rem)]
 				font-black uppercase
 				leading-[0.85]
 				tracking-[-0.06em]

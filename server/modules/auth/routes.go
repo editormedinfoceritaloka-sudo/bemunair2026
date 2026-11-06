@@ -13,6 +13,6 @@ func RegisterRoutes(api *gin.RouterGroup, users repository.UserRepository, jwtSe
 	authController := controller.NewAuthController(authService)
 
 	auth := api.Group("/auth")
-	auth.POST("/login", authController.Login)
+	auth.POST("/login", middlewares.LoginThrottle(), authController.Login)
 	auth.GET("/me", middlewares.Auth(jwtSecret), authController.Me)
 }

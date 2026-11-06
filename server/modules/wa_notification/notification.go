@@ -105,6 +105,9 @@ func ApproachingDeadline(items []ReminderItem, now time.Time) []ReminderItem {
 }
 
 func approachingDeadline(items []ReminderItem, now time.Time, window, overdueGrace time.Duration) []ReminderItem {
+	// TODO(push-down): move (status, deadline) filter into the content_submissions /
+	// letter_submissions repo method once the repository signature supports a window
+	// parameter. Skipped now to avoid breaking the daily_reminder caller and its tests.
 	start := now.Add(-overdueGrace)
 	end := now.Add(window)
 	filtered := make([]ReminderItem, 0, len(items))
@@ -228,11 +231,7 @@ func deadlineDistance(now, deadline time.Time) string {
 }
 
 func formatTime(t time.Time) string {
-	loc, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		loc = time.FixedZone("WIB", 7*60*60)
-	}
-	t = t.In(loc)
+	t = t.In(pkg.JakartaLocation())
 	weekdays := [...]string{"Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"}
 	months := [...]string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
 	return fmt.Sprintf("%s, %02d %s %d pukul %02d.%02d WIB", weekdays[t.Weekday()], t.Day(), months[t.Month()-1], t.Year(), t.Hour(), t.Minute())

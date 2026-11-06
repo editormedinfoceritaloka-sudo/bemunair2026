@@ -2,7 +2,7 @@
   let {
     name = 'Teddy Indra Wijaya',
     position = 'Menteri Koordinator',
-    image = '/menko/test.png'
+    image = '/menko/test.webp'
   }: {
     name?: string;
     position?: string;

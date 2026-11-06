@@ -7,8 +7,27 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
+
+var (
+	jakartaLocOnce sync.Once
+	jakartaLoc    *time.Location
+)
+
+// JakartaLocation returns the Asia/Jakarta time zone, loaded once.
+// Falls back to a fixed UTC+7 zone if the tzdata lookup fails.
+func JakartaLocation() *time.Location {
+	jakartaLocOnce.Do(func() {
+		loc, err := time.LoadLocation("Asia/Jakarta")
+		if err != nil {
+			loc = time.FixedZone("WIB", 7*60*60)
+		}
+		jakartaLoc = loc
+	})
+	return jakartaLoc
+}
 
 type WASender interface {
 	SendTextMessage(phone, message string) error

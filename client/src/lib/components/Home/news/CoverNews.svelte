@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+
   type NewsItem = {
-    id: string;
     slug: string;
     title: string;
     excerpt: string;
@@ -11,7 +12,7 @@
 
   let {
     item,
-    logo = '/logo/logo-kabinet.png',
+    logo = '/logo/logo-kabinet.webp',
     organization = 'Kabinet Cerita Loka'
   }: {
     item: NewsItem;
@@ -36,7 +37,7 @@
 
 <article class="group">
   <a
-    href={`/news/${encodeURIComponent(item.slug)}`}
+    href={resolve(`/news/${encodeURIComponent(item.slug)}`)}
     aria-label={`Baca berita utama ${item.title}`}
     class="
       grid items-stretch gap-6
@@ -56,6 +57,8 @@
         src={item.coverImage}
         alt={item.title}
         draggable="false"
+        loading="eager"
+        fetchpriority="high"
         class="
           absolute inset-0 h-full w-full object-cover
           transition duration-700

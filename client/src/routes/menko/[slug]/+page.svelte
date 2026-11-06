@@ -46,7 +46,7 @@
       leader?.photo?.thumbnail_url ??
       unit.logo?.url ??
       unit.logo?.thumbnail_url ??
-      '/menko/test.png'
+      '/menko/test.webp'
   );
 
   const kementrian = $derived.by(() => {
@@ -68,7 +68,7 @@
         logo:
           child.logo?.url ??
           child.logo?.thumbnail_url ??
-          '/logo/logo-kabinet.png'
+          '/logo/logo-kabinet.webp'
       }));
   });
 
@@ -443,15 +443,15 @@
         bind:this={headingElement}
         class="
           max-w-4xl
-          text-4xl leading-[0.98] font-black
+          text-xl leading-[0.98] font-black
           tracking-[-0.055em]
           text-blue-700
           [-webkit-text-stroke:2px_white]
           [paint-order:stroke_fill]
           drop-shadow-[0_10px_0_rgba(5,34,70,0.75)]
-          sm:text-5xl
-          md:text-6xl
-          lg:text-7xl
+          sm:text-2xl
+          md:text-3xl
+          lg:text-5xl
         "
       >
         {headingPrefix}
@@ -497,14 +497,16 @@
           bind:this={kementrianHeadingElement}
           class="
             text-center
-            text-4xl leading-none font-black
+             leading-none font-black
             tracking-[-0.055em]
             text-blue-700
             [-webkit-text-stroke:1.5px_white]
             [paint-order:stroke_fill]
             drop-shadow-[0_8px_0_rgba(5,34,70,0.75)]
-            sm:text-5xl
-            lg:text-6xl
+            text-xl
+            sm:text-2xl
+            md:text-3xl
+            lg:text-5xl
           "
         >
           Kementerian
@@ -536,7 +538,7 @@
 
   <img
     bind:this={leftStarOneElement}
-    src="/menko/b-3-left.png"
+    src="/menko/b-3-left.webp"
     alt=""
     class="
       absolute left-0 top-1/3
@@ -547,7 +549,7 @@
 
   <img
     bind:this={leftStarTwoElement}
-    src="/menko/b-3-left.png"
+    src="/menko/b-3-left.webp"
     alt=""
     class="
       absolute left-0 top-2/3
@@ -558,7 +560,7 @@
 
   <img
     bind:this={rightStarElement}
-    src="/menko/b-3-right.png"
+    src="/menko/b-3-right.webp"
     alt=""
     class="
       absolute right-0 top-1/5

@@ -99,7 +99,7 @@
         class="flex h-full min-w-0 items-start justify-center will-change-transform"
       >
         <img
-          src="/landing/home/left.png"
+          src="/landing/home/left.webp"
           alt="Ilustrasi landing bagian kiri"
           class="h-full w-full -rotate-4 object-contain object-top md:rotate-0"
           draggable="false"
@@ -168,7 +168,7 @@
         class="flex h-full min-w-0 items-start justify-center will-change-transform"
       >
         <img
-          src="/landing/home/right.png"
+          src="/landing/home/right.webp"
           alt="Ilustrasi landing bagian kanan"
           class="h-full w-full object-contain object-top"
           draggable="false"
@@ -181,7 +181,7 @@
       class="relative z-10 w-full shrink-0 will-change-transform"
     >
       <img
-        src="/landing/home/bottom.png"
+        src="/landing/home/bottom.webp"
         alt="Ilustrasi landing bagian bawah"
         class="block h-auto w-full object-cover object-bottom"
         draggable="false"

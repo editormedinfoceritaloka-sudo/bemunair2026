@@ -146,7 +146,7 @@
 
   let {
     events = [],
-    logo = '/logo/logo-kabinet.png',
+    logo = '/logo/logo-kabinet.webp',
     initialMonth,
     cabinet = null
   }: {

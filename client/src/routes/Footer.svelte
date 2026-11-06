@@ -66,7 +66,7 @@
     >
       <div class="flex items-center gap-5">
         <img
-          src="/logo/logo-kabinet.png"
+          src="/logo/logo-kabinet.webp"
           alt="Logo Kabinet Cerita Loka"
           class="size-28 shrink-0 object-contain sm:size-32"
         />

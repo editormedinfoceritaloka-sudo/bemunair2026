@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"bemunair2026/server/database/entities"
 	"gorm.io/gorm"
@@ -22,9 +24,11 @@ type Repository interface {
 	CreateCabinet(value *entities.CabinetTerm) error
 	UpdateCabinet(value *entities.CabinetTerm) error
 	Units(cabinetID uint64, unitType string, public bool) ([]entities.Ministry, error)
+	UnitByID(id uint64) (*entities.Ministry, error)
 	UnitBySlug(slug string, public bool) (*entities.Ministry, error)
 	CreateUnit(value *entities.Ministry) error
 	UpdateUnit(value *entities.Ministry) error
+	DeleteUnit(value *entities.Ministry) error
 	Members(unitID uint64, public bool) ([]entities.OrganizationMember, error)
 	CreateMember(value *entities.OrganizationMember) error
 	UpdateMember(value *entities.OrganizationMember) error
@@ -209,6 +213,18 @@ func (r *cabinetRepository) Units(cabinetID uint64, unitType string, public bool
 	return values, err
 }
 
+func (r *cabinetRepository) UnitByID(id uint64) (*entities.Ministry, error) {
+	var value entities.Ministry
+	query := preloadUnitRelations(r.db, "", false)
+	if err := query.First(&value, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &value, nil
+}
+
 func (r *cabinetRepository) UnitBySlug(slug string, public bool) (*entities.Ministry, error) {
 	query := r.db.Where("ministries.slug = ?", slug)
 
@@ -248,6 +264,9 @@ func (r *cabinetRepository) CreateUnit(value *entities.Ministry) error {
 	return r.db.Create(value).Error
 }
 func (r *cabinetRepository) UpdateUnit(value *entities.Ministry) error { return r.db.Save(value).Error }
+func (r *cabinetRepository) DeleteUnit(value *entities.Ministry) error {
+	return r.db.Delete(value).Error
+}
 
 func (r *cabinetRepository) Members(unitID uint64, public bool) ([]entities.OrganizationMember, error) {
 	query := r.db.Where("ministry_id = ?", unitID)
@@ -329,13 +348,31 @@ func (r *cabinetRepository) CreateDocumentation(value *entities.WorkProgramDocum
 }
 
 func (r *cabinetRepository) ReorderDocumentations(programID uint64, ids []uint64) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		for index, id := range ids {
-			if err := tx.Model(&entities.WorkProgramDocumentation{}).Where("id = ? AND work_program_id = ?", id, programID).Update("display_order", index).Error; err != nil {
-				return err
-			}
-		}
+	if len(ids) == 0 {
 		return nil
+	}
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		cases := make([]string, 0, len(ids))
+		args := make([]any, 0, len(ids)*2+2)
+		for index, id := range ids {
+			cases = append(cases, "WHEN ? THEN ?")
+			args = append(args, id, index)
+		}
+		placeholders := make([]string, len(ids))
+		for i := range placeholders {
+			placeholders[i] = "?"
+		}
+		args = append(args, programID)
+		idList := strings.Join(placeholders, ",")
+		sql := fmt.Sprintf(
+			"UPDATE work_program_documentations SET display_order = CASE id %s ELSE display_order END WHERE work_program_id = ? AND id IN (%s)",
+			strings.Join(cases, " "), idList,
+		)
+		idArgs := make([]any, 0, len(ids))
+		for _, id := range ids {
+			idArgs = append(idArgs, id)
+		}
+		return tx.Exec(sql, append(args, idArgs...)...).Error
 	})
 }
 

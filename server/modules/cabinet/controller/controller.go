@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -111,6 +112,19 @@ func (c *Controller) ListUnits(ctx *gin.Context) {
 	}
 	response.OK(ctx, "Daftar unit organisasi", values)
 }
+
+func (c *Controller) AdminUnit(ctx *gin.Context) {
+	value, err := c.service.Unit(paramID(ctx))
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, "Gagal mengambil unit organisasi")
+		return
+	}
+	if value == nil {
+		response.Error(ctx, http.StatusNotFound, response.NotFound, "Unit organisasi tidak ditemukan")
+		return
+	}
+	response.OK(ctx, "Detail unit organisasi", value)
+}
 func (c *Controller) CreateUnit(ctx *gin.Context) {
 	var req dto.UnitRequest
 	if !bind(ctx, &req) {
@@ -138,6 +152,26 @@ func (c *Controller) UpdateUnit(ctx *gin.Context) {
 		return
 	}
 	response.OK(ctx, "Unit organisasi diperbarui", value)
+}
+
+func (c *Controller) DeleteUnit(ctx *gin.Context) {
+	deleted, err := c.service.DeleteUnit(paramID(ctx), middlewares.CurrentClaims(ctx))
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrUnitAccessDenied):
+			response.Error(ctx, http.StatusForbidden, response.Forbidden, err.Error())
+		case errors.Is(err, service.ErrUnitInUse):
+			response.Error(ctx, http.StatusConflict, response.ValidationError, err.Error())
+		default:
+			response.Error(ctx, http.StatusInternalServerError, response.InternalError, "Gagal menghapus unit organisasi")
+		}
+		return
+	}
+	if !deleted {
+		response.Error(ctx, http.StatusNotFound, response.NotFound, "Unit organisasi tidak ditemukan")
+		return
+	}
+	response.OK(ctx, "Unit organisasi dihapus", nil)
 }
 
 func (c *Controller) ListMembers(ctx *gin.Context) {

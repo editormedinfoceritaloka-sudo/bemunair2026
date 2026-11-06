@@ -1,9 +1,13 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strconv"
+	"strings"
+	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 type Config struct {
@@ -26,6 +30,14 @@ type Config struct {
 }
 
 func Load() *Config {
+	appEnv := strings.ToLower(strings.TrimSpace(env("APP_ENV", "dev")))
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		if appEnv != "dev" && appEnv != "development" {
+			log.Fatalf("JWT_SECRET must be set when APP_ENV=%q (non-dev)", appEnv)
+		}
+		jwtSecret = "dev_secret_change_me"
+	}
 	return &Config{
 		AppEnv:      env("APP_ENV", "dev"),
 		Port:        env("PORT", "8080"),
@@ -37,7 +49,7 @@ func Load() *Config {
 		DBName:      env("DB_NAME", "bemunair_db"),
 		DBMaxOpen:   envInt("DB_MAX_OPEN", 20),
 		DBMaxIdle:   envInt("DB_MAX_IDLE", 10),
-		JWTSecret:   env("JWT_SECRET", "dev_secret_change_me"),
+		JWTSecret:   jwtSecret,
 		WAURL:       env("WA_ENGINE_URL", "http://localhost:3001"),
 		WAAPIKey:    env("WA_ENGINE_API_KEY", ""),
 		WAGroupJID1: env("WA_GROUP_JID_1", ""),
@@ -47,8 +59,24 @@ func Load() *Config {
 }
 
 func (c *Config) DSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Asia%%2FJakarta",
-		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
+	cfg := mysql.NewConfig()
+	cfg.User = c.DBUser
+	cfg.Passwd = c.DBPassword
+	cfg.Net = "tcp"
+	cfg.Addr = c.DBHost + ":" + c.DBPort
+	cfg.DBName = c.DBName
+	cfg.ParseTime = true
+	cfg.Loc = c.tzLocation()
+	cfg.Params = map[string]string{"charset": "utf8mb4"}
+	return cfg.FormatDSN()
+}
+
+func (c *Config) tzLocation() *time.Location {
+	loc, err := time.LoadLocation(c.TZ)
+	if err != nil {
+		loc = time.UTC
+	}
+	return loc
 }
 
 func env(key, fallback string) string {

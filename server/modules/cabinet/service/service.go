@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -17,6 +18,11 @@ const PublicProgramPageSize = 8
 
 var validStatuses = map[string]bool{"DRAFT": true, "PLANNED": true, "ONGOING": true, "COMPLETED": true, "POSTPONED": true, "CANCELLED": true, "ARCHIVED": true}
 
+var (
+	ErrUnitAccessDenied = errors.New("akses unit ditolak")
+	ErrUnitInUse        = errors.New("unit organisasi masih digunakan")
+)
+
 type Service interface {
 	PublicCabinet() (*dto.CabinetResponse, error)
 	PublicCabinetBySlug(slug string) (*dto.CabinetResponse, error)
@@ -28,8 +34,10 @@ type Service interface {
 	CreateCabinet(req dto.CabinetRequest) (*dto.CabinetResponse, error)
 	UpdateCabinet(id uint64, req dto.CabinetRequest) (*dto.CabinetResponse, error)
 	Units(cabinetID uint64, unitType string, public bool) ([]dto.UnitResponse, error)
+	Unit(id uint64) (*dto.UnitResponse, error)
 	CreateUnit(req dto.UnitRequest, actor *middlewares.Claims) (*dto.UnitResponse, error)
 	UpdateUnit(id uint64, req dto.UnitRequest, actor *middlewares.Claims) (*dto.UnitResponse, error)
+	DeleteUnit(id uint64, actor *middlewares.Claims) (bool, error)
 	Members(unitID uint64, public bool) ([]dto.MemberResponse, error)
 	CreateMember(req dto.MemberRequest, actor *middlewares.Claims) (*dto.MemberResponse, error)
 	UpdateMember(id uint64, req dto.MemberRequest, actor *middlewares.Claims) (*dto.MemberResponse, error)
@@ -216,12 +224,21 @@ func (s *cabinetService) Units(cabinetID uint64, unitType string, public bool) (
 	return result, nil
 }
 
+func (s *cabinetService) Unit(id uint64) (*dto.UnitResponse, error) {
+	value, err := s.repo.UnitByID(id)
+	if err != nil || value == nil {
+		return nil, err
+	}
+	result := unitToDTO(*value)
+	return &result, nil
+}
+
 func (s *cabinetService) CreateUnit(req dto.UnitRequest, actor *middlewares.Claims) (*dto.UnitResponse, error) {
 	if err := validateUnit(req); err != nil {
 		return nil, err
 	}
-	if req.UnitType == "KEMENKOAN" && actor.CanonicalRole() != "ADMIN_MEDINFO" {
-		return nil, errors.New("hanya ADMIN_MEDINFO yang dapat mengelola kemenkoan")
+	if isParentUnitType(req.UnitType) && (actor == nil || actor.CanonicalRole() != "ADMIN_MEDINFO") {
+		return nil, errors.New("hanya ADMIN_MEDINFO yang dapat membuat unit induk")
 	}
 	if err := s.validateHierarchy(req.CabinetTermID, req.UnitType, req.ParentID, 0); err != nil {
 		return nil, err
@@ -283,6 +300,43 @@ func (s *cabinetService) UpdateUnit(id uint64, req dto.UnitRequest, actor *middl
 	}
 	result := unitToDTO(value)
 	return &result, nil
+}
+
+func (s *cabinetService) DeleteUnit(id uint64, actor *middlewares.Claims) (bool, error) {
+	if actor == nil || actor.CanonicalRole() != "ADMIN_MEDINFO" {
+		return false, ErrUnitAccessDenied
+	}
+	value, err := s.repo.UnitByID(id)
+	if err != nil || value == nil {
+		return false, err
+	}
+
+	checks := []struct {
+		table  string
+		column string
+		label  string
+	}{
+		{table: "ministries", column: "parent_id", label: "kementerian anak"},
+		{table: "users", column: "ministry_id", label: "pengguna"},
+		{table: "organization_members", column: "ministry_id", label: "anggota"},
+		{table: "user_organization_roles", column: "ministry_id", label: "hak akses pengguna"},
+		{table: "work_programs", column: "ministry_id", label: "program kerja"},
+		{table: "content_submissions", column: "ministry_id", label: "pengajuan media"},
+		{table: "letter_submissions", column: "ministry_id", label: "pengajuan surat"},
+	}
+	for _, check := range checks {
+		var count int64
+		if err := s.repo.DB().Table(check.table).Where(check.column+" = ?", id).Count(&count).Error; err != nil {
+			return false, err
+		}
+		if count > 0 {
+			return false, fmt.Errorf("%w: terdapat %s; nonaktifkan unit untuk mempertahankan histori", ErrUnitInUse, check.label)
+		}
+	}
+	if err := s.repo.DeleteUnit(value); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (s *cabinetService) Members(unitID uint64, public bool) ([]dto.MemberResponse, error) {
@@ -564,11 +618,15 @@ func (s *cabinetService) canManage(actor *middlewares.Claims, unitID uint64) boo
 		return false
 	}
 	var count int64
-	s.repo.DB().Table("user_organization_roles").Where("user_id = ? AND ministry_id = ? AND permission = ? AND is_active = ?", actor.UserID, unitID, "MANAGE_CONTENT", true).Count(&count)
+	if err := s.repo.DB().Table("user_organization_roles").Where("user_id = ? AND ministry_id = ? AND permission = ? AND is_active = ?", actor.UserID, unitID, "MANAGE_CONTENT", true).Count(&count).Error; err != nil {
+		return false
+	}
 	if count > 0 {
 		return true
 	}
-	s.repo.DB().Table("users").Where("id = ? AND ministry_id = ?", actor.UserID, unitID).Count(&count)
+	if err := s.repo.DB().Table("users").Where("id = ? AND ministry_id = ?", actor.UserID, unitID).Count(&count).Error; err != nil {
+		return false
+	}
 	return count > 0
 }
 
@@ -577,10 +635,10 @@ func (s *cabinetService) validateHierarchy(cabinetID *uint64, unitType string, p
 		return errors.New("kabinet wajib dipilih")
 	}
 	if unitType == "KEMENTERIAN" && parentID == nil {
-		return errors.New("kementerian wajib memiliki kemenkoan")
+		return errors.New("kementerian wajib memiliki unit induk")
 	}
-	if unitType == "KEMENKOAN" && parentID != nil {
-		return errors.New("kemenkoan tidak dapat memiliki parent")
+	if isParentUnitType(unitType) && parentID != nil {
+		return errors.New("unit induk tidak dapat memiliki parent")
 	}
 	if parentID == nil {
 		return nil
@@ -588,12 +646,12 @@ func (s *cabinetService) validateHierarchy(cabinetID *uint64, unitType string, p
 	var parent entities.Ministry
 	if err := s.repo.DB().First(&parent, *parentID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("parent kemenkoan tidak ditemukan")
+			return errors.New("unit induk tidak ditemukan")
 		}
 		return err
 	}
-	if parent.UnitType != "KEMENKOAN" || parent.ParentID != nil {
-		return errors.New("parent harus berupa kemenkoan")
+	if !isParentUnitType(parent.UnitType) || parent.ParentID != nil {
+		return errors.New("parent harus berupa MENKO, BPII, atau kemenkoan")
 	}
 	if parent.CabinetTermID == nil || *parent.CabinetTermID != *cabinetID {
 		return errors.New("parent harus berada dalam kabinet yang sama")
@@ -624,18 +682,27 @@ func validateUnit(req dto.UnitRequest) error {
 	if strings.TrimSpace(req.Name) == "" || strings.TrimSpace(req.Code) == "" {
 		return errors.New("kode dan nama unit wajib diisi")
 	}
-	if req.UnitType != "KEMENKOAN" && req.UnitType != "KEMENTERIAN" {
+	if req.UnitType != "MENKO" && req.UnitType != "BPII" && req.UnitType != "KEMENKOAN" && req.UnitType != "KEMENTERIAN" {
 		return errors.New("tipe unit tidak valid")
 	}
 	return nil
 }
+
+func isParentUnitType(unitType string) bool {
+	return unitType == "MENKO" || unitType == "BPII" || unitType == "KEMENKOAN"
+}
+
 func validateMember(req dto.MemberRequest) error {
 	if strings.TrimSpace(req.Name) == "" || strings.TrimSpace(req.Position) == "" {
 		return errors.New("nama dan jabatan wajib diisi")
 	}
 	position := strings.ToUpper(strings.TrimSpace(req.PositionType))
-	if position != "MINISTER" && position != "DIRECTOR_GENERAL" {
-		return errors.New("posisi harus Menteri atau Dirjen")
+	validPositions := map[string]bool{
+		"MENKO": true, "MENTERI": true, "DIRJEN": true, "KABIRO": true,
+		"KEPALA": true, "DEPUTI": true, "MINISTER": true, "DIRECTOR_GENERAL": true,
+	}
+	if !validPositions[position] {
+		return errors.New("tipe posisi tidak valid")
 	}
 	return nil
 }
@@ -676,7 +743,7 @@ func mediaToDTO(value *entities.MediaAsset) *dto.MediaResponse {
 	return &dto.MediaResponse{ID: value.ID, FileID: value.ImageKitFileID, URL: value.URL, ThumbnailURL: value.ThumbnailURL, Name: value.Name, AltText: value.AltText, Caption: value.Caption, MimeType: value.MimeType, SizeBytes: value.SizeBytes, Width: value.Width, Height: value.Height, Purpose: value.Purpose, Status: value.Status}
 }
 func memberToDTO(value entities.OrganizationMember) dto.MemberResponse {
-	return dto.MemberResponse{ID: value.ID, Name: value.Name, Position: value.Position, PositionType: value.PositionType, Biography: value.Biography, Quote: value.Quote, Photo: mediaToDTO(value.PhotoMedia), DisplayOrder: value.DisplayOrder, IsLeader: value.IsLeader}
+	return dto.MemberResponse{ID: value.ID, Name: value.Name, Position: value.Position, PositionType: value.PositionType, Biography: value.Biography, Quote: value.Quote, Photo: mediaToDTO(value.PhotoMedia), DisplayOrder: value.DisplayOrder, IsLeader: value.IsLeader, IsActive: value.IsActive}
 }
 func unitToDTO(value entities.Ministry) dto.UnitResponse {
 	result := dto.UnitResponse{ID: value.ID, CabinetTermID: value.CabinetTermID, ParentID: value.ParentID, Code: value.Code, Name: value.Name, UnitType: value.UnitType, Slug: value.Slug, ShortName: value.ShortName, Description: value.Description, Vision: value.Vision, Mission: value.Mission, Logo: mediaToDTO(value.LogoMedia), Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsActive: value.IsActive, IsPublished: value.IsPublished, Members: make([]dto.MemberResponse, 0, len(value.Members)), Programs: make([]dto.ProgramResponse, 0, len(value.Programs)), Children: make([]dto.UnitResponse, 0, len(value.Children))}

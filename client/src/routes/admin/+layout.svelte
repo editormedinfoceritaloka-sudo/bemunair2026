@@ -6,11 +6,13 @@
   let { data, children } = $props();
 </script>
 
+<a href="#admin-main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-3 focus:py-2 focus:text-white">Skip to content</a>
+
 {#if page.url.pathname === '/admin/login'}
   {@render children()}
 {:else if data.user}
   <div class="h-svh overflow-hidden bg-background md:flex">
-    <AdminSidebar user={data.user} />
+    <AdminSidebar user={data.user} ministryLogo={data.ministryLogo} />
     <div class="flex min-h-0 min-w-0 flex-1 flex-col">
       <header class="flex h-14 shrink-0 items-center border-b border-border/80 bg-card px-4 md:px-6">
         <span class="text-sm font-medium text-muted-foreground">Admin Workspace</span>

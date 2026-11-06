@@ -6,6 +6,8 @@ import {
   type RequestEvent
 } from '@sveltejs/kit';
 
+const IS_PRODUCTION = env.NODE_ENV === 'production';
+
 export const SESSION_COOKIE = 'bemunair_admin_session';
 
 const API_BASE = (
@@ -319,8 +321,8 @@ export function setSession(
   cookies.set(SESSION_COOKIE, token, {
     path: '/',
     httpOnly: true,
-    sameSite: 'lax',
-    secure,
+    sameSite: 'strict',
+    secure: IS_PRODUCTION || secure,
     maxAge: 60 * 60 * 24
   });
 }

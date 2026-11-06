@@ -15,7 +15,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/server ./cmd/main.go
 
 # Stage 2: Runner
-FROM alpine:latest AS runner
+FROM alpine:3.22 AS runner
 
 RUN apk add --no-cache ca-certificates tzdata
 
@@ -28,5 +28,8 @@ WORKDIR /app
 COPY --from=builder /app/bin/server ./server
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=10 \
+  CMD wget -qO- http://127.0.0.1:8080/ping || exit 1
 
 CMD ["./server"]

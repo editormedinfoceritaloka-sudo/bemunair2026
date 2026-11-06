@@ -49,7 +49,7 @@
     kemenkoan = []
   }: {
     autoplayDelay?: number;
-    kemenkoan?: any[];
+    kemenkoan?: Kemenkoan[];
   } = $props();
 
   const cabinetItems =
@@ -86,7 +86,7 @@
             leader?.photo?.thumbnail_url ??
             item.logo?.url ??
             item.logo?.thumbnail_url ??
-            '/landing/speech/p.png';
+            '/landing/speech/p.webp';
 
           return {
             id: item.slug,
@@ -99,7 +99,7 @@
               item.name,
             image,
             backgroundImage:
-              '/landing/cabinet/bg-card.png'
+              '/landing/cabinet/bg-card.webp'
           };
         });
     });

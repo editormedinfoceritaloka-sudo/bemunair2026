@@ -186,7 +186,7 @@ func (s *articleService) uniqueSlug(title string, excludeID uint64) (string, err
 		base = "artikel"
 	}
 	slug := base
-	for i := 2; ; i++ {
+	for i := 0; i < 10; i++ {
 		exists, err := s.repository.ExistsBySlug(slug, excludeID)
 		if err != nil {
 			return "", err
@@ -194,8 +194,9 @@ func (s *articleService) uniqueSlug(title string, excludeID uint64) (string, err
 		if !exists {
 			return slug, nil
 		}
-		slug = fmt.Sprintf("%s-%d", base, i)
+		slug = fmt.Sprintf("%s-%d", base, i+1)
 	}
+	return "", errors.New("slug collision after 10 attempts")
 }
 
 func normalizePaging(page, perPage int) (int, int) {

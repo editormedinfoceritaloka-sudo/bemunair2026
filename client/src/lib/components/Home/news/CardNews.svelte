@@ -1,17 +1,18 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+
   type NewsItem = {
-    id: string;
     slug: string;
     title: string;
     excerpt: string;
     coverImage: string;
-    category: string;
     publishedAt: string;
+    authorName?: string;
   };
 
   let {
     item,
-    logo = '/logo/logo-kabinet.png',
+    logo = '/logo/logo-kabinet.webp',
     organization = 'Kabinet Cerita Loka'
   }: {
     item: NewsItem;
@@ -20,14 +21,18 @@
   } = $props();
 
   function formatDate(value: string): string {
+    if (!value) {
+      return '';
+    }
+
     const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
       return value;
     }
 
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
       month: 'long',
       year: 'numeric'
     }).format(date);
@@ -36,7 +41,7 @@
 
 <article class="group min-w-0">
   <a
-    href={`/news/${encodeURIComponent(item.slug)}`}
+    href={resolve(`/news/${encodeURIComponent(item.slug)}`)}
     aria-label={`Baca berita ${item.title}`}
     class="block"
   >
@@ -52,6 +57,9 @@
         alt={item.title}
         draggable="false"
         loading="lazy"
+        decoding="async"
+        width="640"
+        height="442"
         class="
           h-full w-full object-cover
           transition duration-500
@@ -83,14 +91,11 @@
         {item.title}
       </h3>
 
-      <p
-        class="
-          mt-3 line-clamp-4
-          text-sm leading-6 text-slate-700
-        "
-      >
-        {item.excerpt}
-      </p>
+      {#if item.excerpt}
+        <p class="mt-3 line-clamp-4 text-sm leading-6 text-slate-700">
+          {item.excerpt}
+        </p>
+      {/if}
 
       <div class="mt-5 flex items-center gap-3">
         <img
@@ -101,18 +106,18 @@
         />
 
         <div class="min-w-0">
-          <p
-            class="
-              truncate text-sm font-bold
-              text-slate-950
-            "
-          >
-            {item.category}
+          <p class="truncate text-sm font-bold text-slate-950">
+            {item.authorName ?? organization}
           </p>
 
-          <p class="mt-0.5 text-xs font-medium text-slate-600">
-            {formatDate(item.publishedAt)}
-          </p>
+          {#if item.publishedAt}
+            <time
+              datetime={item.publishedAt}
+              class="mt-0.5 block text-xs font-medium text-slate-600"
+            >
+              {formatDate(item.publishedAt)}
+            </time>
+          {/if}
         </div>
       </div>
     </div>

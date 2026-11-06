@@ -128,6 +128,7 @@
   }
 
   function submitConfirmed() {
+    if (submitting || confirmed) return;
     confirmed = true;
     reviewOpen = false;
     requestAnimationFrame(() => formElement?.requestSubmit());
