@@ -6,7 +6,11 @@
 -- - Akun Medinfo: role ADMIN_MEDINFO
 -- - Satu akun per kementerian
 -- - Medinfo memiliki 3 akun: Caca, Ocha, Febi
--- - Password berbeda dan terdiri dari 8 digit
+-- - Dev-only (compose production hanya menjalankan `migrate`, bukan seeder
+--   ini). Semua akun berbagi SATU password dev yang sama, diambil dari env
+--   SEED_USER_PASSWORD (lihat server/.env.example) dan di-hash saat seeder
+--   dijalankan oleh database/seeder.go. Tidak ada password — plaintext
+--   maupun hash — yang pernah ditulis ke file ini.
 -- ============================================================
 
 START TRANSACTION;
@@ -30,7 +34,7 @@ INSERT INTO users (
 (
     'Admin BEM UNAIR',
     'admin@bem.unair.ac.id',
-    '$2a$10$r1pia3hWuIcj/mUOE4WYiuLQ.H9Nd5KwgR6xoxY/Nct3sEe1b.VXG',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN_MEDINFO',
     NULL,
     NULL,
@@ -47,7 +51,7 @@ INSERT INTO users (
 (
     'Johanes Richard Darmawan',
     'menko.kemahasiswaan@bem.unair.ac.id',
-    '$2a$10$Oef94oZusjkGYHbVjf6awuaMFenWPN/TiPqKFnsfqBB6Ylzyuk.R6',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'MENKO_KEMAHASISWAAN',
     (
@@ -69,7 +73,7 @@ INSERT INTO users (
 (
     'Muhammad Ziyaad Difa Ul Haq',
     'menko.kemasyarakatan@bem.unair.ac.id',
-    '$2a$10$qPX/06lAa93rbbxAu19e3.c6I3tgyYfcxdKizoUIlFDrwxGbW.3D.',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'MENKO_KEMASYARAKATAN',
     (
@@ -91,7 +95,7 @@ INSERT INTO users (
 (
     'Andrean Marcellino',
     'menko.kominfo@bem.unair.ac.id',
-    '$2a$10$GntLR1rdqq/BI63lxRuY3u639ZiqEc8BBY6gkmcDupIBOfFdvFTnS',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'MENKO_KOMINFO',
     (
@@ -113,7 +117,7 @@ INSERT INTO users (
 (
     'Dewa Pranata Putra Pratama',
     'menko.pergerakan@bem.unair.ac.id',
-    '$2a$10$IKXudAcmNi6W08WuWbAnW.Sc2kxuv1ur19d2e6mi6d4ew5./A4FNi',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'MENKO_PERGERAKAN',
     (
@@ -135,7 +139,7 @@ INSERT INTO users (
 (
     'Nasua Okta Kusuma Dewi Rofiq',
     'menko.ppk@bem.unair.ac.id',
-    '$2a$10$iuVHVMdgzbZM96cFc/ymUOMfn2um8W9e4x1G4qlyenU7on21rs0xC',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'MENKO_PPK',
     (
@@ -157,7 +161,7 @@ INSERT INTO users (
 (
     'Elsa Putri Aprizalni',
     'menteri.adkesma@bem.unair.ac.id',
-    '$2a$10$A3hkE1tdTfYzh74p5mQliOmfpCK0tfhC2SXlxxLBj5W3EeU.92cGu',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'ADKESMA',
     (
@@ -179,7 +183,7 @@ INSERT INTO users (
 (
     'M. Rifqy Yusuf',
     'menteri.pengprof@bem.unair.ac.id',
-    '$2a$10$RZe5.8ttuYvP/ShWwjxlmuphHUTLUE2XzhNeSH6uQDmG5cZ.GkKqG',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'PENGPROF',
     (
@@ -201,7 +205,7 @@ INSERT INTO users (
 (
     'Labib Azka Asysyafiq',
     'menteri.psdm@bem.unair.ac.id',
-    '$2a$10$Y62KUut2z841yA3yHMqKUu2kzBJ26kZDbgVz9R5j5oTuTwKRbYGjK',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'PSDM',
     (
@@ -223,7 +227,7 @@ INSERT INTO users (
 (
     'Zaskia Darojah',
     'menteri.lh@bem.unair.ac.id',
-    '$2a$10$usU8RNR7etoS/Fzru9G9auA5Xb/ZwQVO4SOpIaHi76w3mgqVt6j32',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'LH',
     (
@@ -245,7 +249,7 @@ INSERT INTO users (
 (
     'An Nadhofah Adlin',
     'menteri.kemenkes@bem.unair.ac.id',
-    '$2a$10$StDMNiWfJoIdgIGuXzkuIOzDRQC.n/JcF5vktLvP8BUKa/4m5HBmC',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'KEMENKES',
     (
@@ -267,7 +271,7 @@ INSERT INTO users (
 (
     'Sahrul Efendi',
     'menteri.pengmas@bem.unair.ac.id',
-    '$2a$10$WaPpjkgExDiCy3qa2fqWteEcAhw.QeSPjCcLeE1Jh3jVe5BH/3Bfi',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'PENGMAS',
     (
@@ -289,7 +293,7 @@ INSERT INTO users (
 (
     'Zalfaa Putri Arfiliesia',
     'menteri.hublu@bem.unair.ac.id',
-    '$2a$10$1BMQrrYZNy1MVkho9B9V1uiYzIlQre2Hs9uBKrPb6bb4iygySAjJ2',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'HUBLU',
     (
@@ -311,7 +315,7 @@ INSERT INTO users (
 (
     'Ganesya Intantalia (Caca)',
     'caca.medinfo@bem.unair.ac.id',
-    '$2a$10$70EjhwZ5Uj.aHmZkOmHMCe.3RDX2B14ib6VzmbXfAS70DNwO8qB22',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -333,7 +337,7 @@ INSERT INTO users (
 (
     'Ocha Della Fitriani',
     'ocha.medinfo@bem.unair.ac.id',
-    '$2a$10$KWUt9zk1GjjGl0ao6b25oeviFQKW41UiI3bAHRA0XGzxWOQAIZXB6',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -355,7 +359,7 @@ INSERT INTO users (
 (
     'Febiola Al Jannah',
     'febi.medinfo@bem.unair.ac.id',
-    '$2a$10$pRzCfPCEEd984QVcqtRfjuO5lJUF9rJg.FcCunJTxVhfijPlXpM7q',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN_MEDINFO',
     'MEDINFO',
     (
@@ -377,7 +381,7 @@ INSERT INTO users (
 (
     'Eugenius Nathaniel',
     'menteri.sinema@bem.unair.ac.id',
-    '$2a$10$sFQ1isIdimtF2Zp6SgoJYeeZinRAsw/XmfHrQjqyHplHr598t8Z3.',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'SINEMA',
     (
@@ -399,7 +403,7 @@ INSERT INTO users (
 (
     'Farrel Ardisto Samai',
     'menteri.kkg@bem.unair.ac.id',
-    '$2a$10$K24gBVYvv4Rpxscp4Ou9HOLBbqacqAshCnmo7jppYvNQLjGwDVauG',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'KKG',
     (
@@ -421,7 +425,7 @@ INSERT INTO users (
 (
     'Daniel Nikon Martua Situmorang',
     'menteri.sospol@bem.unair.ac.id',
-    '$2a$10$Ydb9OprRJA5NAgljUPvIx.5BmRzUBY8muLG3t6eV4uD4/dyp0SXo2',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'SOSPOL',
     (
@@ -443,7 +447,7 @@ INSERT INTO users (
 (
     'Farhan Kamil',
     'menteri.edigpro@bem.unair.ac.id',
-    '$2a$10$8sj0DXJpkS/M0LYirsmode5pszF1Pvj0lLDHwRgquP/yP2qSnhQw6',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'EDIGPRO',
     (
@@ -465,7 +469,7 @@ INSERT INTO users (
 (
     'Farrel Bisma Abyakta',
     'menteri.riskel@bem.unair.ac.id',
-    '$2a$10$niEcMv2Ri4hW9zhkwKlQ8OwqtfcOMQMWs1T/zSYq8.B5w10vrdr/S',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'RISKEL',
     (
@@ -487,7 +491,7 @@ INSERT INTO users (
 (
     'Alaina Atwa Awali Harahap',
     'menteri.seniiora@bem.unair.ac.id',
-    '$2a$10$xK3wmlQfLc64qfxEtdGWhuDCdenHiG8ZXS2avEY6TJ5RK6xgj3sRq',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'SENIIORA',
     (
@@ -509,7 +513,7 @@ INSERT INTO users (
 (
     'Inez Faradina Kasih',
     'menteri.benkab@bem.unair.ac.id',
-    '$2a$10$RjwIRno/Pi2tCJeyb6tlUuKIqWyp41fbmWP4uklGBzkAOLrbR/qse',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'BENKAB',
     (
@@ -531,7 +535,7 @@ INSERT INTO users (
 (
     'Deri Bayu Setiawan',
     'kepala.pak@bem.unair.ac.id',
-    '$2a$10$tX6E8G95KQf4SumaeUTpXe8.s5smME7/nwb5Hsd2Y29lYA.wrnfxa',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'PAK',
     (
@@ -553,7 +557,7 @@ INSERT INTO users (
 (
     'Gheahaq Danty El Zahra',
     'menteri.seskab@bem.unair.ac.id',
-    '$2a$10$0MvAsSSBOnHUys7bk6SSTOUo9qwhMSDJNy6P2424zURWeH1OFDCfO',
+    '__SEED_PASSWORD_HASH__',
     'ADMIN',
     'SESKAB',
     (
