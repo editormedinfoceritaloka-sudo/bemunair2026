@@ -91,7 +91,8 @@ PJ bukan role terpisah. PJ merupakan user `ADMIN_MEDINFO` dari kementerian `MEDI
 │   ├── docker-compose.yml  # Production
 │   └── nginx/
 ├── scripts/
-│   └── deploy.sh
+│   ├── deploy.sh
+│   └── seed.sh
 └── .github/
     ├── workflows/deploy.yml
     └── dependabot.yml
@@ -230,11 +231,19 @@ go run ./cmd seed     # jalankan seeder idempotent
 go run ./cmd setup    # migrate lalu seed
 ```
 
+Atau lewat `scripts/seed.sh` dari root repo, yang menjalankan command yang sama di dalam container dev compose (default) atau langsung di host dengan `--local`:
+
+```bash
+./scripts/seed.sh           # seed saja, lewat docker compose
+./scripts/seed.sh setup     # migrate lalu seed, lewat docker compose
+./scripts/seed.sh --local   # seed saja, langsung di host (DB via 127.0.0.1:3308)
+```
+
 Migration manager mencatat migrasi pada tabel `schema_migrations`. File migrasi saat ini berada di `server/database/migrations/`, sedangkan master data development berada di `server/database/seeders/`.
 
 Seeder hanya untuk development atau bootstrap yang disetujui. Deployment production menjalankan `./server migrate` dan tidak pernah menjalankan seeder otomatis.
 
-Akun seed development memakai password contoh `password`. Password tersebut wajib diganti dan tidak boleh digunakan di production.
+Semua akun seed berbagi satu password dev yang sama, diambil dari env `SEED_USER_PASSWORD` (lihat `server/.env.example`) dan di-hash saat seeder dijalankan — tidak ada password, plaintext maupun hash, yang ditulis ke file seeder itu sendiri. Isi `SEED_USER_PASSWORD` di `server/.env` sebelum menjalankan seeder; nilai ini dev-only dan tidak pernah dipakai di production.
 
 ## API dan Contoh Curl
 
