@@ -13,9 +13,13 @@ wa_engine_image="$4"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 app_dir="$(cd "$script_dir/.." && pwd)"
-production_env="$script_dir/.env.production"
-release_env="$script_dir/.release.env"
-previous_env="$script_dir/.release.env.previous"
+# This script lives in scripts/; the compose file, nginx config, and the
+# production secrets it reads/writes stay in infra/ alongside everything
+# else that describes the stack.
+infra_dir="$app_dir/infra"
+production_env="$infra_dir/.env.production"
+release_env="$infra_dir/.release.env"
+previous_env="$infra_dir/.release.env.previous"
 backup_dir="$app_dir/backups"
 
 if [[ ! -f "$production_env" ]]; then
@@ -36,7 +40,7 @@ CLIENT_IMAGE=$client_image
 WA_ENGINE_IMAGE=$wa_engine_image
 EOF
 
-compose=(docker compose --env-file "$production_env" --env-file "$release_env" -f "$script_dir/docker-compose.yml")
+compose=(docker compose --env-file "$production_env" --env-file "$release_env" -f "$infra_dir/docker-compose.yml")
 
 rollback() {
   exit_code=$?

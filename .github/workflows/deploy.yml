@@ -60,7 +60,7 @@ jobs:
         run: pnpm test
 
       - name: Validate production shell script
-        run: bash -n infra/deploy.sh
+        run: bash -n scripts/deploy.sh
 
       - name: Validate production Compose model
         run: docker compose --env-file infra/.env.production.example -f infra/docker-compose.yml config --quiet
@@ -176,7 +176,7 @@ jobs:
           archive="/tmp/bemunair-${GITHUB_SHA}.tgz"
           remote_archive="/tmp/bemunair-${GITHUB_SHA}.tgz"
           target="${VPS_USER}@${VPS_HOST}"
-          tar -czf "$archive" infra/docker-compose.yml infra/nginx/nginx.conf infra/deploy.sh infra/.env.production.example docs/api
+          tar -czf "$archive" infra/docker-compose.yml infra/nginx/nginx.conf scripts/deploy.sh infra/.env.production.example docs/api
           ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" "install -d -- '$VPS_APP_DIR'"
           scp -i "$HOME/.ssh/id_ed25519" -P "$VPS_PORT" "$archive" "$target:$remote_archive"
           ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" "tar -xzf '$remote_archive' -C '$VPS_APP_DIR' && rm -f '$remote_archive'"
@@ -195,7 +195,7 @@ jobs:
           target="${VPS_USER}@${VPS_HOST}"
           image_prefix="ghcr.io/${GITHUB_REPOSITORY,,}"
           ssh -i "$HOME/.ssh/id_ed25519" -p "$VPS_PORT" "$target" \
-            "bash '$VPS_APP_DIR/infra/deploy.sh' '$GITHUB_SHA' '${image_prefix}-server:sha-${GITHUB_SHA}' '${image_prefix}-client:sha-${GITHUB_SHA}' '${image_prefix}-wa-engine:sha-${GITHUB_SHA}'"
+            "bash '$VPS_APP_DIR/scripts/deploy.sh' '$GITHUB_SHA' '${image_prefix}-server:sha-${GITHUB_SHA}' '${image_prefix}-client:sha-${GITHUB_SHA}' '${image_prefix}-wa-engine:sha-${GITHUB_SHA}'"
 
       - name: Verify public endpoint
         if: env.PRODUCTION_URL != ''

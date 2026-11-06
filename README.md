@@ -89,8 +89,9 @@ PJ bukan role terpisah. PJ merupakan user `ADMIN_MEDINFO` dari kementerian `MEDI
 ├── infra/
 │   ├── docker-compose.dev.yml
 │   ├── docker-compose.yml  # Production
-│   ├── deploy.sh
 │   └── nginx/
+├── scripts/
+│   └── deploy.sh
 └── .github/
     ├── workflows/deploy.yml
     └── dependabot.yml
@@ -315,7 +316,7 @@ cd ../wa-engine && pnpm install --frozen-lockfile && pnpm test
 Validasi infrastruktur production:
 
 ```bash
-bash -n infra/deploy.sh
+bash -n scripts/deploy.sh
 docker compose --env-file infra/.env.production.example \
   -f infra/docker-compose.yml config --quiet
 docker run --rm \
