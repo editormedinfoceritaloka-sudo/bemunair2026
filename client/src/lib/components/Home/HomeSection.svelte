@@ -157,9 +157,7 @@
             md:max-w-none md:text-lg md:leading-normal
           "
         >
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pulvinar
-          facilisis ornare. Maecenas ut dignissim orci. Mauris ac accumsan
-          tellus.
+          BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
         </p>
       </div>
 
