@@ -421,7 +421,7 @@
         bind:this={headingElement}
         id="calendar-heading"
         class="
-          text-5xl leading-[0.94]
+          text-4xl leading-[0.94]
           font-black
           tracking-[-0.065em]
           text-[#164f88]

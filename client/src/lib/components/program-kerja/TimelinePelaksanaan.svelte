@@ -195,7 +195,7 @@
   >
     <div
       class="
-        relative flex min-h-[70px]
+        relative flex h-[50px] sm:min-h-[70px]
         items-center
         rounded-[12px]
         border-[5px] border-orange-700
@@ -233,7 +233,7 @@
   >
     <div
       class="
-        flex min-h-[90px]
+        flex h-[70px] sm:min-h-[90px]
         items-center
         rounded-[10px]
         border border-slate-300
@@ -248,7 +248,7 @@
     >
       <span
         class="
-          text-[clamp(0.9rem,3.8vw,3.2rem)]
+          text-[clamp(0.5rem,3vw,3rem)]
           leading-[0.9] font-black
           tracking-[-0.055em]
           text-white

@@ -133,11 +133,11 @@
   bind:this={sectionElement}
   id="cabinet"
   class="
-    min-h-screen w-full overflow-hidden
+    md:min-h-screen w-full overflow-hidden
     bg-linear-to-b from-blue-100 via-blue-50 to-white
-    py-24
-    sm:py-28
-    md:py-32
+    pt-24 pb-12
+    sm:pt-28 sm:pb-16
+    md:py-32 md:pb-20
   "
 >
   <div class="mx-auto flex w-full max-w-7xl flex-col items-center">

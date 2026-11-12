@@ -247,10 +247,10 @@
     from-blue-700
     via-blue-500
     to-blue-100
-    px-3 py-14
-    sm:px-5 sm:py-16
-    md:px-8 md:py-20
-    lg:px-10 lg:py-24
+    px-3 pt-14 pb-4
+    sm:px-5 sm:pt-16 sm:pb-6
+    md:px-8 md:pt-20 md:pb-8
+    lg:px-10 lg:pt-24 lg:pb-10 
   "
 >
   <div

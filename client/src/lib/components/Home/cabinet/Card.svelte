@@ -244,7 +244,7 @@
         >
           <h3
             class="
-              max-w-[90%] text-sm font-extrabold
+              max-w-[90%] mt-10 text-sm font-extrabold
               uppercase leading-[1.05]
               tracking-[-0.025em] text-blue-800
               drop-shadow-[0_1px_1px_rgba(255,255,255,0.95)]

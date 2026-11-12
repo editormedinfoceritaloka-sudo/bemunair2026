@@ -20,7 +20,7 @@
     bg-linear-to-b
     from-white
     via-blue-50/60
-    to-blue-100
+    to-blue-50
     pb-28
     pt-28
     sm:pt-32
@@ -52,7 +52,6 @@
       top-[45%]
       size-96
       rounded-full
-      bg-blue-200/25
       blur-[120px]
     "
   ></div>
