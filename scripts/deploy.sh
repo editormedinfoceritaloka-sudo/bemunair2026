@@ -42,6 +42,16 @@ EOF
 
 compose=(docker compose --env-file "$production_env" --env-file "$release_env" -f "$infra_dir/docker-compose.yml")
 
+# SKIP_PULL=true pulls only infrastructure images (db, nginx) and starts
+# everything with `--pull never`, for releases built from local images that
+# exist only on this host (no registry). Default keeps pulling everything.
+up_args=()
+pull_infra_only=false
+if [[ "${SKIP_PULL:-false}" == "true" ]]; then
+  pull_infra_only=true
+  up_args=(--pull never)
+fi
+
 rollback() {
   exit_code=$?
   if [[ $exit_code -eq 0 ]]; then
@@ -51,7 +61,7 @@ rollback() {
   echo "Deployment failed. Restoring previous application images..." >&2
   if [[ -f "$previous_env" ]]; then
     cp "$previous_env" "$release_env"
-    "${compose[@]}" up -d --remove-orphans || true
+    "${compose[@]}" up "${up_args[@]}" -d --remove-orphans || true
   else
     echo "No previous release metadata is available for automatic rollback." >&2
   fi
@@ -60,8 +70,13 @@ rollback() {
 trap rollback ERR
 
 "${compose[@]}" config --quiet
-"${compose[@]}" pull
-"${compose[@]}" up -d db
+if [[ "$pull_infra_only" == "true" ]]; then
+  echo "SKIP_PULL=true: pulling infrastructure images only; app images must already exist locally."
+  "${compose[@]}" pull db nginx
+else
+  "${compose[@]}" pull
+fi
+"${compose[@]}" up "${up_args[@]}" -d db
 
 for attempt in {1..30}; do
   if "${compose[@]}" exec -T db sh -c 'mysqladmin ping -h 127.0.0.1 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent' >/dev/null 2>&1; then
@@ -79,7 +94,7 @@ backup_file="$backup_dir/pre-deploy-${release_sha}-$(date -u +%Y%m%dT%H%M%SZ).sq
 "${compose[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysqldump --single-transaction --quick --lock-tables=false -u"$MYSQL_USER" "$MYSQL_DATABASE"' >"$backup_file"
 chmod 600 "$backup_file"
 
-"${compose[@]}" up -d --remove-orphans
+"${compose[@]}" up "${up_args[@]}" -d --remove-orphans
 
 http_port="$(sed -n 's/^HTTP_PORT=//p' "$production_env" | tail -n 1)"
 http_port="${http_port:-8081}"
