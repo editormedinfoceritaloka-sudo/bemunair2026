@@ -45,10 +45,7 @@ export const load: PageServerLoad = async ({
       programs: programsResponse.data
     };
   } catch (cause) {
-    console.error(
-      `Gagal mengambil kementerian "${params.slug}":`,
-      cause
-    );
+
 
     const status = getErrorStatus(cause);
 

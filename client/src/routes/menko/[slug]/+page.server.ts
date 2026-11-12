@@ -11,21 +11,11 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
       `/cabinet/units/${params.slug}`
     );
 
-    console.log('Slug:', params.slug);
-    console.log('Organization unit:', response.data);
-    console.dir(response.data, {
-      depth: null,
-      colors: true
-    });
-
     return {
       unit: response.data
     };
   } catch (err) {
-    console.error(
-      `Gagal mengambil unit dengan slug "${params.slug}":`,
-      err
-    );
+
 
     error(404, 'Kemenkoan atau kementerian tidak ditemukan');
   }

@@ -21,105 +21,11 @@
   let pageTwo: HTMLDivElement;
 
   let pages: HTMLDivElement[] = [];
-  let currentPage = 0;
-  let isAnimating = false;
+
+  let currentPage = $state(0);
+  let isAnimating = $state(false);
+
   let reduceMotion = false;
-
-  onMount(() => {
-    gsap.registerPlugin(ScrollTrigger);
-
-    pages = [coverPage, pageOne, pageTwo];
-
-    reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-
-    pages.forEach((page, index) => {
-      gsap.set(page, {
-        rotationY: 0,
-        transformOrigin: 'left center',
-        transformStyle: 'preserve-3d',
-        backfaceVisibility: 'hidden',
-        zIndex: totalPages - index
-      });
-    });
-
-    const context = gsap.context(() => {
-      if (reduceMotion) {
-        gsap.set([bookFrame, bookControls], {
-          autoAlpha: 1,
-          clearProps: 'transform'
-        });
-
-        return;
-      }
-
-      gsap.set(bookFrame, {
-        autoAlpha: 0,
-        y: 110,
-        scale: 0.94,
-        rotationX: 8,
-        transformOrigin: 'center bottom'
-      });
-
-      gsap.set(bookControls, {
-        autoAlpha: 0,
-        y: 28
-      });
-
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: speechSection,
-            start: 'top 78%',
-            once: true,
-            invalidateOnRefresh: true
-          }
-        })
-        .to(bookFrame, {
-          autoAlpha: 1,
-          y: 0,
-          scale: 1,
-          rotationX: 0,
-          duration: 1.15,
-          ease: 'power3.out',
-          clearProps: 'transform,opacity,visibility'
-        })
-        .to(
-          bookControls,
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.65,
-            ease: 'power2.out',
-            clearProps: 'transform,opacity,visibility'
-          },
-          '-=0.4'
-        );
-    }, speechSection);
-
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        nextPage();
-      }
-
-      if (event.key === 'ArrowLeft') {
-        previousPage();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeydown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeydown);
-
-      pages.forEach((page) => {
-        gsap.killTweensOf(page);
-      });
-
-      context.revert();
-    };
-  });
 
   function nextPage(): void {
     if (
@@ -139,9 +45,10 @@
 
     gsap.to(page, {
       rotationY: -180,
-      duration: reduceMotion ? 0.01 : 1.15,
+      duration: reduceMotion ? 0.01 : 0.9,
       ease: 'power2.inOut',
-      boxShadow: '-20px 12px 32px rgba(15, 23, 42, 0.25)',
+      boxShadow:
+        '-14px 8px 24px rgba(15, 23, 42, 0.25)',
       onComplete: () => {
         currentPage += 1;
         isAnimating = false;
@@ -172,15 +79,163 @@
 
     gsap.to(page, {
       rotationY: 0,
-      duration: reduceMotion ? 0.01 : 1.15,
+      duration: reduceMotion ? 0.01 : 0.9,
       ease: 'power2.inOut',
-      boxShadow: '0 12px 30px rgba(15, 23, 42, 0.15)',
+      boxShadow:
+        '0 8px 20px rgba(15, 23, 42, 0.15)',
       onComplete: () => {
         currentPage = previousIndex;
         isAnimating = false;
       }
     });
   }
+
+  onMount(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    pages = [
+      coverPage,
+      pageOne,
+      pageTwo
+    ];
+
+    reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    pages.forEach((page, index) => {
+      gsap.set(page, {
+        rotationY: 0,
+        transformOrigin: 'left center',
+        transformStyle: 'preserve-3d',
+        backfaceVisibility: 'hidden',
+        zIndex: totalPages - index
+      });
+    });
+
+    const context = gsap.context(() => {
+      if (reduceMotion) {
+        gsap.set(
+          [bookFrame, bookControls],
+          {
+            autoAlpha: 1,
+            clearProps: 'transform'
+          }
+        );
+
+        return;
+      }
+
+      gsap.set(bookFrame, {
+        autoAlpha: 0,
+        y: 65,
+        scale: 0.96,
+        rotationX: 5,
+        transformOrigin: 'center bottom'
+      });
+
+      gsap.set(bookControls, {
+        autoAlpha: 0,
+        y: 18
+      });
+
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: speechSection,
+            start: 'top 80%',
+            once: true,
+            invalidateOnRefresh: true
+          }
+        })
+        .to(bookFrame, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          rotationX: 0,
+          duration: 0.95,
+          ease: 'power3.out',
+          clearProps:
+            'transform,opacity,visibility'
+        })
+        .to(
+          bookControls,
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.55,
+            ease: 'power2.out',
+            clearProps:
+              'transform,opacity,visibility'
+          },
+          '-=0.3'
+        );
+    }, speechSection);
+
+    const handleKeydown = (
+      event: KeyboardEvent
+    ): void => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+
+      if (
+        target instanceof HTMLElement &&
+        (
+          target.matches(
+            'input, textarea, select'
+          ) ||
+          target.isContentEditable
+        )
+      ) {
+        return;
+      }
+
+      const rect =
+        speechSection.getBoundingClientRect();
+
+      if (
+        rect.bottom <= 0 ||
+        rect.top >= window.innerHeight
+      ) {
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        nextPage();
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        previousPage();
+      }
+    };
+
+    window.addEventListener(
+      'keydown',
+      handleKeydown
+    );
+
+    return () => {
+      window.removeEventListener(
+        'keydown',
+        handleKeydown
+      );
+
+      pages.forEach((page) => {
+        gsap.killTweensOf(page);
+      });
+
+      context.revert();
+    };
+  });
 </script>
 
 <section
@@ -188,30 +243,44 @@
   id="speech"
   class="
     w-full overflow-hidden
-    bg-linear-to-b from-blue-700 via-blue-500 to-blue-100
-    px-3 py-24
-    sm:px-6 sm:py-26
-    md:px-10 md:py-28
-    lg:px-16 lg:py-30
+    bg-linear-to-b
+    from-blue-700
+    via-blue-500
+    to-blue-100
+    px-3 py-14
+    sm:px-5 sm:py-16
+    md:px-8 md:py-20
+    lg:px-10 lg:py-24
   "
 >
   <div
     class="
-      mx-auto flex w-full max-w-7xl
-      flex-col items-center gap-5
+      mx-auto flex w-full
+      max-w-4xl
+      flex-col items-center
+      gap-3
+      sm:gap-4
     "
   >
     <div
       bind:this={bookFrame}
       class="
-        relative h-[400px] w-full
-        rounded-xl bg-white/20
-        p-3 shadow-2xl backdrop-blur-xl
-        [perspective:2200px]
+        relative
+        h-[330px]
+        w-full
+        rounded-xl
+        bg-white/20
+        p-2
+        shadow-2xl
+        backdrop-blur-xl
+        [perspective:1800px]
         will-change-transform
-        sm:h-[70svh] sm:min-h-[500px] sm:p-5
-        md:h-[85svh] md:min-h-[620px] md:p-8
-        lg:h-[70vh] lg:max-h-[700px]
+        sm:h-[410px]
+        sm:p-3
+        md:h-[490px]
+        md:p-4
+        lg:h-[540px]
+        lg:p-5
       "
     >
       <div
@@ -223,7 +292,9 @@
         <div
           bind:this={coverPage}
           class="
-            absolute inset-0 overflow-hidden rounded-xl
+            absolute inset-0
+            overflow-hidden
+            rounded-xl
             [backface-visibility:hidden]
             [transform-style:preserve-3d]
             will-change-transform
@@ -235,32 +306,43 @@
         <div
           bind:this={pageOne}
           class="
-            absolute inset-0 overflow-hidden rounded-xl
+            absolute inset-0
+            overflow-hidden
+            rounded-xl
             [backface-visibility:hidden]
             [transform-style:preserve-3d]
             will-change-transform
           "
         >
-          <Page1 />
+          <Page1
+            active={currentPage === 1}
+          />
         </div>
 
         <div
           bind:this={pageTwo}
           class="
-            absolute inset-0 overflow-hidden rounded-xl
+            absolute inset-0
+            overflow-hidden
+            rounded-xl
             [backface-visibility:hidden]
             [transform-style:preserve-3d]
             will-change-transform
           "
         >
-          <Page2 />
+          <Page2
+            active={currentPage === 2}
+          />
         </div>
       </div>
     </div>
 
     <div
       bind:this={bookControls}
-      class="flex items-center justify-center gap-4"
+      class="
+        flex items-center
+        justify-center gap-3
+      "
     >
       <button
         type="button"
@@ -268,16 +350,23 @@
         disabled={currentPage === 0 || isAnimating}
         onclick={previousPage}
         class="
-          grid size-11 place-items-center rounded-full
-          border border-white/60 bg-white/30
-          text-blue-900 shadow-lg backdrop-blur-xl
+          grid size-9
+          place-items-center
+          rounded-full
+          border border-white/60
+          bg-white/30
+          text-blue-900
+          shadow-lg
+          backdrop-blur-xl
           transition
           hover:bg-white/60
-          disabled:pointer-events-none disabled:opacity-35
+          disabled:pointer-events-none
+          disabled:opacity-35
+          sm:size-10
         "
       >
         <ChevronLeft
-          size={22}
+          size={18}
           strokeWidth={2.5}
         />
       </button>
@@ -285,11 +374,18 @@
       <p
         aria-live="polite"
         class="
-          min-w-24 rounded-full
-          border border-white/60 bg-white/30
-          px-4 py-2 text-center text-sm
-          font-bold text-blue-900
-          shadow-lg backdrop-blur-xl
+          min-w-18
+          rounded-full
+          border border-white/60
+          bg-white/30
+          px-3 py-1.5
+          text-center
+          text-xs font-bold
+          text-blue-900
+          shadow-lg
+          backdrop-blur-xl
+          sm:min-w-20
+          sm:text-sm
         "
       >
         {currentPage + 1} / {totalPages}
@@ -301,16 +397,23 @@
         disabled={currentPage === totalPages - 1 || isAnimating}
         onclick={nextPage}
         class="
-          grid size-11 place-items-center rounded-full
-          border border-white/60 bg-white/30
-          text-blue-900 shadow-lg backdrop-blur-xl
+          grid size-9
+          place-items-center
+          rounded-full
+          border border-white/60
+          bg-white/30
+          text-blue-900
+          shadow-lg
+          backdrop-blur-xl
           transition
           hover:bg-white/60
-          disabled:pointer-events-none disabled:opacity-35
+          disabled:pointer-events-none
+          disabled:opacity-35
+          sm:size-10
         "
       >
         <ChevronRight
-          size={22}
+          size={18}
           strokeWidth={2.5}
         />
       </button>

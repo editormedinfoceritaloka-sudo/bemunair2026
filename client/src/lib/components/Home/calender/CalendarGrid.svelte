@@ -60,7 +60,7 @@
 
 <div
   class="
-    mt-8 overflow-hidden
+    mt-6 overflow-hidden
     rounded-3xl
     border border-blue-900/15
     bg-white
@@ -77,7 +77,7 @@
     <div
       role="grid"
       aria-label="Kalender program kerja Kabinet Cerita Loka"
-      class="min-w-245"
+      class="min-w-195"
     >
       <div
         role="row"
@@ -94,9 +94,9 @@
             class={`
               border-r
               border-white/15
-              px-3 py-4
+              px-2.5 py-3
               text-center
-              text-xs font-black
+              text-[11px] font-black
               uppercase
               tracking-[0.1em]
               text-white
@@ -118,7 +118,7 @@
         <div
           role="row"
           class="
-            grid min-h-54
+            grid min-h-44
             grid-cols-7
             border-b
             border-blue-950/10
@@ -145,7 +145,7 @@
                 min-w-0
                 border-r
                 border-blue-950/10
-                p-2.5
+                p-2
                 last:border-r-0
 
                 ${
@@ -160,16 +160,16 @@
               <div
                 class="
                   flex items-center
-                  justify-between gap-2
+                  justify-between gap-1.5
                 "
               >
                 <span
                   class={`
-                    flex size-8
+                    flex size-7
                     items-center
                     justify-center
                     rounded-xl
-                    text-xs font-black
+                    text-[11px] font-black
 
                     ${
                       isToday(day)
@@ -187,11 +187,11 @@
               {#if dayEvents.length > 0}
                 <div
                   class="
-                    mt-2.5 flex
-                    max-h-40
-                    flex-col gap-1.5
+                    mt-2 flex
+                    max-h-28
+                    flex-col gap-1
                     overflow-y-auto
-                    pr-1
+                    pr-0.5
                     [scrollbar-color:#164f88_transparent]
                     [scrollbar-width:thin]
                   "
@@ -216,13 +216,13 @@
         border-t
         border-blue-950/10
         bg-blue-50
-        px-6 py-8
+        px-5 py-6
         text-center
       "
     >
       <p
         class="
-          text-sm font-bold
+          text-xs font-bold
           text-[#164f88]/65
         "
       >

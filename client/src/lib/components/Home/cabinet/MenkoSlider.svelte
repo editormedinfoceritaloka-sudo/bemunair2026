@@ -52,144 +52,99 @@
     kemenkoan?: Kemenkoan[];
   } = $props();
 
-  const cabinetItems =
-    $derived.by<CabinetItem[]>(() => {
-      return [...kemenkoan]
-        .filter(
-          (item) =>
-            item.unit_type === 'MENKO' &&
-            item.is_active !== false &&
-            item.is_published !== false
-        )
-        .sort(
+  const cabinetItems = $derived.by<CabinetItem[]>(() =>
+    [...kemenkoan]
+      .filter(
+        (item) =>
+          item.unit_type === 'MENKO' &&
+          item.is_active !== false &&
+          item.is_published !== false
+      )
+      .sort(
+        (first, second) =>
+          (first.display_order ?? 0) -
+          (second.display_order ?? 0)
+      )
+      .map((item) => {
+        const members = [...(item.members ?? [])].sort(
           (first, second) =>
             (first.display_order ?? 0) -
             (second.display_order ?? 0)
-        )
-        .map((item) => {
-          const members = [
-            ...(item.members ?? [])
-          ].sort(
-            (first, second) =>
-              (first.display_order ?? 0) -
-              (second.display_order ?? 0)
-          );
+        );
 
-          const leader =
-            members.find(
-              (member) =>
-                member.is_leader === true
-            ) ?? members[0];
+        const leader =
+          members.find((member) => member.is_leader === true) ??
+          members[0];
 
-          const image =
+        return {
+          id: item.slug,
+          title:
+            leader?.position ??
+            item.short_name ??
+            item.name,
+          subtitle: leader?.name ?? item.name,
+          image:
             leader?.photo?.url ??
             leader?.photo?.thumbnail_url ??
             item.logo?.url ??
             item.logo?.thumbnail_url ??
-            '/landing/speech/p.webp';
+            '/landing/speech/p.webp',
+          backgroundImage: '/landing/cabinet/bg-card.webp'
+        };
+      })
+  );
 
-          return {
-            id: item.slug,
-            title:
-              leader?.position ??
-              item.short_name ??
-              item.name,
-            subtitle:
-              leader?.name ??
-              item.name,
-            image,
-            backgroundImage:
-              '/landing/cabinet/bg-card.webp'
-          };
-        });
-    });
+  const loopItems = $derived([
+    ...cabinetItems,
+    ...cabinetItems,
+    ...cabinetItems
+  ]);
 
-  const loopItems =
-    $derived.by<CabinetItem[]>(() => [
-      ...cabinetItems,
-      ...cabinetItems,
-      ...cabinetItems
-    ]);
-
-  let sliderRoot = $state<
-    HTMLDivElement | undefined
-  >(undefined);
-
-  let viewport = $state<
-    HTMLDivElement | undefined
-  >(undefined);
-
-  let track = $state<
-    HTMLDivElement | undefined
-  >(undefined);
-
+  let sliderRoot = $state<HTMLDivElement | undefined>(undefined);
+  let viewport = $state<HTMLDivElement | undefined>(undefined);
+  let track = $state<HTMLDivElement | undefined>(undefined);
   let currentIndex = $state(0);
-  let initializedItemCount = $state(0);
   let isAnimating = $state(false);
-  let interactionPaused = $state(false);
+  let mounted = $state(false);
 
-  let cards: Array<
-    HTMLDivElement | undefined
-  > = [];
+  const cards = new Map<number, HTMLDivElement>();
 
-  let autoplayTimer:
-    | ReturnType<typeof setInterval>
-    | undefined;
-
-  let resizeObserver:
-    | ResizeObserver
-    | undefined;
-
+  let autoplayTimer: ReturnType<typeof setInterval> | undefined;
+  let resizeObserver: ResizeObserver | undefined;
   let reduceMotion = false;
-  let mounted = false;
+  let interactionPaused = false;
+  let initialSignature = '';
+  let initializeFrame = 0;
+  let centerFrame = 0;
 
-  function registerCard(
-    node: HTMLDivElement,
-    index: number
-  ) {
-    const handleClick = (
-      event: MouseEvent
-    ): void => {
+  function registerCard(node: HTMLDivElement, index: number) {
+    const handleClick = (event: MouseEvent): void => {
       selectCard(event, index);
     };
 
-    cards[index] = node;
-
-    node.addEventListener(
-      'click',
-      handleClick
-    );
+    cards.set(index, node);
+    node.addEventListener('click', handleClick);
 
     return {
       destroy() {
-        node.removeEventListener(
-          'click',
-          handleClick
-        );
+        node.removeEventListener('click', handleClick);
 
-        if (cards[index] === node) {
-          cards[index] = undefined;
+        if (cards.get(index) === node) {
+          cards.delete(index);
         }
       }
     };
   }
 
-  function getCardPosition(
-    index: number
-  ): number | null {
-    const card = cards[index];
+  function getCardPosition(index: number): number | null {
+    const card = cards.get(index);
     const sliderViewport = viewport;
 
-    if (!card || !sliderViewport) {
-      return null;
-    }
+    if (!card || !sliderViewport) return null;
 
     return (
       sliderViewport.clientWidth / 2 -
-      (
-        card.offsetLeft +
-        card.offsetWidth / 2
-      )
+      (card.offsetLeft + card.offsetWidth / 2)
     );
   }
 
@@ -199,13 +154,9 @@
     onComplete?: () => void
   ): void {
     const sliderTrack = track;
-    const targetX =
-      getCardPosition(index);
+    const targetX = getCardPosition(index);
 
-    if (
-      targetX === null ||
-      !sliderTrack
-    ) {
+    if (targetX === null || !sliderTrack) {
       isAnimating = false;
       return;
     }
@@ -213,10 +164,7 @@
     gsap.killTweensOf(sliderTrack);
 
     if (!animate || reduceMotion) {
-      gsap.set(sliderTrack, {
-        x: targetX
-      });
-
+      gsap.set(sliderTrack, { x: targetX });
       isAnimating = false;
       onComplete?.();
       return;
@@ -226,7 +174,7 @@
 
     gsap.to(sliderTrack, {
       x: targetX,
-      duration: 0.9,
+      duration: 0.75,
       ease: 'power3.inOut',
       overwrite: true,
       onComplete: () => {
@@ -239,48 +187,22 @@
   function normalizePosition(): void {
     const total = cabinetItems.length;
 
-    if (total === 0) {
-      return;
-    }
+    if (total === 0) return;
 
     if (currentIndex >= total * 2) {
       currentIndex -= total;
-
-      centerCard(
-        currentIndex,
-        false
-      );
-
-      return;
-    }
-
-    if (currentIndex < total) {
+      centerCard(currentIndex, false);
+    } else if (currentIndex < total) {
       currentIndex += total;
-
-      centerCard(
-        currentIndex,
-        false
-      );
+      centerCard(currentIndex, false);
     }
   }
 
-  function moveToIndex(
-    index: number
-  ): void {
-    if (
-      isAnimating ||
-      cabinetItems.length <= 1
-    ) {
-      return;
-    }
+  function moveToIndex(index: number): void {
+    if (isAnimating || cabinetItems.length <= 1) return;
 
     currentIndex = index;
-
-    centerCard(
-      currentIndex,
-      true,
-      normalizePosition
-    );
+    centerCard(currentIndex, true, normalizePosition);
   }
 
   function next(): void {
@@ -301,24 +223,16 @@
     restartAutoplay();
   }
 
-  function selectCard(
-    event: MouseEvent,
-    index: number
-  ): void {
-    if (index === currentIndex) {
-      return;
-    }
+  function selectCard(event: MouseEvent, index: number): void {
+    if (index === currentIndex) return;
 
     event.preventDefault();
-
     moveToIndex(index);
     restartAutoplay();
   }
 
   function stopAutoplay(): void {
-    if (!autoplayTimer) {
-      return;
-    }
+    if (autoplayTimer === undefined) return;
 
     clearInterval(autoplayTimer);
     autoplayTimer = undefined;
@@ -339,16 +253,14 @@
 
     autoplayTimer = setInterval(
       next,
-      autoplayDelay
+      Math.max(1000, autoplayDelay)
     );
   }
 
   function restartAutoplay(): void {
-    if (interactionPaused) {
-      return;
+    if (!interactionPaused) {
+      startAutoplay();
     }
-
-    startAutoplay();
   }
 
   function pauseSlider(): void {
@@ -357,52 +269,74 @@
   }
 
   function resumeSlider(): void {
+    if (
+      sliderRoot?.matches(':hover') ||
+      sliderRoot?.contains(document.activeElement)
+    ) {
+      return;
+    }
+
     interactionPaused = false;
     startAutoplay();
   }
 
-  function handleKeydown(
-    event: KeyboardEvent
-  ): void {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      handlePrevious();
+  function handleFocusOut(event: FocusEvent): void {
+    if (
+      event.relatedTarget instanceof Node &&
+      sliderRoot?.contains(event.relatedTarget)
+    ) {
       return;
     }
 
-    if (event.key === 'ArrowRight') {
+    resumeSlider();
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      handlePrevious();
+    } else if (event.key === 'ArrowRight') {
       event.preventDefault();
       handleNext();
     }
   }
 
+  function handleVisibilityChange(): void {
+    if (document.hidden) {
+      stopAutoplay();
+    } else {
+      startAutoplay();
+    }
+  }
+
   $effect(() => {
-    const total = cabinetItems.length;
+    const items = cabinetItems;
 
-    if (
-      !mounted ||
-      total === initializedItemCount
-    ) {
-      return;
-    }
+    if (!mounted) return;
 
-    initializedItemCount = total;
+    const signature = items.map((item) => item.id).join('|');
+
+    if (signature === initialSignature) return;
+
+    initialSignature = signature;
+
     stopAutoplay();
-    cards = [];
+    gsap.killTweensOf(track);
 
-    if (total === 0) {
-      currentIndex = 0;
-      return;
-    }
-
-    currentIndex = total;
+    isAnimating = false;
+    currentIndex = items.length;
 
     void tick().then(() => {
-      requestAnimationFrame(() => {
-        centerCard(
-          currentIndex,
-          false
-        );
+      if (!mounted) return;
+
+      cancelAnimationFrame(initializeFrame);
+
+      initializeFrame = requestAnimationFrame(() => {
+        if (!mounted) return;
+
+        if (cabinetItems.length > 0) {
+          centerCard(currentIndex, false);
+        }
 
         startAutoplay();
       });
@@ -410,219 +344,70 @@
   });
 
   onMount(() => {
-    let disposed = false;
-    let initializeFrame = 0;
-    let centerFrame = 0;
-
-    mounted = true;
-
-    const root = sliderRoot;
-
     reduceMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
 
-    const handleMouseEnter =
-      (): void => {
-        pauseSlider();
-      };
+    const root = sliderRoot;
+    const sliderViewport = viewport;
 
-    const handleMouseLeave =
-      (): void => {
-        resumeSlider();
-      };
+    root?.addEventListener('mouseenter', pauseSlider);
+    root?.addEventListener('mouseleave', resumeSlider);
+    root?.addEventListener('focusin', pauseSlider);
+    root?.addEventListener('focusout', handleFocusOut);
+    root?.addEventListener('keydown', handleKeydown);
 
-    const handleFocusIn =
-      (): void => {
-        pauseSlider();
-      };
-
-    const handleFocusOut = (
-      event: FocusEvent
-    ): void => {
-      const nextTarget =
-        event.relatedTarget;
-
-      if (
-        nextTarget instanceof Node &&
-        root?.contains(nextTarget)
-      ) {
-        return;
-      }
-
-      resumeSlider();
-    };
-
-    const handleVisibilityChange =
-      (): void => {
-        if (document.hidden) {
-          stopAutoplay();
-          return;
+    if (sliderViewport) {
+      gsap.fromTo(
+        sliderViewport,
+        {
+          autoAlpha: 0,
+          y: reduceMotion ? 0 : 24
+        },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: reduceMotion ? 0.01 : 0.85,
+          ease: 'power3.out'
         }
+      );
 
-        startAutoplay();
-      };
+      resizeObserver = new ResizeObserver(() => {
+        if (cabinetItems.length === 0) return;
 
-    root?.addEventListener(
-      'mouseenter',
-      handleMouseEnter
+        cancelAnimationFrame(centerFrame);
+
+        centerFrame = requestAnimationFrame(() => {
+          if (mounted) {
+            centerCard(currentIndex, false);
+          }
+        });
+      });
+
+      resizeObserver.observe(sliderViewport);
+    }
+
+    document.addEventListener(
+      'visibilitychange',
+      handleVisibilityChange
     );
 
-    root?.addEventListener(
-      'mouseleave',
-      handleMouseLeave
-    );
-
-    root?.addEventListener(
-      'focusin',
-      handleFocusIn
-    );
-
-    root?.addEventListener(
-      'focusout',
-      handleFocusOut
-    );
-
-    root?.addEventListener(
-      'keydown',
-      handleKeydown
-    );
-
-    const initialize =
-      async (): Promise<void> => {
-        initializedItemCount =
-          cabinetItems.length;
-
-        currentIndex =
-          cabinetItems.length;
-
-        await tick();
-
-        if (disposed) {
-          return;
-        }
-
-        initializeFrame =
-          requestAnimationFrame(() => {
-            const sliderViewport =
-              viewport;
-
-            if (
-              disposed ||
-              !sliderViewport
-            ) {
-              return;
-            }
-
-            if (
-              cabinetItems.length > 0
-            ) {
-              centerCard(
-                currentIndex,
-                false
-              );
-            }
-
-            gsap.fromTo(
-              sliderViewport,
-              {
-                autoAlpha: 0,
-                y: 45,
-                scale: 0.98
-              },
-              {
-                autoAlpha: 1,
-                y: 0,
-                scale: 1,
-                duration: reduceMotion
-                  ? 0.01
-                  : 1,
-                ease: 'power3.out'
-              }
-            );
-
-            startAutoplay();
-          });
-
-        const sliderViewport =
-          viewport;
-
-        if (!sliderViewport) {
-          return;
-        }
-
-        resizeObserver =
-          new ResizeObserver(() => {
-            if (
-              cabinetItems.length === 0
-            ) {
-              return;
-            }
-
-            cancelAnimationFrame(
-              centerFrame
-            );
-
-            centerFrame =
-              requestAnimationFrame(() => {
-                centerCard(
-                  currentIndex,
-                  false
-                );
-              });
-          });
-
-        resizeObserver.observe(
-          sliderViewport
-        );
-
-        document.addEventListener(
-          'visibilitychange',
-          handleVisibilityChange
-        );
-      };
-
-    void initialize();
+    mounted = true;
 
     return () => {
-      disposed = true;
       mounted = false;
 
-      cancelAnimationFrame(
-        initializeFrame
-      );
-
-      cancelAnimationFrame(
-        centerFrame
-      );
+      cancelAnimationFrame(initializeFrame);
+      cancelAnimationFrame(centerFrame);
 
       stopAutoplay();
       resizeObserver?.disconnect();
 
-      root?.removeEventListener(
-        'mouseenter',
-        handleMouseEnter
-      );
-
-      root?.removeEventListener(
-        'mouseleave',
-        handleMouseLeave
-      );
-
-      root?.removeEventListener(
-        'focusin',
-        handleFocusIn
-      );
-
-      root?.removeEventListener(
-        'focusout',
-        handleFocusOut
-      );
-
-      root?.removeEventListener(
-        'keydown',
-        handleKeydown
-      );
+      root?.removeEventListener('mouseenter', pauseSlider);
+      root?.removeEventListener('mouseleave', resumeSlider);
+      root?.removeEventListener('focusin', pauseSlider);
+      root?.removeEventListener('focusout', handleFocusOut);
+      root?.removeEventListener('keydown', handleKeydown);
 
       document.removeEventListener(
         'visibilitychange',
@@ -633,9 +418,11 @@
         gsap.killTweensOf(track);
       }
 
-      if (viewport) {
-        gsap.killTweensOf(viewport);
+      if (sliderViewport) {
+        gsap.killTweensOf(sliderViewport);
       }
+
+      cards.clear();
     };
   });
 </script>
@@ -646,60 +433,38 @@
   aria-label="Slider struktur Kabinet Cerita Loka"
   class="
     relative w-full overflow-hidden
-    py-3
-    sm:py-5
-    md:py-6
+    py-2 sm:py-3 md:py-4
   "
 >
   <div
     bind:this={viewport}
-    class="
-      relative w-full overflow-hidden
-      opacity-0
-    "
+    class="relative w-full overflow-hidden opacity-0"
   >
     {#if cabinetItems.length > 0}
       <div
         bind:this={track}
         class="
-          flex w-max items-center
-          gap-0 py-16
-          will-change-transform
+          flex w-max items-center gap-0
+          py-8 will-change-transform
+          sm:py-10 md:py-12
         "
       >
         {#each loopItems as item, index (`${index}-${item.id}`)}
-          {@const distance = Math.abs(
-            index - currentIndex
-          )}
+          {@const distance = Math.abs(index - currentIndex)}
 
           <div
             use:registerCard={index}
             role="presentation"
             class={`
-              relative h-80 w-64 shrink-0
-              -mr-24 cursor-pointer
+              relative h-[17rem] w-48 shrink-0
+              -mr-16 cursor-pointer
               transition-[transform,opacity,filter]
               duration-500
 
-              sm:h-105 sm:w-[70vw]
-              sm:max-w-105
-              sm:-mr-36
-
-              md:h-120 md:w-[52vw]
-              md:max-w-110
-              md:-mr-48
-
-              lg:h-130 lg:w-[34vw]
-              lg:max-w-115
-              lg:-mr-52
-
-              xl:h-140 xl:w-[32vw]
-              xl:max-w-120
-              xl:-mr-56
-
-              2xl:h-150 2xl:w-[30vw]
-              2xl:max-w-125
-              2xl:-mr-60
+              sm:h-[21rem] sm:w-60 sm:-mr-20
+              md:h-[24rem] md:w-68 md:-mr-24
+              lg:h-[26rem] lg:w-76 lg:-mr-28
+              xl:h-[28rem] xl:w-80 xl:-mr-32
 
               ${
                 distance === 0
@@ -726,11 +491,10 @@
     {:else}
       <div
         class="
-          flex min-h-80 w-full
+          flex min-h-48 w-full
           items-center justify-center
-          px-6 text-center
-          text-sm font-semibold
-          text-blue-900/70
+          px-4 text-center
+          text-xs font-semibold text-blue-900/70
         "
       >
         Data kementerian koordinator belum tersedia.
@@ -745,9 +509,8 @@
       onclick={handlePrevious}
       disabled={isAnimating}
       class="
-        absolute left-3 top-1/2
-        z-50 flex size-11
-        -translate-y-1/2
+        absolute left-2 top-1/2 z-50
+        flex size-9 -translate-y-1/2
         items-center justify-center
         rounded-full
         border border-white/70
@@ -759,23 +522,22 @@
         hover:scale-110
         hover:bg-blue-900
         focus-visible:outline-2
-        focus-visible:outline-offset-4
+        focus-visible:outline-offset-2
         focus-visible:outline-white
         active:scale-95
         disabled:pointer-events-none
         disabled:opacity-40
-        sm:left-5 sm:size-12
-        md:left-8 md:size-14
+        sm:left-4 sm:size-10
+        md:left-6 md:size-11
       "
     >
       <svg
         viewBox="0 0 24 24"
         aria-hidden="true"
         class="
-          size-6 fill-none
-          stroke-current
-          stroke-2
-          sm:size-7
+          size-5 fill-none
+          stroke-current stroke-2
+          sm:size-6
         "
       >
         <path
@@ -792,9 +554,8 @@
       onclick={handleNext}
       disabled={isAnimating}
       class="
-        absolute right-3 top-1/2
-        z-50 flex size-11
-        -translate-y-1/2
+        absolute right-2 top-1/2 z-50
+        flex size-9 -translate-y-1/2
         items-center justify-center
         rounded-full
         border border-white/70
@@ -806,23 +567,22 @@
         hover:scale-110
         hover:bg-blue-900
         focus-visible:outline-2
-        focus-visible:outline-offset-4
+        focus-visible:outline-offset-2
         focus-visible:outline-white
         active:scale-95
         disabled:pointer-events-none
         disabled:opacity-40
-        sm:right-5 sm:size-12
-        md:right-8 md:size-14
+        sm:right-4 sm:size-10
+        md:right-6 md:size-11
       "
     >
       <svg
         viewBox="0 0 24 24"
         aria-hidden="true"
         class="
-          size-6 fill-none
-          stroke-current
-          stroke-2
-          sm:size-7
+          size-5 fill-none
+          stroke-current stroke-2
+          sm:size-6
         "
       >
         <path

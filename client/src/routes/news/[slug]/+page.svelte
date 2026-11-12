@@ -92,7 +92,7 @@
       relative z-10
       mx-auto
       flex w-full
-      max-w-7xl
+      max-w-8xl
       flex-col
       items-center
       px-5
@@ -103,8 +103,8 @@
   >
     <h1
       class="
-        max-w-6xl
-        text-[clamp(2.5rem,6.4vw,6rem)]
+        max-w-8xl
+        text-[clamp(2rem,6vw,4rem)]
         leading-[0.9]
         font-black
         tracking-[-0.065em]
@@ -145,7 +145,7 @@
       <p
         class="
           mt-9
-          max-w-3xl
+          max-w-4xl
           text-base
           leading-7
           font-semibold
@@ -332,58 +332,66 @@
       "
     ></div>
 
-    <div
+
+<div
+  class="
+    flex flex-col items-center justify-between gap-6
+    rounded-2xl border border-blue-100/80
+    bg-gradient-to-r from-blue-50/80 via-white to-orange-50/70
+    p-5 shadow-sm
+    sm:flex-row sm:p-6
+  "
+>
+  <div class="text-center sm:text-left">
+    <p class="text-base font-extrabold tracking-tight text-blue-950">
+      Kabinet Cerita Loka
+    </p>
+
+    <p class="mt-1.5 text-sm font-medium leading-relaxed text-blue-950/55">
+      Bersama merajut cerita untuk Airlangga dan Indonesia.
+    </p>
+  </div>
+
+  <a
+    href={resolve('/news')}
+    class="
+      group inline-flex items-center justify-center gap-3
+      rounded-full
+      border border-orange-400/30
+      bg-gradient-to-br from-orange-400 to-orange-600
+      px-6 py-3.5
+      text-sm font-extrabold text-white
+      shadow-[0_5px_0_#c2410c,0_8px_18px_rgba(234,88,12,0.2)]
+      transition-all duration-300 ease-out
+      hover:-translate-y-1
+      hover:shadow-[0_7px_0_#c2410c,0_12px_22px_rgba(234,88,12,0.28)]
+      active:translate-y-1
+      active:shadow-none
+      focus-visible:outline-none
+      focus-visible:ring-4
+      focus-visible:ring-orange-300/50
+    "
+  >
+    <span
       class="
-        flex
-        flex-col
-        items-center
-        justify-between
-        gap-5
-        text-center
-        sm:flex-row
-        sm:text-left
+        flex size-8 items-center justify-center
+        rounded-full bg-white/20
+        transition-all duration-300
+        group-hover:bg-white/30 text-white
       "
     >
-      <div>
-        <p class="text-sm font-black text-blue-950">
-          Kabinet Cerita Loka
-        </p>
+      <ArrowLeftIcon
+        size={17}
+        strokeWidth={2.5}
+        class="transition-transform duration-300 group-hover:-translate-x-1"
+      />
+    </span>
 
-        <p class="mt-1 text-xs font-medium text-blue-950/50">
-          Bersama merajut cerita untuk Airlangga dan Indonesia.
-        </p>
-      </div>
+    <span class="tracking-wide text-white">
+      Kembali ke News
+    </span>
+  </a>
+</div>
 
-      <a
-        href={resolve('/news')}
-        class="
-          group
-          inline-flex
-          items-center
-          justify-center
-          gap-2
-          rounded-full
-          bg-orange-500
-          px-6 py-3
-          text-sm
-          font-black
-          text-white
-          shadow-[0_6px_0_rgba(163,61,10,0.3)]
-          transition
-          hover:-translate-y-0.5
-          hover:bg-orange-600
-          active:translate-y-1
-          active:shadow-none
-        "
-      >
-        <ArrowLeftIcon
-          size={17}
-          strokeWidth={2.5}
-          class="transition-transform group-hover:-translate-x-1"
-        />
-
-        <span>Kembali ke News</span>
-      </a>
-    </div>
   </footer>
 </article>

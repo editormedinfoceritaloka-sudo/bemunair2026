@@ -456,7 +456,7 @@
         class="
           mx-auto
           mt-14
-          flex max-w-2xl
+          flex max-w-8xl
           flex-col
           items-center
           justify-center

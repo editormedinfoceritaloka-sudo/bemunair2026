@@ -27,16 +27,12 @@
   let reduceMotion = false;
 
   function showDetail(): void {
-    if (!active || !cardElement) {
-      return;
-    }
+    if (!active || !cardElement) return;
 
     flipAnimation?.kill();
 
     flipAnimation = gsap.timeline({
-      defaults: {
-        overwrite: true
-      }
+      defaults: { overwrite: true }
     });
 
     flipAnimation
@@ -44,8 +40,8 @@
         frontTitle,
         {
           autoAlpha: 0,
-          scale: 0.92,
-          duration: reduceMotion ? 0.01 : 0.16,
+          scale: 0.96,
+          duration: reduceMotion ? 0.01 : 0.14,
           ease: 'power2.out'
         },
         0
@@ -54,24 +50,20 @@
         cardElement,
         {
           rotationY: 180,
-          duration: reduceMotion ? 0.01 : 0.75,
+          duration: reduceMotion ? 0.01 : 0.65,
           ease: 'power3.inOut'
         },
-        reduceMotion ? 0 : 0.08
+        reduceMotion ? 0 : 0.06
       );
   }
 
   function hideDetail(): void {
-    if (!cardElement) {
-      return;
-    }
+    if (!cardElement) return;
 
     flipAnimation?.kill();
 
     flipAnimation = gsap.timeline({
-      defaults: {
-        overwrite: true
-      }
+      defaults: { overwrite: true }
     });
 
     flipAnimation
@@ -79,27 +71,25 @@
         cardElement,
         {
           rotationY: 0,
-          duration: reduceMotion ? 0.01 : 0.65,
+          duration: reduceMotion ? 0.01 : 0.55,
           ease: 'power3.inOut'
         },
         0
       )
       .set(frontTitle, {
         autoAlpha: 0,
-        scale: 0.92
+        scale: 0.96
       })
       .to(frontTitle, {
         autoAlpha: 1,
         scale: 1,
-        duration: reduceMotion ? 0.01 : 0.18,
+        duration: reduceMotion ? 0.01 : 0.17,
         ease: 'power2.out'
       });
   }
 
   function handleClick(event: MouseEvent): void {
-    if (!active) {
-      event.preventDefault();
-    }
+    if (!active) event.preventDefault();
   }
 
   $effect(() => {
@@ -163,12 +153,14 @@
   onfocusin={showDetail}
   onfocusout={hideDetail}
   class={`
-    block h-full w-full rounded-[30px] outline-none
-    transition-[filter] duration-500
+    block h-full w-full rounded-[20px] outline-none
+    transition-[filter] duration-300
+    focus-visible:ring-2 focus-visible:ring-blue-700
+    focus-visible:ring-offset-2
     ${active ? 'cursor-pointer' : 'cursor-default'}
   `}
 >
-  <div class="relative h-full w-full [perspective:2200px]">
+  <div class="relative h-full w-full [perspective:1800px]">
     <div
       bind:this={cardElement}
       class="
@@ -180,7 +172,7 @@
       <div
         bind:this={frontFace}
         class="
-          absolute inset-0 overflow-hidden rounded-[30px]
+          absolute inset-0 overflow-hidden rounded-[20px]
           [backface-visibility:hidden]
           [-webkit-backface-visibility:hidden]
           [transform:rotateY(0deg)_translateZ(0)]
@@ -198,18 +190,16 @@
           class="
             relative z-10 flex h-full w-full
             flex-col items-center justify-center
-            px-6 text-center
+            px-4 text-center
             will-change-[opacity,transform]
           "
         >
           <h3
             class="
-              max-w-[84%]
-              text-xl leading-[0.92] font-black uppercase
-              tracking-[-0.05em] text-blue-700
-              sm:text-2xl
-              md:text-3xl
-              xl:text-4xl
+              max-w-[90%] text-base font-extrabold
+              uppercase leading-[1.05]
+              tracking-[-0.025em] text-blue-700
+              sm:text-lg md:text-xl xl:text-2xl
             "
           >
             {title}
@@ -218,10 +208,10 @@
           {#if subtitle}
             <p
               class="
-                mt-3 text-[9px] font-semibold uppercase
-                tracking-[0.14em] text-blue-600
-                sm:text-[11px]
-                md:text-xs
+                mt-2 max-w-[90%] text-[8px]
+                font-semibold uppercase leading-snug
+                tracking-[0.08em] text-blue-600
+                sm:text-[9px] md:text-[10px]
               "
             >
               {subtitle}
@@ -233,7 +223,7 @@
       <div
         bind:this={backFace}
         class="
-          absolute inset-0 overflow-hidden rounded-[30px]
+          absolute inset-0 overflow-hidden rounded-[20px]
           [backface-visibility:hidden]
           [-webkit-backface-visibility:hidden]
           [transform:rotateY(180deg)_translateZ(0)]
@@ -248,20 +238,17 @@
 
         <div
           class="
-            absolute inset-x-0 top-[5%] z-30
-            flex flex-col items-center
-            px-5 text-center
+            absolute inset-x-0 top-[9%] z-30
+            flex flex-col items-center px-3 text-center
           "
         >
           <h3
             class="
-              mt-16 max-w-[88%]
-              text-lg leading-[0.92] font-black uppercase
-              tracking-[-0.045em] text-blue-800
-              drop-shadow-[0_2px_1px_rgba(255,255,255,0.95)]
-              sm:text-xl
-              md:text-2xl
-              xl:text-3xl
+              max-w-[90%] text-sm font-extrabold
+              uppercase leading-[1.05]
+              tracking-[-0.025em] text-blue-800
+              drop-shadow-[0_1px_1px_rgba(255,255,255,0.95)]
+              sm:text-base md:text-lg xl:text-xl
             "
           >
             {title}
@@ -270,10 +257,10 @@
           {#if subtitle}
             <p
               class="
-                mt-1.5 text-[8px] font-semibold uppercase
-                tracking-[0.12em] text-blue-600
-                sm:text-[10px]
-                md:text-xs
+                mt-1 max-w-[90%] text-[8px]
+                font-semibold uppercase leading-snug
+                tracking-[0.07em] text-blue-600
+                sm:text-[9px] md:text-[10px]
               "
             >
               {subtitle}
@@ -283,11 +270,9 @@
 
         <div
           class="
-            pointer-events-none absolute
-            inset-x-0 bottom-0 z-20
-            flex h-[70%] w-full
-            items-end justify-center
-            overflow-hidden
+            pointer-events-none absolute inset-x-0
+            bottom-0 z-20 flex h-[64%] w-full
+            items-end justify-center overflow-hidden
           "
         >
           <img
@@ -295,8 +280,7 @@
             alt={title}
             draggable="false"
             class="
-              block h-full w-auto
-              max-w-full
+              block h-full w-auto max-w-full
               object-contain object-bottom
             "
           />

@@ -88,7 +88,7 @@
 <section
   bind:this={heroSection}
   id="home"
-  class="relative h-[80vh] overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white sm:h-[100vh] md:h-screen"
+  class="relative h-[45vh] overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white sm:h-[80vh] md:h-screen"
 >
   <div class="absolute inset-0 flex flex-col">
     <div
@@ -120,15 +120,15 @@
             bg-linear-to-b
             from-blue-900
             via-blue-700
-            to-blue-400
+          to-blue-400
             bg-clip-text
-            text-[clamp(2.25rem,10vw,4rem)]
+            text-[clamp(2rem,9vw,3.5rem)]
             leading-none
             font-black
             tracking-[-0.06em]
             text-transparent
             drop-shadow-[0_8px_6px_rgba(15,23,42,0.28)]
-            md:text-[clamp(4rem,13vw,12rem)]
+            md:text-[clamp(3.5rem,11vw,9rem)]
           "
         >
           BEM UNAIR
@@ -152,9 +152,9 @@
 
         <p
           class="
-            max-w-md text-center
-            text-[10px] leading-snug
-            md:max-w-none md:text-lg md:leading-normal
+            max-w-2xl text-center
+            text-sm leading-snug
+            md:text-sm md:leading-normal
           "
         >
           BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
