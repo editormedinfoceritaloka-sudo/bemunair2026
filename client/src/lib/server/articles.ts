@@ -133,6 +133,20 @@ export async function getPublishedArticles(
   };
 }
 
+export async function getRelatedArticles(
+  fetch: FetchLike,
+  excludeSlug: string,
+  limit = 3
+): Promise<ArticleListItem[]> {
+  // Daftar publik sudah terurut published_at DESC; ambil satu ekstra
+  // agar tetap dapat `limit` berita setelah artikel aktif dibuang.
+  const { articles } = await fetchPublishedArticlePage(fetch, 1, limit + 1);
+
+  return articles
+    .filter((article) => article.slug !== excludeSlug)
+    .slice(0, limit);
+}
+
 export async function getPublishedArticleBySlug(
   fetch: FetchLike,
   slug: string

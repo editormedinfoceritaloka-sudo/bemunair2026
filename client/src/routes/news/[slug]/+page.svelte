@@ -3,6 +3,7 @@
   import { resolve } from '$app/paths';
 
   import ArticleBody from '$lib/components/news/ArticleBody.svelte';
+  import RelatedNewsCarousel from '$lib/components/news/RelatedNewsCarousel.svelte';
 
   import type { PageData } from './$types';
 
@@ -14,6 +15,7 @@
 
   const article = $derived(data.article);
   const readTime = $derived(data.readTime);
+  const related = $derived(data.related);
 
   const titleLines = $derived.by(() => {
     const words = article.title.trim().split(/\s+/).filter(Boolean);
@@ -281,7 +283,7 @@
     </div>
   {/if}
 
-  <main
+  <div
     class="
       relative z-10
       mx-auto
@@ -307,7 +309,14 @@
     ></div>
 
     <ArticleBody body={article.body} />
-  </main>
+  </div>
+
+  <!-- Remount saat pindah antar-berita agar state & posisi GSAP direset. -->
+  {#if related.length > 0}
+    {#key article.slug}
+      <RelatedNewsCarousel articles={related} />
+    {/key}
+  {/if}
 
   <footer
     class="
