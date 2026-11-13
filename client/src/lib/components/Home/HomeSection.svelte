@@ -109,7 +109,7 @@
       <div
         bind:this={centerText}
         class="
-          flex h-full min-w-0 flex-col
+          flex h-full  flex-col
           items-center justify-center gap-2 px-1
           md:justify-start md:gap-4 md:px-0 md:py-24
         "
@@ -144,7 +144,7 @@
             tracking-[-0.04em]
             text-orange-600
             drop-shadow-[0_4px_3px_rgba(120,53,15,0.35)]
-            md:text-[clamp(1.5rem,3.2vw,3.5rem)]
+            md:text-[clamp(1.5rem,3vw,3.5rem)]
           "
         >
           Kabinet Cerita Loka
@@ -152,9 +152,9 @@
 
         <p
           class="
-            max-w-2xl text-center
-            text-sm leading-snug
-            md:text-sm md:leading-normal
+            text-center
+            sm:text-[0.8rem]
+            text-[8px]
           "
         >
           BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
