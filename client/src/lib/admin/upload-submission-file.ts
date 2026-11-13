@@ -10,14 +10,6 @@ export interface UploadedSubmissionFile {
   mime_type: string;
 }
 
-interface UploadAuthentication {
-  token: string;
-  expire: number;
-  signature: string;
-  public_key: string;
-  folder: string;
-}
-
 const MEDIA_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp'
 ]);
@@ -47,43 +39,33 @@ export async function uploadSubmissionFile(
   onProgress?: (percentage: number) => void
 ): Promise<UploadedSubmissionFile> {
   validate(file, purpose);
-  const authResponse = await fetch(`/api/uploads/imagekit/auth?purpose=${purpose}`);
-  const authPayload = await authResponse.json() as { status: boolean; message: string; data?: UploadAuthentication };
-  if (!authResponse.ok || !authPayload.data) throw new Error(authPayload.message || 'Gagal menyiapkan upload.');
 
-  const auth = authPayload.data;
   const body = new FormData();
   body.set('file', file);
-  body.set('fileName', file.name);
-  body.set('publicKey', auth.public_key);
-  body.set('token', auth.token);
-  body.set('expire', String(auth.expire));
-  body.set('signature', auth.signature);
-  body.set('folder', auth.folder);
-  body.set('useUniqueFileName', 'true');
-  body.set('tags', `bemunair,${purpose}`);
+  body.set('purpose', purpose);
 
   return await new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://upload.imagekit.io/api/v1/files/upload');
+    xhr.open('POST', '/api/uploads/imagekit');
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
     };
     xhr.onerror = () => reject(new Error('Koneksi upload terputus.'));
     xhr.onload = () => {
-      let result: Record<string, unknown> = {};
+      let result: Record<string, any> = {};
       try { result = JSON.parse(xhr.responseText); } catch { /* handled below */ }
-      if (xhr.status < 200 || xhr.status >= 300) {
-        reject(new Error(String(result.message || 'Upload ke ImageKit gagal.')));
+      const data = result?.data;
+      if (xhr.status < 200 || xhr.status >= 300 || !data) {
+        reject(new Error(String(result?.message || 'Upload file gagal.')));
         return;
       }
       resolve({
-        file_id: String(result.fileId),
-        name: String(result.name || file.name),
-        url: String(result.url),
-        thumbnail_url: result.thumbnailUrl ? String(result.thumbnailUrl) : undefined,
-        file_type: String(result.fileType || ''),
-        size: Number(result.size || file.size),
+        file_id: String(data.file_id),
+        name: String(data.name || file.name),
+        url: String(data.url),
+        thumbnail_url: data.thumbnail_url ? String(data.thumbnail_url) : undefined,
+        file_type: String(data.file_type || file.type),
+        size: Number(data.size || file.size),
         mime_type: file.type
       });
     };

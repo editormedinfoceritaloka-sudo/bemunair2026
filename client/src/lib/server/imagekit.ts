@@ -1,14 +1,22 @@
-import ImageKit from '@imagekit/nodejs';
+import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { env } from '$env/dynamic/private';
 
 const DEFAULT_MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
 const ALLOWED_PDF_TYPES = new Set(['application/pdf']);
+const ALLOWED_BRIEF_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+]);
 const PURPOSE_FOLDERS = {
   article: 'articles',
   cover: 'article-covers',
   profile: 'profiles',
-  submission: 'submissions',
+  submission_media: 'submissions/media',
+  submission_brief: 'submissions/briefs',
   documentation: 'program-documentations',
   letter_template: 'letter-templates'
 } as const;
@@ -22,7 +30,7 @@ export class ImageUploadError extends Error {
 }
 
 function configuredMaxBytes() {
-  const configured = Number(env.IMAGEKIT_MAX_UPLOAD_BYTES);
+  const configured = Number(env.UPLOAD_MAX_BYTES);
   return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_MAX_BYTES;
 }
 
@@ -50,12 +58,18 @@ function safeFileName(original: string) {
 }
 
 export async function validateUpload(file: File, purpose: ImagePurpose) {
-  if (purpose === 'letter_template') {
-    if (!ALLOWED_PDF_TYPES.has(file.type)) throw new ImageUploadError('Template surat harus berupa file PDF.', 415, 'UNSUPPORTED_PDF_TYPE');
-    if (file.size === 0) throw new ImageUploadError('File PDF kosong.', 400, 'EMPTY_FILE');
-    if (file.size > configuredMaxBytes()) throw new ImageUploadError('Ukuran PDF maksimal ' + Math.floor(configuredMaxBytes() / 1024 / 1024) + ' MB.', 413, 'FILE_TOO_LARGE');
-    const header = new TextDecoder().decode(new Uint8Array(await file.slice(0, 5).arrayBuffer()));
-    if (header !== '%PDF-') throw new ImageUploadError('Isi file tidak sesuai dengan PDF.', 415, 'INVALID_PDF_SIGNATURE');
+  if (purpose === 'letter_template' || purpose === 'submission_brief') {
+    const allowed = purpose === 'letter_template' ? ALLOWED_PDF_TYPES : ALLOWED_BRIEF_TYPES;
+    if (!allowed.has(file.type)) {
+      throw new ImageUploadError(purpose === 'letter_template' ? 'Template surat harus berupa file PDF.' : 'Brief harus berupa PDF, DOC, atau DOCX.', 415, 'UNSUPPORTED_DOCUMENT_TYPE');
+    }
+    if (file.size === 0) throw new ImageUploadError('File dokumen kosong.', 400, 'EMPTY_FILE');
+    if (file.size > configuredMaxBytes()) throw new ImageUploadError('Ukuran dokumen maksimal ' + Math.floor(configuredMaxBytes() / 1024 / 1024) + ' MB.', 413, 'FILE_TOO_LARGE');
+    // ponytail: hanya PDF yang dicek signature; DOC/DOCX dipercaya dari MIME + allowlist
+    if (file.type === 'application/pdf') {
+      const header = new TextDecoder().decode(new Uint8Array(await file.slice(0, 5).arrayBuffer()));
+      if (header !== '%PDF-') throw new ImageUploadError('Isi file tidak sesuai dengan PDF.', 415, 'INVALID_PDF_SIGNATURE');
+    }
     return;
   }
   return validateImage(file);
@@ -82,19 +96,27 @@ export function parsePurpose(value: FormDataEntryValue | null): ImagePurpose {
   return purpose;
 }
 
+// ponytail: nama file modul masih "imagekit" agar import lama tidak berubah;
+// isinya kini menyimpan file ke disk dan Nginx yang menyajikan /uploads/.
+const UPLOAD_ROOT = (env.UPLOAD_DIR || '/app/uploads').replace(/\/+$/, '');
+
 export async function uploadImage(file: File, purpose: ImagePurpose) {
-  const privateKey = env.IMAGEKIT_PRIVATE_KEY?.trim();
-  if (!privateKey) throw new ImageUploadError('ImageKit belum dikonfigurasi pada server.', 503, 'IMAGEKIT_NOT_CONFIGURED');
+  const folder = PURPOSE_FOLDERS[purpose];
+  const name = `${randomUUID()}-${safeFileName(file.name)}`;
+  const directory = join(UPLOAD_ROOT, folder);
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, name), new Uint8Array(await file.arrayBuffer()));
 
-  const root = (env.IMAGEKIT_UPLOAD_FOLDER || '/bemunair').trim().replace(/^\/+|\/+$/g, '');
-  const folder = `/${[root, PURPOSE_FOLDERS[purpose]].filter(Boolean).join('/')}`;
-  const imagekit = new ImageKit({ privateKey, timeout: 30_000, maxRetries: 1 });
-
-  return imagekit.files.upload({
-    file,
-    fileName: safeFileName(file.name),
-    folder,
-    useUniqueFileName: true,
-    tags: ['bemunair', purpose]
-  });
+  const url = `/uploads/${folder}/${name}`;
+  return {
+    fileId: `${folder}/${name}`,
+    name,
+    filePath: url,
+    url,
+    thumbnailUrl: url,
+    width: null,
+    height: null,
+    size: file.size,
+    fileType: file.type
+  };
 }

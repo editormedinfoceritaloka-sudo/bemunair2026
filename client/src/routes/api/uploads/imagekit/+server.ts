@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 
   try {
     const session = await apiRequest<User>(fetch, token, '/auth/me');
-    if (session.data?.role !== 'ADMIN_MEDINFO') {
+    if (!['ADMIN', 'ADMIN_MEDINFO'].includes(session.data?.role ?? '')) {
       return json({ status: false, message: 'Akses upload hanya untuk admin.', error: { code: 'FORBIDDEN' } }, { status: 403 });
     }
 
@@ -54,14 +54,14 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
     const status = typeof error === 'object' && error && 'status' in error && typeof error.status === 'number'
       ? error.status
       : 502;
-    console.error('ImageKit upload failed', {
+    console.error('Upload failed', {
       name: error instanceof Error ? error.name : 'UnknownError',
       status
     });
     return json({
       status: false,
-      message: 'Gagal mengunggah gambar ke media storage.',
-      error: { code: 'IMAGEKIT_UPLOAD_FAILED' }
+      message: 'Gagal menyimpan file di server.',
+      error: { code: 'UPLOAD_FAILED' }
     }, { status: status >= 400 && status < 600 ? status : 502 });
   }
 };
