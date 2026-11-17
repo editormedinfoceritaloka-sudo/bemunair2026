@@ -153,8 +153,9 @@
         <p
           class="
             text-center
-            sm:text-[0.8rem]
-            text-[8px]
+            text-sm
+            sm:text-base
+            lg:text-lg
           "
         >
           BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
