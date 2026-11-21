@@ -3,6 +3,7 @@
 
 	import TimelinePelaksanaan from '$lib/components/program-kerja/TimelinePelaksanaan.svelte';
 	import Documentation from '$lib/components/program-kerja/Documentation.svelte';
+	import WorkProgramTimeline from '$lib/features/work-program/components/WorkProgramTimeline.svelte';
 
 	import type { PageData } from './$types';
 
@@ -15,47 +16,6 @@
 	let descriptionElement: HTMLParagraphElement;
 	let timelineElement: HTMLDivElement;
 	let documentationElement: HTMLDivElement;
-
-	const monthNames = [
-		'Januari',
-		'Februari',
-		'Maret',
-		'April',
-		'Mei',
-		'Juni',
-		'Juli',
-		'Agustus',
-		'September',
-		'Oktober',
-		'November',
-		'Desember'
-	];
-
-	function formatProgramDate(value?: string | null): string {
-		if (!value) {
-			return '';
-		}
-
-		const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-		if (!match) {
-			return value;
-		}
-
-		const month = Number(match[2]);
-		const day = Number(match[3]);
-
-		if (
-			Number.isNaN(day) ||
-			Number.isNaN(month) ||
-			month < 1 ||
-			month > 12
-		) {
-			return value;
-		}
-
-		return `${day} ${monthNames[month - 1]}`;
-	}
 
 	function splitTitleLines(name: string): { first: string; second: string } {
 		const words = name.trim().split(/\s+/);
@@ -76,12 +36,12 @@
 	const titleLines = $derived(splitTitleLines(program.name));
 	const documentationImages = $derived(
 		[...(program.documentations ?? [])]
-			.sort((a, b) => a.display_order - b.display_order)
+			.sort((a, b) => Number(b.is_cover) - Number(a.is_cover) || a.display_order - b.display_order)
 			.map((documentation) => documentation.media?.url)
 			.filter((url): url is string => Boolean(url))
 	);
-	const startDate = $derived(formatProgramDate(program.start_date));
-	const endDate = $derived(formatProgramDate(program.end_date));
+	const startDate = $derived(program.start_date?.slice(0, 10) ?? '');
+	const endDate = $derived(program.end_date?.slice(0, 10) ?? '');
 
 	onMount(() => {
 		const reduceMotion = window.matchMedia(
@@ -226,6 +186,17 @@
 			>
 				{program.description}
 			</p>
+		{/if}
+
+		{#if program.milestones?.length}
+			<div class="mt-16 w-full">
+				<h2 class="text-center text-2xl font-black text-blue-900 sm:text-3xl">
+					Tahapan program
+				</h2>
+				<div class="mt-6">
+					<WorkProgramTimeline milestones={program.milestones} />
+				</div>
+			</div>
 		{/if}
 
 		{#if startDate && endDate}

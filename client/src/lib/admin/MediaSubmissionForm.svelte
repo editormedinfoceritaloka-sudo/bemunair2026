@@ -203,7 +203,7 @@
           </div>
         {/if}
         <div class="field"><Label for="publish_date">Tanggal Publikasi *</Label><Input id="publish_date" name="publish_date" type="date" min={minimumDate} required /><p>Minimal {minimumDays} hari dari hari ini.</p></div>
-        <div class="field"><Label for="publish_time">Waktu Publikasi *</Label><Input id="publish_time" name="publish_time" type="time" min={startTime} max={endTime} step={interval * 60} required /><p>Tersedia {startTime}–{endTime} WIB dalam interval {interval} menit.</p></div>
+        <div class="field"><Label for="publish_time">Waktu Publikasi *</Label><Input id="publish_time" name="publish_time" type="time" min={service === 'CONTENT' ? startTime : undefined} max={service === 'CONTENT' ? endTime : undefined} step={service === 'CONTENT' ? interval * 60 : 60} required /><p>{service === 'CONTENT' ? `Tersedia ${startTime}–${endTime} WIB dalam interval ${interval} menit.` : 'Pilih waktu publikasi artikel.'}</p></div>
         <div class="field sm:col-span-2"><Label for="title">{service === 'ARTICLE' ? 'Judul Artikel / Nama Kegiatan' : 'Judul Konten / Nama Kegiatan'} *</Label><Input id="title" name="title" minlength={5} maxlength={150} required /></div>
       </div>
     </section>

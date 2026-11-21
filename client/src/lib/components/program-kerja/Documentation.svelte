@@ -29,6 +29,19 @@
   ];
 
   let frameElement: HTMLDivElement;
+  let activeImage = $state<string | null>(null);
+
+  $effect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.body.style.overflow = activeImage ? 'hidden' : '';
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  });
 
   let failedSlots = $state<
     Record<SlotId, boolean>
@@ -304,23 +317,30 @@
           class={`documentation-slot slot-${slot}`}
         >
           {#if imageSrc && !failedSlots[slot]}
-            <img
-              src={imageSrc}
-              alt={`Dokumentasi program kerja ${index + 1}`}
-              loading="lazy"
-              decoding="async"
-              onerror={() => {
-                handleImageError(slot);
-              }}
-              class="
-                h-full w-full
-                object-cover
-                object-center
-                transition-transform
-                duration-500
-                hover:scale-[1.04]
-              "
-            />
+            <button
+              type="button"
+              class="block h-full w-full cursor-zoom-in"
+              onclick={() => activeImage = imageSrc}
+              aria-label={`Perbesar dokumentasi ${index + 1}`}
+            >
+              <img
+                src={imageSrc}
+                alt={`Dokumentasi program kerja ${index + 1}`}
+                loading="lazy"
+                decoding="async"
+                onerror={() => {
+                  handleImageError(slot);
+                }}
+                class="
+                  h-full w-full
+                  object-cover
+                  object-center
+                  transition-transform
+                  duration-500
+                  hover:scale-[1.04]
+                "
+              />
+            </button>
           {:else}
             <div
               class="documentation-placeholder"
@@ -333,6 +353,43 @@
     </div>
   </div>
 </section>
+
+{#if activeImage}
+  <div
+    class="fixed inset-0 z-[100] grid place-items-center bg-blue-950/90 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Pratinjau dokumentasi"
+    tabindex="-1"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) activeImage = null;
+    }}
+    onkeydown={(event) => {
+      if (event.key === 'Escape') activeImage = null;
+    }}
+  >
+    <button
+      type="button"
+      class="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/90 text-xl font-black text-blue-900 shadow-lg"
+      onclick={() => activeImage = null}
+      aria-label="Tutup pratinjau"
+    >
+      ×
+    </button>
+
+    <img
+      src={activeImage}
+      alt="Pratinjau dokumentasi program kerja"
+      class="max-h-[90vh] max-w-full rounded-xl object-contain shadow-2xl"
+    />
+  </div>
+{/if}
+
+<svelte:window
+  onkeydown={(event) => {
+    if (event.key === 'Escape') activeImage = null;
+  }}
+/>
 
 <style>
   .documentation-grid {
