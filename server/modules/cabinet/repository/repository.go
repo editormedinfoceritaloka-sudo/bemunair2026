@@ -91,7 +91,7 @@ func programPreload(public bool) func(*gorm.DB) *gorm.DB {
 		query := db.Order("display_order ASC, id ASC")
 
 		if public {
-			query = query.Where("is_published = ?", true)
+			query = query.Where("is_published = ? AND lifecycle_status <> ?", true, "DRAFT")
 		}
 
 		return query
@@ -289,7 +289,7 @@ func (r *cabinetRepository) UpdateMember(value *entities.OrganizationMember) err
 func (r *cabinetRepository) Programs(unitID uint64, page, perPage int, public bool) (ListResult[entities.WorkProgram], error) {
 	query := r.db.Model(&entities.WorkProgram{}).Where("ministry_id = ?", unitID)
 	if public {
-		query = query.Where("is_published = ?", true)
+		query = query.Where("is_published = ? AND lifecycle_status <> ?", true, "DRAFT")
 	}
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
@@ -306,7 +306,7 @@ func (r *cabinetRepository) Programs(unitID uint64, page, perPage int, public bo
 func (r *cabinetRepository) ProgramBySlug(unitSlug, programSlug string, public bool) (*entities.WorkProgram, error) {
 	query := r.db.Joins("JOIN ministries ON ministries.id = work_programs.ministry_id").Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").Where("ministries.slug = ? AND work_programs.slug = ?", unitSlug, programSlug)
 	if public {
-		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ?", true, true, true, true, true)
+		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ? AND work_programs.lifecycle_status <> ?", true, true, true, true, true, "DRAFT")
 	}
 	var value entities.WorkProgram
 	err := query.Preload("Ministry").Preload("CoverMedia").Preload("Milestones", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations.MediaAsset").First(&value).Error
@@ -319,7 +319,7 @@ func (r *cabinetRepository) ProgramBySlug(unitSlug, programSlug string, public b
 func (r *cabinetRepository) ProgramBySlugOnly(programSlug string, public bool) (*entities.WorkProgram, error) {
 	query := r.db.Joins("JOIN ministries ON ministries.id = work_programs.ministry_id").Joins("JOIN cabinet_terms ON cabinet_terms.id = ministries.cabinet_term_id").Where("work_programs.slug = ?", programSlug)
 	if public {
-		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ?", true, true, true, true, true)
+		query = query.Where("ministries.is_active = ? AND ministries.is_published = ? AND cabinet_terms.is_active = ? AND cabinet_terms.is_published = ? AND work_programs.is_published = ? AND work_programs.lifecycle_status <> ?", true, true, true, true, true, "DRAFT")
 	}
 	var value entities.WorkProgram
 	err := query.Preload("Ministry").Preload("CoverMedia").Preload("Milestones", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations", func(db *gorm.DB) *gorm.DB { return db.Order("display_order ASC, id ASC") }).Preload("Documentations.MediaAsset").First(&value).Error

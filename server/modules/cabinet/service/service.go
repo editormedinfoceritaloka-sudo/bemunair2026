@@ -16,7 +16,7 @@ import (
 
 const PublicProgramPageSize = 8
 
-var validStatuses = map[string]bool{"DRAFT": true, "PLANNED": true, "ONGOING": true, "COMPLETED": true, "POSTPONED": true, "CANCELLED": true, "ARCHIVED": true}
+var validStatuses = map[string]bool{"DRAFT": true, "PLANNED": true, "ONGOING": true, "COMPLETED": true}
 
 var (
 	ErrUnitAccessDenied = errors.New("akses unit ditolak")
@@ -456,6 +456,10 @@ func (s *cabinetService) CreateProgram(req dto.ProgramRequest, actor *middleware
 		return nil, err
 	}
 	value.Slug = slug
+	if value.IsPublished {
+		now := time.Now()
+		value.PublishedAt = &now
+	}
 	if err := s.repo.CreateProgram(value); err != nil {
 		return nil, err
 	}
@@ -482,6 +486,13 @@ func (s *cabinetService) UpdateProgram(id uint64, req dto.ProgramRequest, actor 
 	updated.CreatedAt = value.CreatedAt
 	updated.CreatedBy = value.CreatedBy
 	updated.PublishedAt = value.PublishedAt
+	if updated.IsPublished && updated.PublishedAt == nil {
+		now := time.Now()
+		updated.PublishedAt = &now
+	}
+	if !updated.IsPublished {
+		updated.PublishedAt = nil
+	}
 	if strings.TrimSpace(req.Slug) == "" {
 		updated.Slug = value.Slug
 	} else {
@@ -570,11 +581,18 @@ func (s *cabinetService) PublishProgram(id uint64, published bool, actor *middle
 	if !s.canManage(actor, value.MinistryID) {
 		return nil, errors.New("akses unit ditolak")
 	}
-	value.IsPublished = published
 	if published {
-		now := time.Now()
-		value.PublishedAt = &now
+		if value.LifecycleStatus == "DRAFT" {
+			value.LifecycleStatus = "PLANNED"
+		}
+		value.IsPublished = true
+		if value.PublishedAt == nil {
+			now := time.Now()
+			value.PublishedAt = &now
+		}
 	} else {
+		value.LifecycleStatus = "DRAFT"
+		value.IsPublished = false
 		value.PublishedAt = nil
 	}
 	if err := s.repo.UpdateProgram(&value); err != nil {
@@ -811,7 +829,7 @@ func programFromRequest(req dto.ProgramRequest) *entities.WorkProgram {
 	if slug == "" {
 		slug = utils.Slugify(req.Name)
 	}
-	return &entities.WorkProgram{MinistryID: req.MinistryID, Name: strings.TrimSpace(req.Name), Slug: slug, ShortDescription: req.ShortDescription, Description: req.Description, Objectives: req.Objectives, TargetAudience: req.TargetAudience, StartDate: parseDate(req.StartDate), EndDate: parseDate(req.EndDate), LifecycleStatus: status, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsFeatured: req.IsFeatured, IsPublished: req.IsPublished}
+	return &entities.WorkProgram{MinistryID: req.MinistryID, Name: strings.TrimSpace(req.Name), Slug: slug, ShortDescription: req.ShortDescription, Description: req.Description, Objectives: req.Objectives, TargetAudience: req.TargetAudience, StartDate: parseDate(req.StartDate), EndDate: parseDate(req.EndDate), LifecycleStatus: status, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsFeatured: req.IsFeatured, IsPublished: status != "DRAFT"}
 }
 func parseDate(value *string) *time.Time {
 	if value == nil || strings.TrimSpace(*value) == "" {
@@ -850,7 +868,18 @@ func unitToDTO(value entities.Ministry) dto.UnitResponse {
 	return result
 }
 func programToDTO(value entities.WorkProgram) dto.ProgramResponse {
-	result := dto.ProgramResponse{ID: value.ID, MinistryID: value.MinistryID, Name: value.Name, Slug: value.Slug, ShortDescription: value.ShortDescription, Description: value.Description, Objectives: value.Objectives, TargetAudience: value.TargetAudience, StartDate: value.StartDate, EndDate: value.EndDate, ExecutionMonth: value.ExecutionMonth, Status: value.LifecycleStatus, Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsFeatured: value.IsFeatured, IsPublished: value.IsPublished, PublishedAt: value.PublishedAt, Milestones: make([]dto.MilestoneResponse, 0, len(value.Milestones)), Documentations: make([]dto.DocumentationResponse, 0, len(value.Documentations))}
+	status := value.LifecycleStatus
+	if status != "DRAFT" {
+		now := time.Now()
+		if value.StartDate != nil && now.Before(*value.StartDate) {
+			status = "PLANNED"
+		} else if value.EndDate != nil && now.After(*value.EndDate) {
+			status = "COMPLETED"
+		} else if value.StartDate != nil {
+			status = "ONGOING"
+		}
+	}
+	result := dto.ProgramResponse{ID: value.ID, MinistryID: value.MinistryID, Name: value.Name, Slug: value.Slug, ShortDescription: value.ShortDescription, Description: value.Description, Objectives: value.Objectives, TargetAudience: value.TargetAudience, StartDate: value.StartDate, EndDate: value.EndDate, ExecutionMonth: value.ExecutionMonth, Status: status, Cover: mediaToDTO(value.CoverMedia), DisplayOrder: value.DisplayOrder, IsFeatured: value.IsFeatured, IsPublished: value.IsPublished, PublishedAt: value.PublishedAt, Milestones: make([]dto.MilestoneResponse, 0, len(value.Milestones)), Documentations: make([]dto.DocumentationResponse, 0, len(value.Documentations))}
 	if value.Ministry != nil {
 		result.MinistryName = value.Ministry.Name
 	}
