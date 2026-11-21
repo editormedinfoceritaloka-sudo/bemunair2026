@@ -45,6 +45,7 @@ type Service interface {
 	Program(id uint64) (*dto.ProgramResponse, error)
 	CreateProgram(req dto.ProgramRequest, actor *middlewares.Claims) (*dto.ProgramResponse, error)
 	UpdateProgram(id uint64, req dto.ProgramRequest, actor *middlewares.Claims) (*dto.ProgramResponse, error)
+	DeleteProgram(id uint64, actor *middlewares.Claims) (bool, error)
 	PublishProgram(id uint64, published bool, actor *middlewares.Claims) (*dto.ProgramResponse, error)
 	CreateMilestone(req dto.MilestoneRequest, actor *middlewares.Claims) (*dto.MilestoneResponse, error)
 	CreateDocumentation(programID uint64, req dto.DocumentationRequest, actor *middlewares.Claims) (*dto.DocumentationResponse, error)
@@ -492,6 +493,23 @@ func (s *cabinetService) validateProgramSlugUnique(slug string, excludeID uint64
 		return errors.New("slug program sudah digunakan")
 	}
 	return nil
+}
+
+func (s *cabinetService) DeleteProgram(id uint64, actor *middlewares.Claims) (bool, error) {
+	var value entities.WorkProgram
+	if err := s.repo.DB().First(&value, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	if !s.canManage(actor, value.MinistryID) {
+		return false, ErrUnitAccessDenied
+	}
+	if err := s.repo.DeleteProgram(id); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (s *cabinetService) PublishProgram(id uint64, published bool, actor *middlewares.Claims) (*dto.ProgramResponse, error) {

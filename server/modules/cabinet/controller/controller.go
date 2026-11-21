@@ -276,6 +276,23 @@ func (c *Controller) PublishProgram(ctx *gin.Context) {
 	}
 	response.OK(ctx, "Status program kerja diperbarui", value)
 }
+
+func (c *Controller) DeleteProgram(ctx *gin.Context) {
+	deleted, err := c.service.DeleteProgram(paramID(ctx), middlewares.CurrentClaims(ctx))
+	if err != nil {
+		if errors.Is(err, service.ErrUnitAccessDenied) {
+			response.Error(ctx, http.StatusForbidden, response.Forbidden, err.Error())
+			return
+		}
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, "Gagal menghapus program kerja")
+		return
+	}
+	if !deleted {
+		response.Error(ctx, http.StatusNotFound, response.NotFound, "Program kerja tidak ditemukan")
+		return
+	}
+	response.OK(ctx, "Program kerja dihapus", nil)
+}
 func (c *Controller) CreateMilestone(ctx *gin.Context) {
 	var req dto.MilestoneRequest
 	if !bind(ctx, &req) {

@@ -37,6 +37,7 @@ type Repository interface {
 	ProgramBySlugOnly(programSlug string, public bool) (*entities.WorkProgram, error)
 	CreateProgram(value *entities.WorkProgram) error
 	UpdateProgram(value *entities.WorkProgram) error
+	DeleteProgram(id uint64) error
 	CreateMilestone(value *entities.WorkProgramMilestone) error
 	CreateDocumentation(value *entities.WorkProgramDocumentation) error
 	ReorderDocumentations(programID uint64, ids []uint64) error
@@ -333,6 +334,18 @@ func (r *cabinetRepository) CreateProgram(value *entities.WorkProgram) error {
 }
 func (r *cabinetRepository) UpdateProgram(value *entities.WorkProgram) error {
 	return r.db.Save(value).Error
+}
+
+func (r *cabinetRepository) DeleteProgram(id uint64) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("work_program_id = ?", id).Delete(&entities.WorkProgramMilestone{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("work_program_id = ?", id).Delete(&entities.WorkProgramDocumentation{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&entities.WorkProgram{}, id).Error
+	})
 }
 func (r *cabinetRepository) CreateMilestone(value *entities.WorkProgramMilestone) error {
 	return r.db.Create(value).Error

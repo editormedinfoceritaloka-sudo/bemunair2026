@@ -40,6 +40,7 @@ func RegisterRoutes(api *gin.RouterGroup, dbRepository repository.Repository, jw
 	adminPrograms.GET("/:id", c.AdminProgram)
 	adminPrograms.POST("", c.CreateProgram)
 	adminPrograms.PUT("/:id", c.UpdateProgram)
+	adminPrograms.DELETE("/:id", c.DeleteProgram)
 	adminPrograms.PUT("/:id/publish", c.PublishProgram)
 	adminPrograms.POST("/:id/milestones", c.CreateMilestone)
 	adminPrograms.POST("/:id/documentations", c.CreateDocumentation)
