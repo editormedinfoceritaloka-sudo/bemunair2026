@@ -91,7 +91,7 @@ done
 
 # Backup dibuat sebelum image migrasi baru dijalankan.
 backup_file="$backup_dir/pre-deploy-${release_sha}-$(date -u +%Y%m%dT%H%M%SZ).sql"
-"${compose[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysqldump --single-transaction --quick --lock-tables=false -u"$MYSQL_USER" "$MYSQL_DATABASE"' >"$backup_file"
+"${compose[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysqldump --single-transaction --quick --lock-tables=false --no-tablespaces -u"$MYSQL_USER" "$MYSQL_DATABASE"' >"$backup_file"
 chmod 600 "$backup_file"
 
 "${compose[@]}" up "${up_args[@]}" -d --remove-orphans
