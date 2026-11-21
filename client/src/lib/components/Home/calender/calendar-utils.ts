@@ -161,11 +161,16 @@ export function getEventsForDay(
   const selectedDate = dateKey(day);
 
   return events
-    .filter(
-      (event) =>
-        event.startDate ===
-        selectedDate
-    )
+    .filter((event) => {
+      const endDate =
+        event.endDate ||
+        event.startDate;
+
+      return (
+        event.startDate <= selectedDate &&
+        selectedDate <= endDate
+      );
+    })
     .sort((first, second) =>
       first.title.localeCompare(
         second.title,
@@ -178,15 +183,22 @@ export function getEventsForMonth(
   month: Date,
   events: CalendarEvent[]
 ): CalendarEvent[] {
+  const monthStart = dateKey(
+    startOfMonth(month)
+  );
+
+  const monthEnd = dateKey(
+    endOfMonth(month)
+  );
+
   return events.filter((event) => {
-    const eventDate =
-      parseDate(event.startDate);
+    const endDate =
+      event.endDate ||
+      event.startDate;
 
     return (
-      eventDate.getMonth() ===
-        month.getMonth() &&
-      eventDate.getFullYear() ===
-        month.getFullYear()
+      event.startDate <= monthEnd &&
+      endDate >= monthStart
     );
   });
 }

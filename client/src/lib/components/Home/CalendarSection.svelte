@@ -44,6 +44,11 @@
           0,
           10
         ),
+      endDate:
+        program.end_date?.slice(
+          0,
+          10
+        ),
       ministryName,
       ministrySlug: unit.slug,
       programSlug: program.slug,

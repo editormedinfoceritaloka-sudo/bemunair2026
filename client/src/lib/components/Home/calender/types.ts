@@ -2,6 +2,7 @@ export type CalendarEvent = {
   id: string;
   title: string;
   startDate: string;
+  endDate?: string;
   ministryName: string;
   ministrySlug: string;
   programSlug: string;
