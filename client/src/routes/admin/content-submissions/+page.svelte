@@ -56,14 +56,14 @@
   </div>
   <select bind:value={status} class="h-9 rounded-lg border bg-card px-3 text-sm">
     <option value="ALL">Semua status</option>
-    <option>SUBMITTED</option>
-    <option>PENDING_REVIEW</option>
-    <option>REVISION_REQUIRED</option>
-    <option>REVISION_SUBMITTED</option>
-    <option>APPROVED</option>
-    <option>SCHEDULED</option>
-    <option>PUBLISHED</option>
-    <option>REJECTED</option>
+    <option value="SUBMITTED">Dikirim</option>
+    <option value="PENDING_REVIEW">Menunggu peninjauan</option>
+    <option value="REVISION_REQUIRED">Perlu revisi</option>
+    <option value="REVISION_SUBMITTED">Revisi dikirim</option>
+    <option value="APPROVED">Disetujui</option>
+    <option value="SCHEDULED">Dijadwalkan</option>
+    <option value="PUBLISHED">Dipublikasikan</option>
+    <option value="REJECTED">Ditolak</option>
   </select>
 </div>
 

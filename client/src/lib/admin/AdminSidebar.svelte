@@ -24,7 +24,7 @@
     adminOnly?: boolean;
   };
 
-  let { user, ministryLogo }: { user: User; ministryLogo?: string | null } = $props();
+  let { user, ministryLogo, mobile = false }: { user: User; ministryLogo?: string | null; mobile?: boolean } = $props();
 
   const navigation: { label: string; items: NavigationItem[] }[] = [
     {
@@ -74,7 +74,7 @@
   );
 </script>
 
-<aside class="hidden h-svh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex">
+<aside class={mobile ? "flex h-svh w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar" : "hidden h-svh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex"}>
   <div class="border-b border-sidebar-border px-4 py-4">
     <a href={resolve('/admin')} class="flex items-center gap-3 rounded-xl no-underline">
       <div class="relative grid size-10 shrink-0 place-items-center rounded-xl border border-blue-100 bg-white p-1 shadow-sm">
