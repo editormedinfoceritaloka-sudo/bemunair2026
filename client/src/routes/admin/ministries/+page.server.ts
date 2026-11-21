@@ -69,7 +69,6 @@ async function unitBody(fetch: typeof globalThis.fetch, token: string | undefine
     code: formValue(form, 'code'),
     name,
     unit_type: formValue(form, 'unit_type'),
-    slug: formValue(form, 'slug'),
     short_name: nullable(form, 'short_name'),
     description: nullable(form, 'description'),
     vision: nullable(form, 'vision'),

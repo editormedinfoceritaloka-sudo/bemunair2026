@@ -133,13 +133,6 @@ func (s *articleService) Update(id uint64, req dto.UpdateRequest) (*dto.ArticleR
 		return nil, errors.New("body wajib diisi")
 	}
 
-	if req.Title != article.Title {
-		slug, err := s.uniqueSlug(req.Title, article.ID)
-		if err != nil {
-			return nil, err
-		}
-		article.Slug = slug
-	}
 	article.Title = req.Title
 	article.Excerpt = req.Excerpt
 	article.Body = utils.SanitizeArticleHTML(req.Body)

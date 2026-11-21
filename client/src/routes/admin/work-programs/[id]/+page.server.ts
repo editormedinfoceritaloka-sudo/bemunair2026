@@ -14,6 +14,8 @@ export const actions: Actions = {
         body: JSON.stringify({
           title: formValue(form, "title"),
           description: nullable(form, "description"),
+          start_date: nullable(form, "start_date"),
+          end_date: nullable(form, "end_date"),
           status: formValue(form, "status"),
           display_order: Number(formValue(form, "display_order") || 0)
         })
@@ -52,6 +54,33 @@ export const actions: Actions = {
           caption: nullable(form, "caption"),
           display_order: Number(formValue(form, "display_order") || 0),
           is_cover: form.has("is_cover")
+        })
+      });
+      return { success: true };
+    } catch (error) {
+      const result = actionError(error);
+      return fail(result.status, { error: result.message });
+    }
+  },
+  update: async ({ request, fetch, cookies, params }) => {
+    const form = await request.formData();
+    try {
+      await apiRequest(fetch, tokenFrom(cookies), "/admin/work-programs/" + params.id, {
+        method: "PUT",
+        body: JSON.stringify({
+          ministry_id: Number(formValue(form, "ministry_id")),
+          name: formValue(form, "name"),
+          short_description: nullable(form, "short_description"),
+          description: nullable(form, "description"),
+          objectives: nullable(form, "objectives"),
+          target_audience: nullable(form, "target_audience"),
+          start_date: nullable(form, "start_date"),
+          end_date: nullable(form, "end_date"),
+          status: formValue(form, "status"),
+          cover_media_id: formValue(form, "cover_media_id") ? Number(formValue(form, "cover_media_id")) : null,
+          display_order: Number(formValue(form, "display_order") || 0),
+          is_featured: form.has("is_featured"),
+          is_published: form.has("is_published")
         })
       });
       return { success: true };

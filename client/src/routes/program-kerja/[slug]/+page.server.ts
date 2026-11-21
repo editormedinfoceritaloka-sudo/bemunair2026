@@ -5,8 +5,6 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
 	try {
-		console.log('slug:', params.slug);
-
 		const response = await apiRequest<WorkProgram>(
 			fetch,
 			undefined,

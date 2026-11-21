@@ -247,9 +247,16 @@ func (s *cabinetService) CreateUnit(req dto.UnitRequest, actor *middlewares.Clai
 	if req.ParentID != nil && !s.canManage(actor, *req.ParentID) {
 		return nil, errors.New("akses unit ditolak")
 	}
-	value := &entities.Ministry{Code: strings.ToUpper(strings.TrimSpace(req.Code)), Name: strings.TrimSpace(req.Name), CabinetTermID: req.CabinetTermID, ParentID: req.ParentID, UnitType: req.UnitType, Slug: strings.TrimSpace(req.Slug), ShortName: req.ShortName, Description: req.Description, Vision: req.Vision, Mission: req.Mission, LogoMediaID: req.LogoMediaID, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsActive: req.IsActive, IsPublished: req.IsPublished}
+	value := &entities.Ministry{Code: strings.ToUpper(strings.TrimSpace(req.Code)), Name: strings.TrimSpace(req.Name), CabinetTermID: req.CabinetTermID, ParentID: req.ParentID, UnitType: req.UnitType, ShortName: req.ShortName, Description: req.Description, Vision: req.Vision, Mission: req.Mission, LogoMediaID: req.LogoMediaID, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsActive: req.IsActive, IsPublished: req.IsPublished}
+	value.Slug = utils.SlugifyMax(req.Slug, 160)
 	if value.Slug == "" {
-		value.Slug = utils.Slugify(value.Name)
+		value.Slug = utils.SlugifyMax(value.Name, 160)
+	}
+	if value.Slug == "" {
+		value.Slug = "unit"
+	}
+	if err := s.validateUnitSlugUnique(value.Slug, value.CabinetTermID, 0); err != nil {
+		return nil, err
 	}
 	if err := s.repo.CreateUnit(value); err != nil {
 		return nil, err
@@ -283,8 +290,21 @@ func (s *cabinetService) UpdateUnit(id uint64, req dto.UnitRequest, actor *middl
 	value.CabinetTermID = req.CabinetTermID
 	value.ParentID = req.ParentID
 	value.UnitType = req.UnitType
-	value.Slug = strings.TrimSpace(req.Slug)
 	value.ShortName = req.ShortName
+	slug := utils.SlugifyMax(req.Slug, 160)
+	if slug == "" {
+		slug = value.Slug
+	}
+	if slug == "" {
+		slug = utils.SlugifyMax(value.Name, 160)
+	}
+	if slug == "" {
+		slug = "unit"
+	}
+	if err := s.validateUnitSlugUnique(slug, value.CabinetTermID, id); err != nil {
+		return nil, err
+	}
+	value.Slug = slug
 	value.Description = req.Description
 	value.Vision = req.Vision
 	value.Mission = req.Mission
@@ -293,9 +313,6 @@ func (s *cabinetService) UpdateUnit(id uint64, req dto.UnitRequest, actor *middl
 	value.DisplayOrder = req.DisplayOrder
 	value.IsActive = req.IsActive
 	value.IsPublished = req.IsPublished
-	if value.Slug == "" {
-		value.Slug = utils.Slugify(value.Name)
-	}
 	if err := s.repo.UpdateUnit(&value); err != nil {
 		return nil, err
 	}
@@ -434,12 +451,11 @@ func (s *cabinetService) CreateProgram(req dto.ProgramRequest, actor *middleware
 		return nil, err
 	}
 	value := programFromRequest(req)
-	if strings.TrimSpace(req.Slug) == "" {
-		value.Slug = utils.Slugify(value.Name) + "-" + time.Now().Format("20060102-150405")
-	}
-	if err := s.validateProgramSlugUnique(value.Slug, 0); err != nil {
+	slug, err := s.uniqueProgramSlug(req.Slug, value.Name, 0)
+	if err != nil {
 		return nil, err
 	}
+	value.Slug = slug
 	if err := s.repo.CreateProgram(value); err != nil {
 		return nil, err
 	}
@@ -468,8 +484,12 @@ func (s *cabinetService) UpdateProgram(id uint64, req dto.ProgramRequest, actor 
 	updated.PublishedAt = value.PublishedAt
 	if strings.TrimSpace(req.Slug) == "" {
 		updated.Slug = value.Slug
-	} else if err := s.validateProgramSlugUnique(updated.Slug, id); err != nil {
-		return nil, err
+	} else {
+		slug, err := s.uniqueProgramSlug(req.Slug, updated.Name, id)
+		if err != nil {
+			return nil, err
+		}
+		updated.Slug = slug
 	}
 	if err := s.repo.UpdateProgram(updated); err != nil {
 		return nil, err
@@ -478,10 +498,37 @@ func (s *cabinetService) UpdateProgram(id uint64, req dto.ProgramRequest, actor 
 	return &result, nil
 }
 
-// validateProgramSlugUnique memastikan slug program tidak dipakai program lain.
-// excludeID diisi saat update agar program itu sendiri tidak dihitung.
-func (s *cabinetService) validateProgramSlugUnique(slug string, excludeID uint64) error {
-	query := s.repo.DB().Model(&entities.WorkProgram{}).Where("slug = ?", slug)
+func (s *cabinetService) uniqueProgramSlug(requested, name string, excludeID uint64) (string, error) {
+	base := utils.SlugifyMax(requested, 200)
+	if base == "" {
+		base = utils.SlugifyMax(name, 200)
+	}
+	if base == "" {
+		base = "program"
+	}
+	slug := base
+	for i := 0; i < 10; i++ {
+		query := s.repo.DB().Model(&entities.WorkProgram{}).Where("slug = ?", slug)
+		if excludeID > 0 {
+			query = query.Where("id <> ?", excludeID)
+		}
+		var count int64
+		if err := query.Count(&count).Error; err != nil {
+			return "", err
+		}
+		if count == 0 {
+			return slug, nil
+		}
+		slug = fmt.Sprintf("%s-%d", base, i+1)
+	}
+	return "", errors.New("slug program sudah digunakan")
+}
+
+func (s *cabinetService) validateUnitSlugUnique(slug string, cabinetTermID *uint64, excludeID uint64) error {
+	query := s.repo.DB().Model(&entities.Ministry{}).Where("slug = ?", slug)
+	if cabinetTermID != nil {
+		query = query.Where("cabinet_term_id = ?", *cabinetTermID)
+	}
 	if excludeID > 0 {
 		query = query.Where("id <> ?", excludeID)
 	}
@@ -490,7 +537,7 @@ func (s *cabinetService) validateProgramSlugUnique(slug string, excludeID uint64
 		return err
 	}
 	if count > 0 {
-		return errors.New("slug program sudah digunakan")
+		return errors.New("slug unit sudah digunakan")
 	}
 	return nil
 }
@@ -731,7 +778,29 @@ func validateProgram(req dto.ProgramRequest) error {
 	if !validStatuses[strings.ToUpper(strings.TrimSpace(req.LifecycleStatus))] {
 		return errors.New("status program tidak valid")
 	}
+	start, err := parseProgramDate(req.StartDate, "tanggal mulai")
+	if err != nil {
+		return err
+	}
+	end, err := parseProgramDate(req.EndDate, "tanggal selesai")
+	if err != nil {
+		return err
+	}
+	if start != nil && end != nil && end.Before(*start) {
+		return errors.New("tanggal selesai tidak boleh sebelum tanggal mulai")
+	}
 	return nil
+}
+
+func parseProgramDate(value *string, label string) (*time.Time, error) {
+	if value == nil || strings.TrimSpace(*value) == "" {
+		return nil, nil
+	}
+	parsed, err := time.Parse("2006-01-02", strings.TrimSpace(*value))
+	if err != nil {
+		return nil, errors.New(label + " tidak valid, gunakan format YYYY-MM-DD")
+	}
+	return &parsed, nil
 }
 func programFromRequest(req dto.ProgramRequest) *entities.WorkProgram {
 	status := strings.ToUpper(strings.TrimSpace(req.LifecycleStatus))
@@ -742,7 +811,7 @@ func programFromRequest(req dto.ProgramRequest) *entities.WorkProgram {
 	if slug == "" {
 		slug = utils.Slugify(req.Name)
 	}
-	return &entities.WorkProgram{MinistryID: req.MinistryID, Name: strings.TrimSpace(req.Name), Slug: slug, ShortDescription: req.ShortDescription, Description: req.Description, Objectives: req.Objectives, TargetAudience: req.TargetAudience, ExecutionMonth: req.ExecutionMonth, LifecycleStatus: status, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsFeatured: req.IsFeatured, IsPublished: req.IsPublished}
+	return &entities.WorkProgram{MinistryID: req.MinistryID, Name: strings.TrimSpace(req.Name), Slug: slug, ShortDescription: req.ShortDescription, Description: req.Description, Objectives: req.Objectives, TargetAudience: req.TargetAudience, StartDate: parseDate(req.StartDate), EndDate: parseDate(req.EndDate), LifecycleStatus: status, CoverMediaID: req.CoverMediaID, DisplayOrder: req.DisplayOrder, IsFeatured: req.IsFeatured, IsPublished: req.IsPublished}
 }
 func parseDate(value *string) *time.Time {
 	if value == nil || strings.TrimSpace(*value) == "" {

@@ -60,7 +60,8 @@ type ProgramRequest struct {
 	Description      *string `json:"description"`
 	Objectives       *string `json:"objectives"`
 	TargetAudience   *string `json:"target_audience"`
-	ExecutionMonth   *string `json:"execution_month"`
+	StartDate        *string `json:"start_date"`
+	EndDate          *string `json:"end_date"`
 	LifecycleStatus  string  `json:"status"`
 	CoverMediaID     *uint64 `json:"cover_media_id"`
 	DisplayOrder     uint    `json:"display_order"`

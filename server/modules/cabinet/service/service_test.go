@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"bemunair2026/server/database/entities"
@@ -105,11 +104,8 @@ func TestCreateProgramAutoSlug(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create failed: %v", err)
 	}
-	if !strings.HasPrefix(value.Slug, "cerita-visual-") {
-		t.Fatalf("expected auto slug with datetime suffix, got %q", value.Slug)
-	}
-	if len(value.Slug) != len("cerita-visual-")+len("20060102-150405") {
-		t.Fatalf("unexpected slug length: %q", value.Slug)
+	if value.Slug != "cerita-visual-1" {
+		t.Fatalf("expected auto slug with numeric suffix, got %q", value.Slug)
 	}
 	var count int64
 	if err := db.Model(&entities.WorkProgram{}).Where("slug = ?", value.Slug).Count(&count).Error; err != nil {
@@ -120,14 +116,17 @@ func TestCreateProgramAutoSlug(t *testing.T) {
 	}
 }
 
-func TestCreateProgramUniqueSlugConflict(t *testing.T) {
+func TestCreateProgramSuffixesDuplicateSlug(t *testing.T) {
 	db := newTestDB(t, "svc_conflict")
 	seedPublishedProgram(t, db)
 	svc := New(repository.New(db))
 
 	value, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Program Lain", Slug: "cerita-visual", LifecycleStatus: "ONGOING"}, testActor())
-	if err == nil || !strings.Contains(err.Error(), "slug program sudah digunakan") {
-		t.Fatalf("expected slug conflict error, got value=%v err=%v", value, err)
+	if err != nil || value == nil {
+		t.Fatalf("create failed: %v", err)
+	}
+	if value.Slug != "cerita-visual-1" {
+		t.Fatalf("expected suffixed slug, got %q", value.Slug)
 	}
 }
 

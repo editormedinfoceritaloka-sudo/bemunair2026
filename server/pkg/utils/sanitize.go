@@ -34,3 +34,15 @@ func Slugify(input string) string {
 	s = dashRuns.ReplaceAllString(s, "-")
 	return strings.Trim(s, "-")
 }
+
+func SlugifyMax(input string, max int) string {
+	s := Slugify(input)
+	if len(s) <= max {
+		return s
+	}
+	s = s[:max]
+	if idx := strings.LastIndex(s, "-"); idx > 0 {
+		s = s[:idx]
+	}
+	return strings.Trim(s, "-")
+}

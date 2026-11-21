@@ -60,7 +60,7 @@ type WorkProgram struct {
 	MinistryID       uint64      `gorm:"not null;index" json:"ministry_id"`
 	Ministry         *Ministry   `gorm:"foreignKey:MinistryID;references:ID;constraint:OnDelete:RESTRICT" json:"ministry,omitempty"`
 	Name             string      `gorm:"type:varchar(180);not null" json:"name"`
-	Slug             string      `gorm:"type:varchar(200);not null" json:"slug"`
+	Slug             string      `gorm:"type:varchar(200);not null;uniqueIndex" json:"slug"`
 	ShortDescription *string     `gorm:"type:varchar(500)" json:"short_description,omitempty"`
 	Description      *string     `gorm:"type:longtext" json:"description,omitempty"`
 	Objectives       *string     `gorm:"type:text" json:"objectives,omitempty"`

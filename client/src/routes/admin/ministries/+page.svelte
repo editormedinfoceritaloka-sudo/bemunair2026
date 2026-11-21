@@ -412,10 +412,6 @@
               <Input id="short_name" name="short_name" value={editing?.short_name ?? ''} maxlength={80} autocomplete="off" />
             </div>
             <div class="space-y-2">
-              <Label for="slug">Slug halaman publik</Label>
-              <Input id="slug" name="slug" value={editing?.slug ?? ''} placeholder="Otomatis dari nama jika kosong" autocomplete="off" />
-            </div>
-            <div class="space-y-2">
               <Label for="display_order">Urutan tampilan</Label>
               <Input id="display_order" name="display_order" type="number" min="0" value={editing?.display_order ?? 0} inputmode="numeric" />
             </div>
