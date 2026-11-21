@@ -36,22 +36,8 @@ export const actions: Actions = {
           start_date: nullable(form, 'start_date'),
           end_date: nullable(form, 'end_date'),
           status: formValue(form, 'status'),
-          is_featured: form.has('is_featured'),
-          is_published: form.has('is_published')
+          is_featured: form.has('is_featured')
         })
-      });
-      return { success: true };
-    } catch (error) {
-      const result = actionError(error);
-      return fail(result.status, { error: result.message });
-    }
-  },
-  publish: async ({ request, fetch, cookies }) => {
-    const form = await request.formData();
-    try {
-      await apiRequest(fetch, tokenFrom(cookies), `/admin/work-programs/${formValue(form, 'id')}/publish`, {
-        method: 'PUT',
-        body: JSON.stringify({ published: formValue(form, 'published') === 'true' })
       });
       return { success: true };
     } catch (error) {

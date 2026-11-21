@@ -62,7 +62,7 @@
     <div class="space-y-2"><Label for="start_date">Tanggal mulai</Label><Input id="start_date" name="start_date" type="date" value={data.program.start_date?.slice(0, 10) ?? ''}/></div>
     <div class="space-y-2"><Label for="end_date">Tanggal selesai</Label><Input id="end_date" name="end_date" type="date" value={data.program.end_date?.slice(0, 10) ?? ''}/></div>
     <div class="space-y-2"><Label for="status">Status</Label><select id="status" name="status" class="h-10 w-full rounded-lg border bg-background px-3 text-sm">{#each workProgramStatuses as status (status.value)}<option value={status.value} selected={data.program.status === status.value}>{status.label}</option>{/each}</select></div>
-    <div class="flex items-end gap-4"><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" checked={data.program.is_featured}/> Featured</label><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_published" checked={data.program.is_published}/> Published</label></div>
+    <div class="flex items-end gap-4"><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" checked={data.program.is_featured}/> Featured</label></div>
     <div class="sm:col-span-2"><Button type="submit">Simpan perubahan</Button></div>
   </form>
 </section>

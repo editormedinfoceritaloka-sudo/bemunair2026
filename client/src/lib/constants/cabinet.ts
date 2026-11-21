@@ -9,8 +9,5 @@ export const workProgramStatuses = [
   { value: 'DRAFT', label: 'Draft' },
   { value: 'PLANNED', label: 'Direncanakan' },
   { value: 'ONGOING', label: 'Berlangsung' },
-  { value: 'COMPLETED', label: 'Selesai' },
-  { value: 'POSTPONED', label: 'Ditunda' },
-  { value: 'CANCELLED', label: 'Dibatalkan' },
-  { value: 'ARCHIVED', label: 'Diarsipkan' }
+  { value: 'COMPLETED', label: 'Selesai' }
 ] as const;

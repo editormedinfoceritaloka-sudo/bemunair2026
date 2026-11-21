@@ -79,8 +79,7 @@ export const actions: Actions = {
           status: formValue(form, "status"),
           cover_media_id: formValue(form, "cover_media_id") ? Number(formValue(form, "cover_media_id")) : null,
           display_order: Number(formValue(form, "display_order") || 0),
-          is_featured: form.has("is_featured"),
-          is_published: form.has("is_published")
+          is_featured: form.has("is_featured")
         })
       });
       return { success: true };

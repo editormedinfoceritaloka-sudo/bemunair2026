@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"bemunair2026/server/database/entities"
 	"bemunair2026/server/middlewares"
@@ -184,5 +185,72 @@ func TestMemberToDTOIncludesActiveStatus(t *testing.T) {
 	value := memberToDTO(entities.OrganizationMember{ID: 1, Name: "Anggota", IsActive: true})
 	if !value.IsActive {
 		t.Fatal("expected active status in member response")
+	}
+}
+
+func TestProgramVisibilityFollowsStatus(t *testing.T) {
+	db := newTestDB(t, "svc_visibility")
+	seedPublishedProgram(t, db)
+	svc := New(repository.New(db))
+
+	draft, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Program Draft", LifecycleStatus: "DRAFT"}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if draft.IsPublished {
+		t.Fatal("draft should not be published")
+	}
+
+	planned, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Program Rencana", LifecycleStatus: "PLANNED"}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !planned.IsPublished {
+		t.Fatal("planned should be published")
+	}
+
+	updated, err := svc.UpdateProgram(planned.ID, dto.ProgramRequest{MinistryID: 1, Name: "Program Rencana", LifecycleStatus: "DRAFT"}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.IsPublished {
+		t.Fatal("draft update should unpublish")
+	}
+}
+
+func TestProgramStatusDerivedFromDates(t *testing.T) {
+	db := newTestDB(t, "svc_derived")
+	seedPublishedProgram(t, db)
+	svc := New(repository.New(db))
+	now := time.Now()
+
+	futureStart := now.AddDate(0, 0, 7).Format("2006-01-02")
+	futureEnd := now.AddDate(0, 0, 14).Format("2006-01-02")
+	planned, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Akan Datang", LifecycleStatus: "PLANNED", StartDate: &futureStart, EndDate: &futureEnd}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if planned.Status != "PLANNED" {
+		t.Fatalf("status=%q", planned.Status)
+	}
+
+	pastStart := now.AddDate(0, 0, -2).Format("2006-01-02")
+	nearEnd := now.AddDate(0, 0, 2).Format("2006-01-02")
+	ongoing, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Sedang Jalan", LifecycleStatus: "ONGOING", StartDate: &pastStart, EndDate: &nearEnd}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ongoing.Status != "ONGOING" {
+		t.Fatalf("status=%q", ongoing.Status)
+	}
+
+	oldStart := now.AddDate(0, 0, -14).Format("2006-01-02")
+	oldEnd := now.AddDate(0, 0, -7).Format("2006-01-02")
+	completed, err := svc.CreateProgram(dto.ProgramRequest{MinistryID: 1, Name: "Sudah Selesai", LifecycleStatus: "COMPLETED", StartDate: &oldStart, EndDate: &oldEnd}, testActor())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if completed.Status != "COMPLETED" {
+		t.Fatalf("status=%q", completed.Status)
 	}
 }

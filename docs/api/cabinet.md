@@ -107,13 +107,13 @@ Upload file memakai mekanisme ImageKit yang sudah tersedia. Setelah upload berha
 
 ## Status dan Validation
 
-Status program kerja yang didukung: `DRAFT`, `PLANNED`, `ONGOING`, `COMPLETED`, `POSTPONED`, `CANCELLED`, dan `ARCHIVED`.
+Status program kerja yang didukung: `DRAFT`, `PLANNED`, `ONGOING`, dan `COMPLETED`. Visibilitas publik diturunkan dari status: `DRAFT` tidak tampil, status lain tampil. Status `PLANNED`/`ONGOING`/`COMPLETED` dihitung otomatis dari `start_date` dan `end_date` saat dibaca.
 
 - Unit induk `MENKO`, `BPII`, atau `KEMENKOAN` tidak memiliki parent.
 - Kementerian wajib memiliki parent unit induk dari kabinet yang sama.
 - Hierarchy cycle ditolak.
 - Slug unit unik dalam satu kabinet.
-- Slug program unik di seluruh program kerja (global), divalidasi di service. Saat membuat program tanpa slug, slug dihasilkan otomatis dari nama + timestamp, misal `cerita-visual-20260807-153045`. Saat update dengan slug kosong, slug lama dipertahankan.
+- Slug program unik global, divalidasi di service dan unique index database. Slug dihasilkan otomatis dari nama; duplikat diberi akhiran `-1`, `-2`, dst. Saat update dengan slug kosong, slug lama dipertahankan.
 - Data unpublished tidak muncul di public API.
 - Penghapusan unit ditolak dengan status `409` bila unit masih memiliki anak, pengguna, pimpinan, role organisasi, program kerja, pengajuan konten, atau pengajuan surat. Nonaktifkan unit bila riwayatnya perlu dipertahankan.
 - Menghapus media yang masih direferensikan perlu dilakukan dengan menghapus relasi terlebih dahulu.
