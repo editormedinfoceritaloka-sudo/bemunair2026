@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { buildProgramWorkHref } from './calendar-utils';
+  import { buildProgramWorkHref, formatEventRange } from './calendar-utils';
   import type { CalendarEvent } from './types';
 
   let {
@@ -11,8 +11,8 @@
 
 <a
   href={buildProgramWorkHref(event)}
-  aria-label={`Lihat program kerja ${event.title} dari ${event.ministryName}`}
-  title={`${event.title} — ${event.ministryName}`}
+  aria-label={`Lihat program kerja ${event.title}, ${formatEventRange(event)}, dari ${event.ministryName}`}
+  title={`${event.title} — ${formatEventRange(event)} — ${event.ministryName}`}
   class="
     group flex min-h-9
     min-w-0 items-center

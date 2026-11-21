@@ -161,16 +161,11 @@ export function getEventsForDay(
   const selectedDate = dateKey(day);
 
   return events
-    .filter((event) => {
-      const endDate =
-        event.endDate ||
-        event.startDate;
-
-      return (
-        event.startDate <= selectedDate &&
-        selectedDate <= endDate
-      );
-    })
+    .filter(
+      (event) =>
+        event.startDate ===
+        selectedDate
+    )
     .sort((first, second) =>
       first.title.localeCompare(
         second.title,
@@ -183,22 +178,15 @@ export function getEventsForMonth(
   month: Date,
   events: CalendarEvent[]
 ): CalendarEvent[] {
-  const monthStart = dateKey(
-    startOfMonth(month)
-  );
-
-  const monthEnd = dateKey(
-    endOfMonth(month)
-  );
-
   return events.filter((event) => {
-    const endDate =
-      event.endDate ||
-      event.startDate;
+    const eventDate =
+      parseDate(event.startDate);
 
     return (
-      event.startDate <= monthEnd &&
-      endDate >= monthStart
+      eventDate.getMonth() ===
+        month.getMonth() &&
+      eventDate.getFullYear() ===
+        month.getFullYear()
     );
   });
 }
@@ -244,4 +232,33 @@ export function buildProgramWorkHref(
     );
 
   return `/program-kerja/${programSlug}`;
+}
+
+export function formatEventRange(
+  event: CalendarEvent
+): string {
+  const formatter =
+    new Intl.DateTimeFormat(
+      'id-ID',
+      {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      }
+    );
+
+  const start = formatter.format(
+    parseDate(event.startDate)
+  );
+
+  if (
+    !event.endDate ||
+    event.endDate === event.startDate
+  ) {
+    return start;
+  }
+
+  return `${start} – ${formatter.format(
+    parseDate(event.endDate)
+  )}`;
 }

@@ -8,6 +8,9 @@
 
   import {
     addMonths,
+    buildProgramWorkHref,
+    dateKey,
+    formatEventRange,
     parseDate,
     startOfMonth
   } from './calender/calendar-utils';
@@ -177,6 +180,16 @@
           )
       );
     });
+
+  const upcomingEvents = $derived(
+    resolvedEvents
+      .filter(
+        (event) =>
+          event.startDate >=
+          dateKey(new Date())
+      )
+      .slice(0, 5)
+  );
 
   let currentMonth = $state(
     startOfMonth(
@@ -461,5 +474,44 @@
         events={resolvedEvents}
       />
     </div>
+
+    {#if upcomingEvents.length}
+      <div class="mx-auto mt-10 w-full max-w-4xl">
+        <h3 class="text-lg font-black text-blue-900">
+          Agenda mendatang
+        </h3>
+
+        <ul class="mt-4 grid gap-3">
+          {#each upcomingEvents as event (event.id)}
+            <li>
+              <a
+                href={buildProgramWorkHref(event)}
+                class="
+                  flex flex-col gap-1
+                  rounded-xl border
+                  border-blue-900/10
+                  bg-white p-4
+                  no-underline shadow-sm
+                  transition
+                  hover:border-orange-400
+                  hover:shadow-md
+                  sm:flex-row
+                  sm:items-center
+                  sm:justify-between
+                "
+              >
+                <span class="font-semibold text-blue-900">
+                  {event.title}
+                </span>
+
+                <span class="text-sm text-muted-foreground">
+                  {formatEventRange(event)} · {event.ministryName}
+                </span>
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   </div>
 </section>
