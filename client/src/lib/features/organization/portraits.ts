@@ -23,6 +23,8 @@ const legacyPortraits: Partial<Record<string, string>> = {
     "DIRJEN_PSDM_FERDIAN",
   "/images/PSDM/dirjen_psdm_kaderisasi_qheisya_luna_alifa":
     "DIRJENPSDM_LUNA",
+  "/images/LH/menteri_lh_zaskia_darojah":
+    "MENTERI_LINGKUNGAN_HIDUP_ZASKIA",
   "/images/LH/dirjen_lh_advokasi_kajian_strategis":
     "DIRJEN_LINGKUNGAN_HIDUP_DAFFA",
   "/images/LH/dirjen_lh_pencegahan_pengendalian":
