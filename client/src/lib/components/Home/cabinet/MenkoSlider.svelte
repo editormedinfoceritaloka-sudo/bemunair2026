@@ -51,7 +51,8 @@
 
   const fullUnitNames: Record<string, string> = {
     SESKAB: 'Sekretaris Kabinet',
-    BENKAB: 'Bendahara Kabinet'
+    BENKAB: 'Bendahara Kabinet',
+    PAK: 'Pendayagunaan Aparatur Kabinet'
   };
 
   const cabinetImages: Record<string, string> = {
