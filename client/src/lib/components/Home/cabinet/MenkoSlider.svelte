@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
   import { onMount, tick } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import { gsap } from 'gsap';
@@ -99,6 +100,12 @@
     const leader =
       members.find((member) => member.is_leader === true) ??
       members[0];
+    const image =
+      leader?.photo?.url ??
+      leader?.photo?.thumbnail_url ??
+      item.logo?.url ??
+      item.logo?.thumbnail_url ??
+      '/landing/speech/p.webp';
 
     return {
       id: item.slug,
@@ -113,12 +120,7 @@
         ),
       subtitle: leader?.name ?? item.name,
       image:
-        cabinetImages[item.slug] ??
-        leader?.photo?.url ??
-        leader?.photo?.thumbnail_url ??
-        item.logo?.url ??
-        item.logo?.thumbnail_url ??
-        '/landing/speech/p.webp',
+        cabinetImages[item.slug] ?? resolveOrganizationPortrait(image),
       pathType,
       backgroundImage: '/landing/cabinet/bg-card.webp'
     };

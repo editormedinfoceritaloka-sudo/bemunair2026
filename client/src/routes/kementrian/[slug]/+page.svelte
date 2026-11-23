@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
   import { onMount,  } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -101,7 +102,7 @@
   function getMemberImage(
     member: OrganizationMember
   ): string {
-    return (
+    return resolveOrganizationPortrait(
       memberImages[member.name] ??
       member.photo?.url ??
       member.photo?.thumbnail_url ??
