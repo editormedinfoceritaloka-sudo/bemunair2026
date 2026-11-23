@@ -2,28 +2,129 @@
   import { onMount, tick } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import { gsap } from 'gsap';
+  import { playSwipeSound } from '$lib/sound';
   import Card from './Card.svelte';
 
-  import type { OrganizationUnit } from '$lib/types';
+  type ApiImage = {
+    id?: number;
+    file_id?: string;
+    url?: string | null;
+    thumbnail_url?: string | null;
+    name?: string;
+    alt_text?: string | null;
+  };
+
+  type KemenkoMember = {
+    id: number;
+    name: string;
+    position: string;
+    position_type?: string;
+    photo?: ApiImage | null;
+    display_order?: number;
+    is_leader?: boolean;
+  };
+
+  type Kemenkoan = {
+    id: number;
+    code: string;
+    name: string;
+    unit_type: string;
+    slug: string;
+    short_name?: string | null;
+    logo?: ApiImage | null;
+    display_order?: number;
+    is_active?: boolean;
+    is_published?: boolean;
+    members?: KemenkoMember[];
+    children?: Kemenkoan[];
+  };
 
   type CabinetItem = {
     id: string;
+    code: string;
     title: string;
     subtitle?: string;
     image: string;
+    pathType: 'menko' | 'kementerian';
     backgroundImage: string;
   };
 
+  const fullUnitNames: Record<string, string> = {
+    SESKAB: 'Sekretaris Kabinet',
+    BENKAB: 'Bendahara Kabinet'
+  };
+
+  const cabinetImages: Record<string, string> = {
+    'sekretaris-kabinet':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
+    'bendahara-kabinet':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
+    'pendayagunaan-aparatur-kabinet':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png'
+  };
+
   let {
+    autoplay = false,
     autoplayDelay = 5000,
     kemenkoan = []
   }: {
+    autoplay?: boolean;
     autoplayDelay?: number;
-    kemenkoan?: OrganizationUnit[];
+    kemenkoan?: Kemenkoan[];
   } = $props();
 
-  const cabinetItems = $derived.by<CabinetItem[]>(() =>
-    [...kemenkoan]
+  function displayTitle(
+    title: string,
+    pathType: 'menko' | 'kementerian'
+  ): string {
+    if (pathType !== 'kementerian') return title;
+
+    return title
+      .replace(/^Kementerian\s+/i, '')
+      .replace(/^Menteri\s+/i, '')
+      .trim();
+  }
+
+  function toCabinetItem(
+    item: Kemenkoan,
+    pathType: 'menko' | 'kementerian'
+  ): CabinetItem {
+    const members = [...(item.members ?? [])].sort(
+      (first, second) =>
+        (first.display_order ?? 0) -
+        (second.display_order ?? 0)
+    );
+
+    const leader =
+      members.find((member) => member.is_leader === true) ??
+      members[0];
+
+    return {
+      id: item.slug,
+      code: item.code,
+      title:
+        fullUnitNames[item.code] ??
+        displayTitle(
+          leader?.position ??
+            item.short_name ??
+            item.name,
+          pathType
+        ),
+      subtitle: leader?.name ?? item.name,
+      image:
+        cabinetImages[item.slug] ??
+        leader?.photo?.url ??
+        leader?.photo?.thumbnail_url ??
+        item.logo?.url ??
+        item.logo?.thumbnail_url ??
+        '/landing/speech/p.webp',
+      pathType,
+      backgroundImage: '/landing/cabinet/bg-card.webp'
+    };
+  }
+
+  const cabinetItems = $derived.by<CabinetItem[]>(() => {
+    const menkoItems = [...kemenkoan]
       .filter(
         (item) =>
           item.unit_type === 'MENKO' &&
@@ -35,34 +136,52 @@
           (first.display_order ?? 0) -
           (second.display_order ?? 0)
       )
-      .map((item) => {
-        const members = [...(item.members ?? [])].sort(
-          (first, second) =>
-            (first.display_order ?? 0) -
-            (second.display_order ?? 0)
-        );
+      .map((item) => toCabinetItem(item, 'menko'));
 
-        const leader =
-          members.find((member) => member.is_leader === true) ??
-          members[0];
+    const bpii = kemenkoan.find(
+      (item) => item.unit_type === 'BPII'
+    );
 
-        return {
-          id: item.slug,
-          title:
-            leader?.position ??
-            item.short_name ??
-            item.name,
-          subtitle: leader?.name ?? item.name,
-          image:
-            leader?.photo?.url ??
-            leader?.photo?.thumbnail_url ??
-            item.logo?.url ??
-            item.logo?.thumbnail_url ??
-            '/landing/speech/p.webp',
-          backgroundImage: '/landing/cabinet/bg-card.webp'
-        };
-      })
-  );
+    const bpiiChildren = [...(bpii?.children ?? [])]
+      .filter(
+        (child) =>
+          child.is_active !== false &&
+          child.is_published !== false
+      )
+      .sort(
+        (first, second) =>
+          (first.display_order ?? 0) -
+          (second.display_order ?? 0)
+      )
+      .map((child) => ({
+        code: child.code,
+        item: toCabinetItem(child, 'kementerian')
+      }));
+
+    const childItem = (
+      code: string
+    ): CabinetItem | undefined =>
+      bpiiChildren.find((entry) => entry.code === code)
+        ?.item;
+
+    const bpiiItems = [
+      childItem('SESKAB'),
+      childItem('PAK'),
+      childItem('BENKAB')
+    ].filter(
+      (item): item is CabinetItem => item !== undefined
+    );
+
+    return [...bpiiItems, ...menkoItems];
+  });
+
+  const startIndex = $derived.by(() => {
+    const index = cabinetItems.findIndex(
+      (item) => item.code === 'PAK'
+    );
+
+    return index === -1 ? 0 : index;
+  });
 
   const loopItems = $derived([
     ...cabinetItems,
@@ -84,11 +203,20 @@
   let reduceMotion = false;
   let interactionPaused = false;
   let initialSignature = '';
+  let dragStartX = 0;
+  let dragging = false;
+  let dragMoved = false;
   let initializeFrame = 0;
   let centerFrame = 0;
 
   function registerCard(node: HTMLDivElement, index: number) {
     const handleClick = (event: MouseEvent): void => {
+      if (dragMoved) {
+        dragMoved = false;
+        event.preventDefault();
+        return;
+      }
+
       selectCard(event, index);
     };
 
@@ -184,12 +312,16 @@
   }
 
   function handleNext(): void {
+    const before = currentIndex;
     next();
+    if (currentIndex !== before) playSwipeSound();
     restartAutoplay();
   }
 
   function handlePrevious(): void {
+    const before = currentIndex;
     previous();
+    if (currentIndex !== before) playSwipeSound();
     restartAutoplay();
   }
 
@@ -212,6 +344,7 @@
     stopAutoplay();
 
     if (
+      !autoplay ||
       !mounted ||
       interactionPaused ||
       reduceMotion ||
@@ -271,6 +404,40 @@
     }
   }
 
+  function handlePointerDown(event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    dragging = true;
+    dragMoved = false;
+    dragStartX = event.clientX;
+  }
+
+  function handlePointerUp(event: PointerEvent): void {
+    if (!dragging) return;
+
+    dragging = false;
+
+    const distance = event.clientX - dragStartX;
+
+    if (Math.abs(distance) < 50) return;
+
+    dragMoved = true;
+
+    if (distance < 0) {
+      handleNext();
+    } else {
+      handlePrevious();
+    }
+  }
+
+  function handlePointerCancel(): void {
+    dragging = false;
+  }
+
+  function handleDragStart(event: DragEvent): void {
+    event.preventDefault();
+  }
+
   function handleVisibilityChange(): void {
     if (document.hidden) {
       stopAutoplay();
@@ -291,10 +458,13 @@
     initialSignature = signature;
 
     stopAutoplay();
-    if (track) gsap.killTweensOf(track);
+
+    if (track) {
+      gsap.killTweensOf(track);
+    }
 
     isAnimating = false;
-    currentIndex = items.length;
+    currentIndex = items.length + startIndex;
 
     void tick().then(() => {
       if (!mounted) return;
@@ -326,6 +496,10 @@
     root?.addEventListener('focusin', pauseSlider);
     root?.addEventListener('focusout', handleFocusOut);
     root?.addEventListener('keydown', handleKeydown);
+    sliderViewport?.addEventListener('pointerdown', handlePointerDown);
+    sliderViewport?.addEventListener('dragstart', handleDragStart);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
 
     if (sliderViewport) {
       gsap.fromTo(
@@ -378,6 +552,10 @@
       root?.removeEventListener('focusin', pauseSlider);
       root?.removeEventListener('focusout', handleFocusOut);
       root?.removeEventListener('keydown', handleKeydown);
+      sliderViewport?.removeEventListener('pointerdown', handlePointerDown);
+      sliderViewport?.removeEventListener('dragstart', handleDragStart);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
 
       document.removeEventListener(
         'visibilitychange',
@@ -408,7 +586,7 @@
 >
   <div
     bind:this={viewport}
-    class="relative w-full overflow-hidden opacity-0"
+    class="relative w-full touch-pan-y select-none overflow-hidden opacity-0"
   >
     {#if cabinetItems.length > 0}
       <div
@@ -452,6 +630,7 @@
               title={item.title}
               subtitle={item.subtitle}
               image={item.image}
+              pathType={item.pathType}
               backgroundImage={item.backgroundImage}
               active={index === currentIndex}
             />

@@ -277,6 +277,18 @@
     });
   }
 
+  function showMonthOf(
+    date: Date
+  ): void {
+    const amount =
+      (date.getFullYear() - currentMonth.getFullYear()) * 12 +
+      (date.getMonth() - currentMonth.getMonth());
+
+    if (amount !== 0) {
+      changeMonth(amount);
+    }
+  }
+
   function showPreviousMonth(): void {
     changeMonth(-1);
   }
@@ -474,6 +486,7 @@
       <CalendarGrid
         {currentMonth}
         events={resolvedEvents}
+        onShowDate={showMonthOf}
       />
     </div>
 

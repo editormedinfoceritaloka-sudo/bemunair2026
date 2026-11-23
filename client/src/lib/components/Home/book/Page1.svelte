@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { playShineSound, playTypeSound } from '$lib/sound';
 
   let {
     active = true
@@ -25,13 +26,96 @@
   let mounted = $state(false);
   let isInView = $state(false);
   let hasAnimated = $state(false);
+  let typedMessage = $state('');
+  let typedName = $state('');
+  let typedRole = $state('');
+  let showCling = $state(false);
 
   let reduceMotion = false;
   let stars: HTMLElement[] = [];
 
   let timeline: gsap.core.Timeline | undefined;
+  let typingTweens: gsap.core.Tween[] = [];
   let context: gsap.Context | undefined;
   let scrollTrigger: ScrollTrigger | undefined;
+
+  function typeText(
+    value: string,
+    onUpdate: (text: string) => void,
+    onComplete: () => void
+  ): gsap.core.Tween {
+    const proxy = { length: 0 };
+    const duration = Math.max(0.8, Math.min(7, value.length / 90));
+
+    return gsap.to(proxy, {
+      length: value.length,
+      duration,
+      delay: 0.7,
+      ease: 'none',
+      onUpdate: () => {
+        onUpdate(value.slice(0, Math.round(proxy.length)));
+
+        if (active) {
+          playTypeSound();
+        }
+      },
+      onComplete
+    });
+  }
+
+  function startTyping(): void {
+    typingTweens.forEach((tween) => tween.kill());
+    typingTweens = [];
+
+    if (reduceMotion) {
+      typedMessage = speech.message;
+      typedName = speech.name;
+      typedRole = speech.role;
+      return;
+    }
+
+    typedMessage = '';
+    typedName = '';
+    typedRole = '';
+    showCling = false;
+
+    typingTweens.push(
+      typeText(
+        speech.message,
+        (text) => (typedMessage = text),
+        () => {
+          typedMessage = speech.message;
+          typingTweens.push(
+            typeText(
+              speech.name,
+              (text) => (typedName = text),
+              () => {
+                typedName = speech.name;
+                typingTweens.push(
+                  typeText(
+                    speech.role,
+                    (text) => (typedRole = text),
+                    () => {
+                      typedRole = speech.role;
+                      typingTweens.push(
+                        gsap.delayedCall(0.45, () => {
+                          showCling = true;
+
+                          if (active) {
+                            playShineSound();
+                          }
+                        })
+                      );
+                    }
+                  )
+                );
+              }
+            )
+          );
+        }
+      )
+    );
+  }
 
   function playEntrance(): void {
     if (
@@ -49,6 +133,10 @@
       Array.from(speechCopy.children);
 
     if (reduceMotion) {
+      typedMessage = speech.message;
+      typedName = speech.name;
+      typedRole = speech.role;
+
       gsap.set(
         [
           speechCard,
@@ -85,16 +173,6 @@
         0
       )
       .to(
-        speechCard,
-        {
-          autoAlpha: 1,
-          xPercent: 0,
-          scale: 1,
-          duration: 0.85
-        },
-        0.1
-      )
-      .to(
         portrait,
         {
           autoAlpha: 1,
@@ -123,12 +201,24 @@
         },
         0.75
       );
+
+    startTyping();
   }
 
   $effect(() => {
     void [active, isInView, mounted];
 
     playEntrance();
+  });
+
+  $effect(() => {
+    typingTweens.forEach((tween) => {
+      if (active) {
+        tween.resume();
+      } else {
+        tween.pause();
+      }
+    });
   });
 
   onMount(() => {
@@ -153,9 +243,8 @@
         });
 
         gsap.set(speechCard, {
-          autoAlpha: 0,
-          xPercent: -14,
-          scale: 0.98
+          autoAlpha: 1,
+          clearProps: 'transform'
         });
 
         gsap.set(portrait, {
@@ -206,6 +295,7 @@
 
     return () => {
       timeline?.kill();
+      typingTweens.forEach((tween) => tween.kill());
       scrollTrigger?.kill();
       context?.revert();
     };
@@ -245,25 +335,33 @@
       "
     />
 
-    <img
-      src="/landing/speech/star-8.webp"
-      alt=""
-      draggable="false"
+    <div
       class="
-        speech-star
         absolute -bottom-2 -left-2
-        w-14 object-contain opacity-65
-        sm:w-20
-        md:w-24
-        lg:w-28
+        rotate-180
       "
-    />
+    >
+      <img
+        src="/landing/speech/star-8.webp"
+        alt=""
+        draggable="false"
+        class="
+          speech-star
+          block
+          w-14 object-contain opacity-65
+          sm:w-20
+          md:w-24
+          lg:w-28
+        "
+      />
+    </div>
 
     <img
       src="/landing/speech/star-4.webp"
       alt=""
       draggable="false"
       class="
+        twinkle
         speech-star
         absolute bottom-[2%]
         left-[25%]
@@ -279,6 +377,7 @@
       alt=""
       draggable="false"
       class="
+        twinkle twinkle-delay
         speech-star
         absolute top-[7%]
         left-[55%]
@@ -369,7 +468,7 @@
                 lg:leading-[1.7]
               "
             >
-              {speech.message}
+              {typedMessage}
             </p>
 
             <div
@@ -383,7 +482,7 @@
             >
               <p
                 class="
-                  text-[9px]
+                  block text-[9px]
                   leading-tight
                   font-bold
                   sm:text-[10px]
@@ -391,13 +490,38 @@
                   lg:text-base
                 "
               >
-                {speech.name}
+                <span class="group relative isolate inline-grid">
+                  <span class="invisible col-start-1 row-start-1">
+                    {speech.name}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class:cling={showCling}
+                    class="
+                      pointer-events-none absolute inset-x-0
+                      top-1/2 -z-10 h-[1.5em]
+                      -translate-y-1/2 scale-x-0
+                      rounded-full bg-linear-to-r
+                      from-transparent via-white/80
+                      to-transparent opacity-0
+                      shadow-[0_0_14px_rgba(255,255,255,0.75)]
+                      transition-[transform,opacity]
+                      duration-200 ease-out
+                      will-change-[transform,opacity]
+                      group-hover:scale-x-100
+                      group-hover:opacity-100
+                      motion-reduce:transition-none
+                    "
+                  ></span>
+                  <span class="relative z-10 col-start-1 row-start-1">
+                    {typedName}
+                  </span>
+                </span>
               </p>
 
               <p
                 class="
-                  mt-0.5
-                  text-[7px]
+                  mt-0.5 block text-[7px]
                   leading-tight
                   font-medium
                   sm:text-[9px]
@@ -405,7 +529,33 @@
                   lg:text-sm
                 "
               >
-                {speech.role}
+                <span class="group relative isolate inline-grid">
+                  <span class="invisible col-start-1 row-start-1">
+                    {speech.role}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class:cling={showCling}
+                    class="
+                      pointer-events-none absolute inset-x-0
+                      top-1/2 -z-10 h-[1.5em]
+                      -translate-y-1/2 scale-x-0
+                      rounded-full bg-linear-to-r
+                      from-transparent via-white/80
+                      to-transparent opacity-0
+                      shadow-[0_0_14px_rgba(255,255,255,0.75)]
+                      transition-[transform,opacity]
+                      duration-200 ease-out
+                      will-change-[transform,opacity]
+                      group-hover:scale-x-100
+                      group-hover:opacity-100
+                      motion-reduce:transition-none
+                    "
+                  ></span>
+                  <span class="relative z-10 col-start-1 row-start-1">
+                    {typedRole}
+                  </span>
+                </span>
               </p>
             </div>
           </div>
@@ -415,7 +565,7 @@
 
     <img
       bind:this={portrait}
-      src="/landing/speech/p.webp"
+      src="https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/PRESIDENT_SENJA"
       alt="Presiden BEM UNAIR 2026"
       draggable="false"
       class="

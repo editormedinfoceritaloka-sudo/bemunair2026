@@ -10,7 +10,7 @@
   import CardNews from './news/CardNews.svelte';
   import CoverNews from './news/CoverNews.svelte';
 
-  import type { ArticleListItem } from '$lib/types';
+  import type { ArticleListItem, Cabinet, OrganizationUnit } from '$lib/types';
 
   type NewsItem = {
     id: string;
@@ -24,10 +24,12 @@
 
   let {
     articles = [],
+    cabinet,
     logo = '/logo/logo-kabinet.webp',
     organization = 'Kabinet Cerita Loka'
   }: {
     articles?: ArticleListItem[];
+    cabinet?: Cabinet;
     logo?: string;
     organization?: string;
   } = $props();
@@ -76,6 +78,21 @@
   );
 
   const featuredNews = $derived(news[0]);
+
+  function collectPhotos(units: OrganizationUnit[]): string[] {
+    return units.flatMap((unit) => [
+      ...(unit.programs ?? []).flatMap((program) =>
+        (program.documentations ?? [])
+          .map((documentation) => documentation.media?.url ?? '')
+          .filter(Boolean)
+      ),
+      ...collectPhotos(unit.children ?? [])
+    ]);
+  }
+
+  const documentationPhotos = $derived(
+    collectPhotos(cabinet?.kemenkoan ?? [])
+  );
 
   const latestNews = $derived(
     news.slice(1, 4)
@@ -421,6 +438,7 @@
         >
           <CoverNews
             item={featuredNews}
+            photos={documentationPhotos}
             {logo}
             {organization}
           />

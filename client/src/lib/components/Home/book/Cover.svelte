@@ -46,6 +46,7 @@
       alt=""
       draggable="false"
       class="
+        twinkle
         absolute bottom-12
         left-[18%]
         w-10 -rotate-12
@@ -62,6 +63,7 @@
       alt=""
       draggable="false"
       class="
+        twinkle twinkle-delay
         absolute top-[20%]
         right-[17%]
         w-9 rotate-12

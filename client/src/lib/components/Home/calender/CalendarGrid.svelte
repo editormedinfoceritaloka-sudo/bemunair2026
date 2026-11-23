@@ -1,24 +1,30 @@
 <script lang="ts">
-  import CalendarDayBadge from './CalendarDayBadge.svelte';
+  import { tick } from 'svelte';
+  import CalendarRangeBadge from './CalendarRangeBadge.svelte';
 
   import {
     buildCalendarWeeks,
     dateKey,
-    getEventsForDay,
     getEventsForMonth,
     isCurrentMonth,
-    isToday
+    isToday,
+    parseDate
   } from './calendar-utils';
 
   import type { CalendarEvent } from './types';
 
   let {
     currentMonth,
-    events
+    events,
+    onShowDate
   }: {
     currentMonth: Date;
     events: CalendarEvent[];
+    onShowDate?: (date: Date) => void;
   } = $props();
+
+  let focusedDate = $state<string | null>(null);
+  let focusTimer: ReturnType<typeof setTimeout> | undefined;
 
   const weekDayLabels = [
     'Senin',
@@ -42,6 +48,150 @@
       events
     )
   );
+
+  type WeekSegment = {
+    event: CalendarEvent;
+    colStart: number;
+    span: number;
+    lane: number;
+    continuesBefore: boolean;
+    continuesAfter: boolean;
+  };
+
+  const barTop = 48;
+  const barGap = 38;
+
+  function eventEndDate(
+    event: CalendarEvent
+  ): string {
+    return event.endDate &&
+      event.endDate >= event.startDate
+      ? event.endDate
+      : event.startDate;
+  }
+
+  function buildWeekSegments(
+    week: Date[]
+  ): {
+    segments: WeekSegment[];
+    laneCount: number;
+  } {
+    const weekKeys = week.map(dateKey);
+    const weekStart = weekKeys[0];
+    const weekEnd = weekKeys[6];
+
+    const weekEvents = events
+      .filter(
+        (event) =>
+          event.startDate <= weekEnd &&
+          eventEndDate(event) >= weekStart
+      )
+      .sort((first, second) => {
+        const startComparison =
+          first.startDate.localeCompare(
+            second.startDate
+          );
+
+        if (startComparison !== 0) {
+          return startComparison;
+        }
+
+        return eventEndDate(second).localeCompare(
+          eventEndDate(first)
+        );
+      });
+
+    const laneEnds: number[] = [];
+    const segments: WeekSegment[] = [];
+
+    for (const event of weekEvents) {
+      const endDate = eventEndDate(event);
+
+      const colStart =
+        event.startDate < weekStart
+          ? 0
+          : weekKeys.indexOf(event.startDate);
+
+      const colEnd =
+        endDate > weekEnd
+          ? 6
+          : weekKeys.indexOf(endDate);
+
+      let lane = laneEnds.findIndex(
+        (laneEnd) => laneEnd < colStart
+      );
+
+      if (lane === -1) {
+        lane = laneEnds.length;
+        laneEnds.push(colEnd);
+      } else {
+        laneEnds[lane] = colEnd;
+      }
+
+      segments.push({
+        event,
+        colStart,
+        span: colEnd - colStart + 1,
+        lane,
+        continuesBefore:
+          event.startDate < weekStart,
+        continuesAfter:
+          endDate > weekEnd
+      });
+    }
+
+    return {
+      segments,
+      laneCount: laneEnds.length
+    };
+  }
+
+  function segmentStyle(
+    segment: WeekSegment
+  ): string {
+    return `
+      left: calc(${segment.colStart} * 100% / 7 + 6px);
+      width: calc(${segment.span} * 100% / 7 - 12px);
+      top: ${barTop + segment.lane * barGap}px;
+    `;
+  }
+
+  function rowMinHeight(
+    laneCount: number
+  ): number {
+    return Math.max(
+      176,
+      barTop + laneCount * barGap + 12
+    );
+  }
+
+  async function showEndDate(
+    event: CalendarEvent
+  ): Promise<void> {
+    const endKey = eventEndDate(event);
+    const endDate = parseDate(endKey);
+
+    clearTimeout(focusTimer);
+    focusedDate = null;
+
+    await tick();
+
+    onShowDate?.(endDate);
+    focusedDate = endKey;
+
+    setTimeout(() => {
+      document
+        .querySelector(`[data-date="${endKey}"]`)
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+    }, 550);
+
+    focusTimer = setTimeout(() => {
+      focusedDate = null;
+    }, 3600);
+  }
 
   function dayAriaLabel(
     date: Date
@@ -115,10 +265,14 @@
       </div>
 
       {#each weeks as week (dateKey(week[0]))}
+        {@const weekLayout =
+          buildWeekSegments(week)}
+
         <div
           role="row"
+          style={`min-height: ${rowMinHeight(weekLayout.laneCount)}px;`}
           class="
-            grid min-h-44
+            relative grid
             grid-cols-7
             border-b
             border-blue-950/10
@@ -126,12 +280,6 @@
           "
         >
           {#each week as day, dayIndex (dateKey(day))}
-            {@const dayEvents =
-              getEventsForDay(
-                day,
-                events
-              )}
-
             {@const currentMonthDay =
               isCurrentMonth(
                 day,
@@ -141,6 +289,7 @@
             <div
               role="gridcell"
               aria-label={dayAriaLabel(day)}
+              data-date={dateKey(day)}
               class={`
                 min-w-0
                 border-r
@@ -154,6 +303,12 @@
                       ? 'bg-blue-50'
                       : 'bg-white'
                     : 'bg-slate-100'
+                }
+
+                ${
+                  focusedDate === dateKey(day)
+                    ? 'calendar-end-focus'
+                    : ''
                 }
               `}
             >
@@ -183,27 +338,18 @@
                   {day.getDate()}
                 </span>
               </div>
-
-              {#if dayEvents.length > 0}
-                <div
-                  class="
-                    mt-2 flex
-                    max-h-28
-                    flex-col gap-1
-                    overflow-y-auto
-                    pr-0.5
-                    [scrollbar-color:#164f88_transparent]
-                    [scrollbar-width:thin]
-                  "
-                >
-                  {#each dayEvents as event (event.id)}
-                    <CalendarDayBadge
-                      {event}
-                    />
-                  {/each}
-                </div>
-              {/if}
             </div>
+          {/each}
+
+          {#each weekLayout.segments as segment (segment.event.id)}
+            <CalendarRangeBadge
+              event={segment.event}
+              logo={segment.event.logo}
+              positionStyle={segmentStyle(segment)}
+              continuesBefore={segment.continuesBefore}
+              continuesAfter={segment.continuesAfter}
+              onShowEnd={() => showEndDate(segment.event)}
+            />
           {/each}
         </div>
       {/each}
@@ -231,3 +377,31 @@
     </div>
   {/if}
 </div>
+
+<style>
+  :global(.calendar-end-focus) {
+    animation: calendar-end-focus 0.9s ease-in-out 4;
+  }
+
+  @keyframes -global-calendar-end-focus {
+    0%,
+    100% {
+      background-color: #ffffff;
+      box-shadow: inset 0 0 0 0 rgba(244, 123, 32, 0);
+    }
+
+    50% {
+      background-color: #fef0e3;
+      box-shadow:
+        inset 0 0 0 3px #f47b20,
+        0 0 18px rgba(244, 123, 32, 0.55);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.calendar-end-focus) {
+      animation: none;
+      box-shadow: inset 0 0 0 3px #f47b20;
+    }
+  }
+</style>

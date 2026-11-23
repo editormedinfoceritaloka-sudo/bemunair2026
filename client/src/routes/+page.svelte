@@ -29,5 +29,6 @@
 
   <NewsSection
     articles={data.articles}
+    cabinet={data.cabinet}
   />
 </main>

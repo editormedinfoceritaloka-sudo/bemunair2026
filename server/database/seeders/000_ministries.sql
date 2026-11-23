@@ -117,7 +117,7 @@ INSERT INTO seed_organization_units (
     NULL,
     1,
     'local-menko-kemahasiswaan',
-    '/images/Menko/menko_kemahasiswaan_johanes_richard_darmawan.png'
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENKO_KEMAHASISWAAAN_RICHIE'
 ),
 (
     'MENKO_KEMASYARAKATAN',
@@ -128,7 +128,7 @@ INSERT INTO seed_organization_units (
     NULL,
     2,
     'local-menko-kemasyarakatan',
-    '/images/Menko/menko_kemasyarakatan_muhammad_ziyaad_difa_ul_haq.png'
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/ZIYAAD_MENKO_KEMASYARAKATAN'
 ),
 (
     'MENKO_KOMINFO',
@@ -139,7 +139,7 @@ INSERT INTO seed_organization_units (
     NULL,
     3,
     'local-menko-kominfo',
-    '/images/Menko/menko_kominfo_andrean_marcellino.png'
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENKO_KOMINFO_ANDREAN'
 ),
 (
     'MENKO_PERGERAKAN',
@@ -150,7 +150,7 @@ INSERT INTO seed_organization_units (
     NULL,
     4,
     'local-menko-pergerakan',
-    '/images/Menko/menko_pergerakan_dewa_pranata_putra_pratama.png'
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DEWA_MENKO_PERGERAKAN'
 ),
 (
     'MENKO_PPK',
@@ -161,7 +161,7 @@ INSERT INTO seed_organization_units (
     NULL,
     5,
     'local-menko-ppk',
-    '/images/Menko/menko_ppk_nasua_okta_kusuma_dewi_rofiq.png'
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/NASUA_OKTA_MENKO_PPK'
 ),
 
 -- ============================================================
@@ -369,8 +369,8 @@ INSERT INTO seed_organization_units (
 
 (
     'BENKAB',
-    'Kementerian Bendahara Kabinet',
-    'BENKAB',
+    'Bendahara Kabinet',
+    'Bendahara Kabinet',
     'bendahara-kabinet',
     'KEMENTERIAN',
     'BPII',
@@ -391,8 +391,8 @@ INSERT INTO seed_organization_units (
 ),
 (
     'SESKAB',
-    'Kementerian Sekretaris Kabinet',
-    'SESKAB',
+    'Sekretaris Kabinet',
+    'Sekretaris Kabinet',
     'sekretaris-kabinet',
     'KEMENTERIAN',
     'BPII',
@@ -517,10 +517,13 @@ SELECT
         WHEN unit.unit_type = 'MENKO' THEN
             CONCAT(
                 unit.name,
-                ' merupakan unit koordinator yang menaungi kementerian dalam bidangnya.'
+                ' merupakan unit koordinator yang menaungi kementerian dalam bidangnya. ',
+                'Melalui koordinasi, sinergi, dan evaluasi yang berkelanjutan, ',
+                COALESCE(unit.short_name, unit.name),
+                ' menyatukan arah gerak kementerian-kementerian di bawahnya untuk menghadirkan program kerja yang berdampak bagi Airlangga dan Indonesia.'
             )
         ELSE
-            'BPII merupakan unit induk yang menaungi Bendahara Kabinet, Pendayagunaan Aparatur Kabinet, dan Sekretaris Kabinet.'
+            'BPII merupakan unit induk yang menaungi Bendahara Kabinet, Pendayagunaan Aparatur Kabinet, dan Sekretaris Kabinet. BPII memastikan tata kelola kabinet berjalan tertib, transparan, dan mendukung kebermanfaatan bersama.'
     END,
 
     'Mewujudkan organisasi yang kolaboratif, profesional, inklusif, dan memberikan dampak nyata.',
@@ -595,7 +598,9 @@ SELECT
         unit.name,
         ' merupakan unit organisasi yang berada di bawah ',
         parent.name,
-        '.'
+        '. ',
+        COALESCE(unit.short_name, unit.name),
+        ' berkolaborasi dengan kementerian dan unit lain untuk menyusun, melaksanakan, dan mengevaluasi program kerja yang berdampak bagi mahasiswa serta masyarakat Airlangga.'
     ),
 
     CONCAT(
@@ -641,6 +646,85 @@ ON DUPLICATE KEY UPDATE
     updated_at = NOW();
 
 -- ============================================================
+-- 5B. DESKRIPSI RESMI MENKO DAN KEMENTERIAN
+-- ============================================================
+
+UPDATE ministries
+SET
+    description = CASE code
+        WHEN 'MENKO_KOMINFO' THEN
+            'Kemenko Komunikasi dan Informasi merupakan bidang yang bertanggung jawab mengoordinasikan komunikasi internal dan eksternal BEM UNAIR serta membangun hubungan dengan berbagai mitra. Kemenkoan ini juga memastikan penyampaian informasi dan hubungan antarkementerian berjalan dengan baik.'
+        WHEN 'MENKO_PPK' THEN
+            'Kemenko Pengembangan Potensi dan Karya merupakan bidang yang berfokus pada pengembangan serta optimalisasi potensi mahasiswa dalam bidang akademik, penelitian, seni, olahraga, dan ekonomi kreatif. Kemenkoan ini bertujuan menciptakan ruang yang mendukung kreativitas, inovasi, dan pencapaian prestasi mahasiswa.'
+        WHEN 'MENKO_PERGERAKAN' THEN
+            'Kemenko Pergerakan merupakan bidang yang bertanggung jawab mengoordinasikan gerakan mahasiswa dalam mengawal isu-isu sosial, politik, keadilan, dan kesetaraan gender. Kemenkoan ini mendorong mahasiswa untuk memiliki kepedulian kritis serta terlibat dalam advokasi dan gerakan yang berlandaskan kajian intelektual.'
+        WHEN 'MENKO_KEMAHASISWAAN' THEN
+            'Kemenko Kemahasiswaan merupakan bidang yang berfokus pada pengembangan kualitas, kapasitas, dan kesejahteraan mahasiswa. Kemenkoan ini mengoordinasikan program kaderisasi, pengembangan kemampuan mahasiswa, advokasi hak mahasiswa, serta persiapan mahasiswa dalam menghadapi dunia profesional dan pascakampus.'
+        WHEN 'MENKO_KEMASYARAKATAN' THEN
+            'Kemenko Kemasyarakatan merupakan bidang yang bertanggung jawab mengoordinasikan program-program yang berorientasi pada kebermanfaatan masyarakat. Fokusnya meliputi pemberdayaan masyarakat, pelestarian lingkungan, serta peningkatan kesehatan dan kesejahteraan melalui kegiatan yang berkelanjutan.'
+        WHEN 'MEDINFO' THEN
+            'Kementerian Media dan Informasi merupakan kementerian yang bertanggung jawab mengelola dan menyebarluaskan informasi mengenai kegiatan serta program kerja BEM UNAIR. Kementerian ini juga berperan membangun citra dan identitas organisasi melalui publikasi yang informatif, edukatif, dan kreatif.'
+        WHEN 'SINEMA' THEN
+            'Kementerian Sinergitas Mahasiswa merupakan kementerian yang berfokus membangun hubungan dan kolaborasi antarorganisasi mahasiswa, komunitas, serta mitra internal Universitas Airlangga. Kementerian ini menjadi wadah untuk memperkuat kerja sama dan menciptakan hubungan yang harmonis antarelemen mahasiswa.'
+        WHEN 'HUBLU' THEN
+            'Kementerian Hubungan Luar merupakan kementerian yang bertanggung jawab menjalin dan mengembangkan hubungan kemitraan dengan pihak eksternal. Kementerian ini berperan memperluas jaringan kerja sama dengan organisasi, lembaga, maupun institusi di tingkat regional, nasional, dan internasional.'
+        WHEN 'EDIGPRO' THEN
+            'Kementerian Ekonomi Digital dan Produk Kreatif merupakan kementerian yang berfokus mengembangkan potensi mahasiswa dalam bidang ekonomi kreatif, kewirausahaan, dan ekonomi digital. Kementerian ini mendorong inovasi, kolaborasi, serta peningkatan kemampuan mahasiswa dalam menghasilkan produk dan mengembangkan peluang usaha.'
+        WHEN 'SENIIORA' THEN
+            'Kementerian Seni dan Olahraga merupakan kementerian yang bertanggung jawab mengembangkan minat dan bakat mahasiswa dalam bidang seni, budaya, dan olahraga. Kementerian ini menyediakan ruang aktualisasi kreativitas, pelestarian budaya, serta peningkatan kemampuan mahasiswa untuk meraih prestasi.'
+        WHEN 'RISKEL' THEN
+            'Kementerian Riset dan Keilmuan merupakan kementerian yang berfokus mendukung pengembangan kemampuan akademik, penelitian, dan keilmuan mahasiswa. Kementerian ini berperan menyediakan fasilitas, pendampingan, serta kesempatan bagi mahasiswa untuk mengembangkan penelitian, mengikuti kompetisi, dan menghasilkan karya ilmiah.'
+        WHEN 'SOSPOL' THEN
+            'Kementerian Sosial dan Politik merupakan kementerian yang bertanggung jawab mengkaji, mengawal, dan merespons berbagai isu sosial, politik, serta kebijakan publik yang berdampak terhadap mahasiswa dan masyarakat. Kementerian ini mendorong terbentuknya kesadaran kritis mahasiswa melalui kajian, diskusi, edukasi, dan gerakan berbasis intelektual.'
+        WHEN 'KKG' THEN
+            'Kementerian Keadilan dan Kesetaraan Gender merupakan kementerian yang berfokus memperjuangkan keadilan dan kesetaraan bagi seluruh mahasiswa tanpa diskriminasi. Kementerian ini berperan meningkatkan kesadaran mengenai isu gender, melakukan advokasi, serta mendorong terciptanya lingkungan kampus yang aman, nyaman, dan inklusif.'
+        WHEN 'PSDM' THEN
+            'Kementerian Pengembangan Sumber Daya Mahasiswa merupakan kementerian yang bertanggung jawab meningkatkan kualitas dan kapasitas mahasiswa melalui proses kaderisasi serta pengembangan potensi diri. Kementerian ini berfokus membentuk mahasiswa yang berintegritas, memiliki jiwa kepemimpinan, serta mampu mengembangkan keterampilan akademik maupun nonakademik.'
+        WHEN 'ADKESMA' THEN
+            'Kementerian Advokasi dan Kesejahteraan Mahasiswa merupakan kementerian yang bertanggung jawab mengawal dan memperjuangkan hak serta aspirasi mahasiswa, baik dalam bidang akademik maupun nonakademik. Kementerian ini juga berperan menyediakan pendampingan, bantuan, dan fasilitas pendukung untuk meningkatkan kesejahteraan mahasiswa.'
+        WHEN 'PENGPROF' THEN
+            'Kementerian Pengembangan Profesi merupakan kementerian yang berfokus mempersiapkan mahasiswa menghadapi dunia kerja dan kehidupan profesional. Kementerian ini mendukung peningkatan kompetensi melalui pelatihan, seminar, sertifikasi, serta pengembangan jejaring karier yang sesuai dengan kebutuhan dunia profesional.'
+        WHEN 'PENGMAS' THEN
+            'Kementerian Pengabdian Masyarakat merupakan kementerian yang bertanggung jawab merancang dan melaksanakan kegiatan pemberdayaan masyarakat secara berkelanjutan. Kementerian ini mendorong keterlibatan mahasiswa dalam membantu menyelesaikan permasalahan masyarakat melalui edukasi, pelatihan, penelitian, dan kolaborasi dengan berbagai pihak.'
+        WHEN 'LH' THEN
+            'Kementerian Lingkungan Hidup merupakan kementerian yang berfokus meningkatkan kepedulian mahasiswa terhadap pelestarian lingkungan dan keberlanjutan ekologi. Kementerian ini mendorong penerapan gaya hidup ramah lingkungan melalui edukasi, kampanye, pengelolaan sampah, daur ulang, serta berbagai aksi pelestarian lingkungan.'
+        WHEN 'KEMENKES' THEN
+            'Kementerian Kesehatan merupakan kementerian yang bertanggung jawab meningkatkan kesadaran dan kepedulian mahasiswa terhadap kesehatan fisik maupun mental. Kementerian ini menjalankan kegiatan promotif, preventif, dan responsif melalui edukasi kesehatan, kampanye, serta program yang mendukung terciptanya lingkungan kampus yang sehat dan suportif.'
+        WHEN 'SESKAB' THEN
+            'Sekretaris Kabinet merupakan unsur organisasi yang bertanggung jawab dalam mengelola administrasi dan kesekretariatan kabinet serta memastikan seluruh proses administrasi berjalan secara tertib, sistematis, dan terkoordinasi. Sekretaris Kabinet juga berperan dalam menyusun dan mengelola Standar Operasional Prosedur (SOP), mengatur alur birokrasi organisasi, serta memastikan kelancaran komunikasi dan koordinasi administratif antarunsur kabinet.'
+        WHEN 'BENKAB' THEN
+            'Bendahara Kabinet merupakan unsur organisasi yang bertanggung jawab atas pengelolaan keuangan kabinet, mulai dari perencanaan anggaran, pencatatan pemasukan dan pengeluaran, hingga pengawasan serta pelaporan keuangan. Bendahara Kabinet berperan memastikan pengelolaan dana organisasi berjalan secara transparan, akuntabel, tertib, dan sesuai dengan kebutuhan serta perencanaan program kerja kabinet.'
+        WHEN 'PAK' THEN
+            'Pendayagunaan Aparatur Kabinet (PAK) merupakan unsur organisasi yang bertugas melakukan evaluasi, pengawasan, audit, dan pengendalian terhadap kinerja kementerian serta seluruh fungsionaris BEM. PAK berperan memastikan setiap unsur kabinet menjalankan tugas dan tanggung jawabnya sesuai dengan fungsi, target, dan ketentuan organisasi. Selain itu, PAK menjadi instrumen evaluasi untuk mengidentifikasi kendala, meningkatkan efektivitas kerja, serta mendorong optimalisasi kinerja aparatur kabinet.'
+        ELSE description
+    END,
+    updated_at = NOW()
+WHERE code IN (
+    'MENKO_KOMINFO',
+    'MENKO_PPK',
+    'MENKO_PERGERAKAN',
+    'MENKO_KEMAHASISWAAN',
+    'MENKO_KEMASYARAKATAN',
+    'MEDINFO',
+    'SINEMA',
+    'HUBLU',
+    'EDIGPRO',
+    'SENIIORA',
+    'RISKEL',
+    'SOSPOL',
+    'KKG',
+    'PSDM',
+    'ADKESMA',
+    'PENGPROF',
+    'PENGMAS',
+    'LH',
+    'KEMENKES',
+    'SESKAB',
+    'BENKAB',
+    'PAK'
+);
+
+-- ============================================================
 -- 6. TEMPORARY DATA ANGGOTA ORGANISASI
 -- ============================================================
 
@@ -682,7 +766,7 @@ INSERT INTO seed_organization_members (
     'Menteri Koordinator Kemahasiswaan',
     'MENKO',
     'local-menko-kemahasiswaan',
-    '/images/Menko/menko_kemahasiswaan_johanes_richard_darmawan.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENKO_KEMAHASISWAAAN_RICHIE',
     1,
     TRUE
 ),
@@ -692,7 +776,7 @@ INSERT INTO seed_organization_members (
     'Menteri Koordinator Kemasyarakatan',
     'MENKO',
     'local-menko-kemasyarakatan',
-    '/images/Menko/menko_kemasyarakatan_muhammad_ziyaad_difa_ul_haq.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/ZIYAAD_MENKO_KEMASYARAKATAN',
     1,
     TRUE
 ),
@@ -702,7 +786,7 @@ INSERT INTO seed_organization_members (
     'Menteri Koordinator Komunikasi dan Informasi',
     'MENKO',
     'local-menko-kominfo',
-    '/images/Menko/menko_kominfo_andrean_marcellino.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENKO_KOMINFO_ANDREAN',
     1,
     TRUE
 ),
@@ -712,7 +796,7 @@ INSERT INTO seed_organization_members (
     'Menteri Koordinator Pergerakan',
     'MENKO',
     'local-menko-pergerakan',
-    '/images/Menko/menko_pergerakan_dewa_pranata_putra_pratama.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DEWA_MENKO_PERGERAKAN',
     1,
     TRUE
 ),
@@ -722,7 +806,7 @@ INSERT INTO seed_organization_members (
     'Menteri Koordinator PPK',
     'MENKO',
     'local-menko-ppk',
-    '/images/Menko/menko_ppk_nasua_okta_kusuma_dewi_rofiq.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/NASUA_OKTA_MENKO_PPK',
     1,
     TRUE
 ),
@@ -737,7 +821,7 @@ INSERT INTO seed_organization_members (
     'Menteri Advokasi dan Kesejahteraan Mahasiswa',
     'MENTERI',
     'local-member-adkesma-elsa-putri-aprizalni',
-    '/images/ADKESMA/menteri_adkesma_elsa_putri_aprizalni.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/menteri_adkesma_elsa_ADKESMA',
     1,
     TRUE
 ),
@@ -747,7 +831,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Advokasi',
     'DIRJEN',
     'local-member-adkesma-yustia-khuspriyanti-feby',
-    '/images/ADKESMA/dirjen_adkesma_advokasi_yustia_khuspriyanti_feby.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Direktur_JenderalYustia_Khuspriyanti_Feby_ADKESMA',
     2,
     FALSE
 ),
@@ -757,7 +841,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Kesejahteraan',
     'DIRJEN',
     'local-member-adkesma-nabila-afifah-abida',
-    '/images/ADKESMA/dirjen_adkesma_kesejahteraan_nabila_afifah_abida.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Direktur_JenderalNabila_Afifah_Abida_ADKESMA',
     3,
     FALSE
 ),
@@ -772,7 +856,7 @@ INSERT INTO seed_organization_members (
     'Menteri Pengembangan Profesi',
     'MENTERI',
     'local-member-pengprof-m-rifqy-yusuf',
-    '/images/PENGPROF/menteri_pengprof_m_rifqy_yusuf.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Menteri_PENGPROFM._Rifqy_Yusuf',
     1,
     TRUE
 ),
@@ -782,7 +866,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Keahlian',
     'DIRJEN',
     'local-member-pengprof-raizatya-qoriananda',
-    '/images/PENGPROF/dirjen_pengprof_keahlian_raizatya_qoriananda.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_RAIS_PENGPROF',
     2,
     FALSE
 ),
@@ -792,7 +876,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Relasi',
     'DIRJEN',
     'local-member-pengprof-deva-zia-ul-haq',
-    '/images/PENGPROF/dirjen_pengprof_relasi_deva_zia_ul_haq.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGPROFDeva_Zia_Ul_Haq',
     3,
     FALSE
 ),
@@ -807,7 +891,7 @@ INSERT INTO seed_organization_members (
     'Menteri Pengembangan Sumber Daya Mahasiswa',
     'MENTERI',
     'local-member-psdm-labib-azka-asysyafiq',
-    '/images/PSDM/menteri_psdm_labib_azka_asysyafiq.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIPSDM_LABIB',
     1,
     TRUE
 ),
@@ -817,7 +901,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Akselerasi',
     'DIRJEN',
     'local-member-psdm-ferdian-amartha',
-    '/images/PSDM/dirjen_psdm_akselerasi_ferdian_amartha.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PSDM_FERDIAN',
     2,
     FALSE
 ),
@@ -827,7 +911,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Kaderisasi',
     'DIRJEN',
     'local-member-psdm-qheisya-luna-alifa',
-    '/images/PSDM/dirjen_psdm_kaderisasi_qheisya_luna_alifa.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENPSDM_LUNA',
     3,
     FALSE
 ),
@@ -835,8 +919,7 @@ INSERT INTO seed_organization_members (
 -- ============================================================
 -- LINGKUNGAN HIDUP
 --
--- Nama tiga Dirjen tidak tersedia dalam nama file.
--- Nama sementara dibuat berdasarkan bidang jabatannya.
+-- Nama Dirjen Lingkungan Hidup: Dhafa Rhofiq Firdaus, Febria Rizqi Aulia S, Rifqah Azizah.
 -- ============================================================
 
 (
@@ -845,37 +928,37 @@ INSERT INTO seed_organization_members (
     'Menteri Lingkungan Hidup',
     'MENTERI',
     'local-member-lh-zaskia-darojah',
-    '/images/LH/menteri_lh_zaskia_darojah.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_LINGKUNGAN_HIDUP_ZASKIA',
     1,
     TRUE
 ),
 (
     'LH',
-    'Nama Belum Tersedia - Advokasi dan Kajian Strategis',
+    'Dhafa Rhofiq Firdaus',
     'Direktur Jenderal Advokasi dan Kajian Strategis',
     'DIRJEN',
     'local-member-lh-advokasi-kajian-strategis',
-    '/images/LH/dirjen_lh_advokasi_kajian_strategis.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGAN_HIDUP_DAFFA',
     2,
     FALSE
 ),
 (
     'LH',
-    'Nama Belum Tersedia - Pencegahan dan Pengendalian',
+    'Febria Rizqi Aulia S',
     'Direktur Jenderal Pencegahan dan Pengendalian',
     'DIRJEN',
     'local-member-lh-pencegahan-pengendalian',
-    '/images/LH/dirjen_lh_pencegahan_pengendalian.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGAN_HIDUP_FEBRIA',
     3,
     FALSE
 ),
 (
     'LH',
-    'Nama Belum Tersedia - Pengembangan dan Preservasi',
+    'Rifqah Azizah',
     'Direktur Jenderal Pengembangan dan Preservasi',
     'DIRJEN',
     'local-member-lh-pengembangan-preservasi',
-    '/images/LH/dirjen_lh_pengembangan_preservasi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGANHIDUP_AZIZAH',
     4,
     FALSE
 ),
@@ -883,7 +966,7 @@ INSERT INTO seed_organization_members (
 -- ============================================================
 -- KEMENTERIAN KESEHATAN
 --
--- Nama dua Dirjen tidak tersedia dalam nama file.
+-- Nama Dirjen Kesehatan: M. Zain Hisyam Al F. Z, Cyintia Uzliva Salsabilla.
 -- ============================================================
 
 (
@@ -892,27 +975,27 @@ INSERT INTO seed_organization_members (
     'Menteri Kesehatan',
     'MENTERI',
     'local-member-kemenkes-an-nadhofah-adlin',
-    '/images/Menkes/menteri_menkes_an_nadhofah_adlin.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIKESEHATAN_AN_NADHOFAH',
     1,
     TRUE
 ),
 (
     'KEMENKES',
-    'Nama Belum Tersedia - Kesehatan Masyarakat',
+    'M. Zain Hisyam Al F. Z',
     'Direktur Jenderal Kesehatan Masyarakat',
     'DIRJEN',
     'local-member-kemenkes-kesehatan-masyarakat',
-    '/images/Menkes/dirjen_menkes_kesehatan_masyarakat.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KESEHATAN_ZEIN',
     2,
     FALSE
 ),
 (
     'KEMENKES',
-    'Nama Belum Tersedia - Psikososial dan Inklusivitas',
+    'Cyintia Uzliva Salsabilla',
     'Direktur Jenderal Psikososial dan Inklusivitas',
     'DIRJEN',
     'local-member-kemenkes-psikososial-inklusivitas',
-    '/images/Menkes/dirjen_menkes_psikososial_inklusivitas.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KESEHATAN_CYINTIA',
     3,
     FALSE
 ),
@@ -927,7 +1010,7 @@ INSERT INTO seed_organization_members (
     'Menteri Pengabdian Masyarakat',
     'MENTERI',
     'local-member-pengmas-sahrul-efendi',
-    '/images/Pengabdian_Masyarakat/menteri_pengmas_sahrul_efendi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_OENGMAS_SAHRUL',
     1,
     TRUE
 ),
@@ -937,7 +1020,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Pengabdian',
     'DIRJEN',
     'local-member-pengmas-fahrur-rosi',
-    '/images/Pengabdian_Masyarakat/dirjen_pengmas_fahrur_rosi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGABDIAN_MASYARAKAT_ROSI',
     2,
     FALSE
 ),
@@ -947,7 +1030,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Pemberdayaan Masyarakat',
     'DIRJEN',
     'local-member-pengmas-m-wahyu',
-    '/images/Pengabdian_Masyarakat/dirjen_pengmas_m_wahyu.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGMAS_WAHYU',
     3,
     FALSE
 ),
@@ -962,7 +1045,7 @@ INSERT INTO seed_organization_members (
     'Menteri Hubungan Luar',
     'MENTERI',
     'local-member-hublu-zalfaa-putri-arfiliesia',
-    '/images/Hubungan_Luar/menteri_hublu_zalfaa_putri_arfiliesia.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_HUBUNGAN_LUAR_ZALFA',
     1,
     TRUE
 ),
@@ -972,7 +1055,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Hubungan Eksternal',
     'DIRJEN',
     'local-member-hublu-billal-syahdan-arrafah',
-    '/images/Hubungan_Luar/dirjen_hublu_billal_syahdan_arrafah.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_HUBLU_BILLAL',
     2,
     FALSE
 ),
@@ -982,7 +1065,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Kemitraan',
     'DIRJEN',
     'local-member-hublu-hafiz-naufal-utomo',
-    '/images/Hubungan_Luar/dirjen_hublu_hafiz_naufal_utomo.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_HUBLU_Hafiz_Naufal_Utomo',
     3,
     FALSE
 ),
@@ -997,7 +1080,7 @@ INSERT INTO seed_organization_members (
     'Menteri Media dan Informasi',
     'MENTERI',
     'local-member-medinfo-ganesya-intantalia',
-    '/images/Medinfo/menteri_medinfo_ganesya_intantalia.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/1',
     1,
     TRUE
 ),
@@ -1007,7 +1090,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Publikasi',
     'DIRJEN',
     'local-member-medinfo-ocha-della-fitriani',
-    '/images/Medinfo/dirjen_medinfo_publikasi_ocha_della_fitriani.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/2',
     2,
     FALSE
 ),
@@ -1017,7 +1100,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Visual',
     'DIRJEN',
     'local-member-medinfo-febiola-al-jannah',
-    '/images/Medinfo/dirjen_medinfo_visual_febiola_al_jannah.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/FEBIOLA_DIRJEN_VIDKRE_MEDIA_DAN_INFORMASI',
     3,
     FALSE
 ),
@@ -1032,7 +1115,7 @@ INSERT INTO seed_organization_members (
     'Menteri Sinergitas Mahasiswa',
     'MENTERI',
     'local-member-sinema-eugenius-nathaniel',
-    '/images/Sinergitas_Mahasiswa/menteri_sinema_eugenius_nathaniel.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/menteri_sinema_nathan',
     1,
     TRUE
 ),
@@ -1042,7 +1125,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Bina Sinergitas',
     'DIRJEN',
     'local-member-sinema-vicentius-nolan',
-    '/images/Sinergitas_Mahasiswa/dirjen_sinema_bina_vicentius_nolan.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_NOLAN_SINEMA',
     2,
     FALSE
 ),
@@ -1052,7 +1135,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Kolaborasi',
     'DIRJEN',
     'local-member-sinema-achmad-rafi-syahputra',
-    '/images/Sinergitas_Mahasiswa/dirjen_sinema_korlaborasi_achmad_rafi_syahputra.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_RAFI_SINEMA',
     3,
     FALSE
 ),
@@ -1067,7 +1150,7 @@ INSERT INTO seed_organization_members (
     'Menteri Keadilan dan Kesetaraan Gender',
     'MENTERI',
     'local-member-kkg-farrel-ardisto-samai',
-    '/images/KKG/menteri_kkg_farrel_ardisto_samai.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_KEMENTERIAN_KEADILAN_DAN_KESTARAAN_GENDER_FARREL',
     1,
     TRUE
 ),
@@ -1077,7 +1160,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Edukasi',
     'DIRJEN',
     'local-member-kkg-annisa-rahmawati',
-    '/images/KKG/dirjen_kkg_edukasi_annisa_rahmawati.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_ANNISA_RAHMA',
     2,
     FALSE
 ),
@@ -1087,7 +1170,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Pemberdayaan',
     'DIRJEN',
     'local-member-kkg-titis-nastiti-dwi',
-    '/images/KKG/dirjen_kkg_pemberdayaan_titis_nastiti_dwi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_TITIS',
     3,
     FALSE
 ),
@@ -1102,7 +1185,7 @@ INSERT INTO seed_organization_members (
     'Menteri Sosial dan Politik',
     'MENTERI',
     'local-member-sospol-daniel-nikon-martua-situmorang',
-    '/images/Sosial_dan_Politik/menteri_sospol_daniel_nikon_martua_situmorang.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_SOSPOL_DANIEL',
     1,
     TRUE
 ),
@@ -1112,7 +1195,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Aksi',
     'DIRJEN',
     'local-member-sospol-moch-amir-nazaruddin',
-    '/images/Sosial_dan_Politik/dirjen_sospol_aksi_moch_amir_nazaruddin.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISOSPOL_AMIR',
     2,
     FALSE
 ),
@@ -1122,7 +1205,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Analisis',
     'DIRJEN',
     'local-member-sospol-ahmad-raihan-fadhillah',
-    '/images/Sosial_dan_Politik/dirjen_sospol_analisis_ahmad_raihan_fadhillah.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISOSPOLRAIHAN',
     3,
     FALSE
 ),
@@ -1137,7 +1220,7 @@ INSERT INTO seed_organization_members (
     'Menteri Ekonomi Digital dan Produk Kreatif',
     'MENTERI',
     'local-member-edigpro-farhan-kamil',
-    '/images/EDIGPRO/menteri_edigpro_farhan_kamil.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_EDIGPRO_FARHAN_KAMIL',
     1,
     TRUE
 ),
@@ -1147,7 +1230,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Ekonomi Digital',
     'DIRJEN',
     'local-member-edigpro-argi',
-    '/images/EDIGPRO/dirjen_edigpro_argi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENEDIGPRO_ARGI_WICAKSANA',
     2,
     FALSE
 ),
@@ -1157,7 +1240,7 @@ INSERT INTO seed_organization_members (
     'Direktur Jenderal Produk Kreatif',
     'DIRJEN',
     'local-member-edigpro-yudhistira',
-    '/images/EDIGPRO/dirjen_edigpro_yudhistira.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_EDIGPRO_YUDHISTIRA',
     3,
     FALSE
 ),
@@ -1172,27 +1255,27 @@ INSERT INTO seed_organization_members (
     'Menteri Riset dan Keilmuan',
     'MENTERI',
     'local-member-riskel-farrel-bisma-abyakta',
-    '/images/Riset_dan_Keilmuan/menteri_risel_farrel_bisma_abyakta.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIRISKEL_BISMA',
     1,
     TRUE
 ),
 (
     'RISKEL',
-    'Ata',
+    'Abdul Wahid Tamimi',
     'Direktur Jenderal Riset',
     'DIRJEN',
     'local-member-riskel-ata',
-    '/images/Riset_dan_Keilmuan/dirjen_riset_ata.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENRISKEL_ATA',
     2,
     FALSE
 ),
 (
     'RISKEL',
-    'Naswa',
+    'Nasywa Ayudya S',
     'Direktur Jenderal Keilmuan',
     'DIRJEN',
     'local-member-riskel-naswa',
-    '/images/Riset_dan_Keilmuan/dirjen_riset_naswa.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENNASYWA_RISKEL',
     3,
     FALSE
 ),
@@ -1207,27 +1290,27 @@ INSERT INTO seed_organization_members (
     'Menteri Seni dan Olahraga',
     'MENTERI',
     'local-member-seniiora-alaina-atwa-awali-harahap',
-    '/images/Seni_dan_Olahraga/menteri_seniora_alaina_atwa_awali_harahap.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISENIORA_ALAINA',
     1,
     TRUE
 ),
 (
     'SENIIORA',
-    'Azzam',
+    'Abdullah Azzam',
     'Direktur Jenderal Seni',
     'DIRJEN',
     'local-member-seniiora-azzam',
-    '/images/Seni_dan_Olahraga/dirjen_seniora_azzam.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/ABDULLAH_AZZAM_DIRJEN_SENIORA',
     2,
     FALSE
 ),
 (
     'SENIIORA',
-    'M. Fadhil',
+    'Puput',
     'Direktur Jenderal Olahraga',
     'DIRJEN',
     'local-member-seniiora-m-fadhil',
-    '/images/Seni_dan_Olahraga/dirjen_seniora_m_fadhil.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/PUPUT_DIRJEN_SENIORA',
     3,
     FALSE
 ),
@@ -1242,7 +1325,7 @@ INSERT INTO seed_organization_members (
     'Menteri Bendahara Kabinet',
     'MENTERI',
     'local-member-benkab-inez-faradina-kasih',
-    '/images/Bendahara_Kabinet/menteri_benkab_inez_faradina_kasih.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
     1,
     TRUE
 ),
@@ -1252,7 +1335,7 @@ INSERT INTO seed_organization_members (
     'Kepala Biro Bendahara Kabinet I',
     'KABIRO',
     'local-member-benkab-ananda-magfira-nurochma',
-    '/images/Bendahara_Kabinet/kabiro_benkab_ananda_magfira_nurochma.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_ANANDA.png',
     2,
     FALSE
 ),
@@ -1262,7 +1345,7 @@ INSERT INTO seed_organization_members (
     'Kepala Biro Bendahara Kabinet II',
     'KABIRO',
     'local-member-benkab-m-salman-al-farisi',
-    '/images/Bendahara_Kabinet/kabiro_benkab_m_salman_al_farisi.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_SALMAN.png',
     3,
     FALSE
 ),
@@ -1277,7 +1360,7 @@ INSERT INTO seed_organization_members (
     'Kepala Pendayagunaan Aparatur Kabinet',
     'KEPALA',
     'local-member-pak-deri-bayu-setiawan',
-    '/images/Pendayagunaan_Aparatur_Kabinet/kepala_pak_deri_bayu_setiawan.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png',
     1,
     TRUE
 ),
@@ -1287,7 +1370,7 @@ INSERT INTO seed_organization_members (
     'Deputi Pendayagunaan Aparatur Kabinet I',
     'DEPUTI',
     'local-member-pak-mevlana-el-fithra',
-    '/images/Pendayagunaan_Aparatur_Kabinet/deputi_pak_mevlana_el_fithra.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_MEVLANA.png',
     2,
     FALSE
 ),
@@ -1297,7 +1380,7 @@ INSERT INTO seed_organization_members (
     'Deputi Pendayagunaan Aparatur Kabinet II',
     'DEPUTI',
     'local-member-pak-nayla-khansa-abbylia',
-    '/images/Pendayagunaan_Aparatur_Kabinet/deputi_pak_nayla_khansa_abbylia.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_NAYLA.png',
     3,
     FALSE
 ),
@@ -1312,7 +1395,7 @@ INSERT INTO seed_organization_members (
     'Menteri Sekretaris Kabinet',
     'MENTERI',
     'local-member-seskab-gheahaq-danty-el-zahra',
-    '/images/Sekretaris_Kabinet/menteri_seskab_gheahaq_danty_el_zahra.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
     1,
     TRUE
 ),
@@ -1322,7 +1405,7 @@ INSERT INTO seed_organization_members (
     'Kepala Biro Sekretaris Kabinet I',
     'KABIRO',
     'local-member-seskab-fathimah-nuurun',
-    '/images/Sekretaris_Kabinet/kabiro_seskab_fathimah_nuurun.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_NUURUN.png',
     2,
     FALSE
 ),
@@ -1332,7 +1415,7 @@ INSERT INTO seed_organization_members (
     'Kepala Biro Sekretaris Kabinet II',
     'KABIRO',
     'local-member-seskab-najwa-nur-hafidza',
-    '/images/Sekretaris_Kabinet/kabiro_seskab_najwa_nur_hafidza.png',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_NAJWA.png',
     3,
     FALSE
 );

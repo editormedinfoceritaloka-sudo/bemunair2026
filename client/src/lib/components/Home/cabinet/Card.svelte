@@ -2,12 +2,14 @@
   import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
+  import { playFlipSound } from '$lib/sound';
 
   let {
     id,
     title,
     subtitle,
     image,
+    pathType = 'menko',
     active = false,
     backgroundImage = '/landing/cabinet/bg-card.webp'
   }: {
@@ -15,9 +17,14 @@
     title: string;
     subtitle?: string;
     image: string;
+    pathType?: 'menko' | 'kementerian';
     active?: boolean;
     backgroundImage?: string;
   } = $props();
+
+  const splitFrontTitle = $derived(
+    id === 'sekretaris-kabinet' || id === 'bendahara-kabinet'
+  );
 
   let cardElement!: HTMLDivElement;
   let frontFace!: HTMLDivElement;
@@ -26,10 +33,13 @@
 
   let flipAnimation: gsap.core.Timeline | undefined;
   let reduceMotion = false;
+  let isFlipped = false;
 
   function showDetail(): void {
-    if (!active || !cardElement) return;
+    if (!active || !cardElement || isFlipped) return;
 
+    isFlipped = true;
+    playFlipSound();
     flipAnimation?.kill();
 
     flipAnimation = gsap.timeline({
@@ -59,8 +69,10 @@
   }
 
   function hideDetail(): void {
-    if (!cardElement) return;
+    if (!cardElement || !isFlipped) return;
 
+    isFlipped = false;
+    playFlipSound();
     flipAnimation?.kill();
 
     flipAnimation = gsap.timeline({
@@ -144,7 +156,9 @@
 </script>
 
 <a
-  href={resolve('/menko/[slug]', { slug: id })}
+  href={pathType === 'kementerian'
+    ? resolve('/kementrian/[slug]', { slug: id })
+    : resolve('/menko/[slug]', { slug: id })}
   aria-label={`Lihat detail ${title}`}
   aria-disabled={!active}
   tabindex={active ? 0 : -1}
@@ -203,7 +217,14 @@
               sm:text-lg md:text-xl xl:text-2xl
             "
           >
-            {title}
+            {#if splitFrontTitle}
+              {title.split(' ')[0]}<br />{title
+                .split(' ')
+                .slice(1)
+                .join(' ')}
+            {:else}
+              {title}
+            {/if}
           </h3>
 
           {#if subtitle}
@@ -238,19 +259,57 @@
         />
 
         <div
-          class="
-            absolute inset-x-0 top-[9%] z-30
+          aria-hidden="true"
+          class={`
+            pointer-events-none absolute inset-x-0 z-[25]
+            ${id === 'menko-komunikasi-dan-informasi'
+              ? 'top-[15%]'
+              : id === 'menko-ppk'
+                ? 'top-[14%]'
+                  : id === 'menko-kemahasiswaan' ||
+                      id === 'menko-pergerakan' ||
+                      id === 'menko-kemasyarakatan'
+                    ? 'top-[13%]'
+                    : id === 'pendayagunaan-aparatur-kabinet'
+                      ? 'top-[19%]'
+                      : id === 'sekretaris-kabinet' ||
+                          id === 'bendahara-kabinet'
+                        ? 'top-[15%]'
+                        : 'top-[19%]'}
+            h-[26%] rounded-full
+            bg-gradient-to-r from-transparent via-white/90
+            to-transparent blur-md
+            shadow-[0_0_24px_rgba(255,255,255,0.8)]
+            transition-opacity duration-500
+            ${active ? 'opacity-100' : 'opacity-0'}
+          `}
+        ></div>
+
+        <div
+          class={`
+            absolute inset-x-0 z-30
+            ${id === 'menko-komunikasi-dan-informasi'
+              ? 'top-[15%]'
+              : id === 'menko-ppk'
+                ? 'top-[14%]'
+                : id === 'pendayagunaan-aparatur-kabinet'
+                  ? 'top-[19%]'
+                  : id === 'sekretaris-kabinet' ||
+                      id === 'bendahara-kabinet'
+                    ? 'top-[15%]'
+                    : 'top-[19%]'}
             flex flex-col items-center px-3 text-center
-          "
+          `}
         >
           <h3
-            class="
-              max-w-[90%] mt-10 text-sm font-extrabold
-              uppercase leading-[1.05]
+            class={`
+              max-w-[90%] break-words uppercase
+              ${title.length > 28 ? 'mt-0' : 'mt-6'}
+              text-sm font-extrabold leading-[1.05]
               tracking-[-0.025em] text-blue-800
               drop-shadow-[0_1px_1px_rgba(255,255,255,0.95)]
               sm:text-base md:text-lg xl:text-xl
-            "
+            `}
           >
             {title}
           </h3>
@@ -258,7 +317,7 @@
           {#if subtitle}
             <p
               class="
-                mt-1 max-w-[90%] text-[8px]
+                mt-1 max-w-[90%] break-words text-[8px]
                 font-semibold uppercase leading-snug
                 tracking-[0.07em] text-blue-600
                 sm:text-[9px] md:text-[10px]
@@ -270,18 +329,19 @@
         </div>
 
         <div
-          class="
+          class={`
             pointer-events-none absolute inset-x-0
-            bottom-0 z-20 flex h-[76%] w-full
-            items-end justify-center overflow-hidden
-          "
+            bottom-0 z-20 flex w-full
+            items-stretch justify-center overflow-hidden
+            h-[66%]
+          `}
         >
           <img
             src={image}
             alt={title}
             draggable="false"
             class="
-              block h-full w-auto max-w-full
+              block h-full w-full
               object-contain object-bottom
             "
           />

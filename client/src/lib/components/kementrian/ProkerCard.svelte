@@ -17,11 +17,11 @@
   class="
     group relative mx-auto
     w-full
-    overflow-hidden rounded-[22px]
-    bg-black
-    shadow-[0_12px_26px_rgba(5,34,70,0.18)]
-    transition-shadow duration-300
-    hover:shadow-[0_20px_38px_rgba(5,34,70,0.38)]
+    rounded-[22px]
+    drop-shadow-[0_12px_18px_rgba(5,34,70,0.18)]
+    transition-[filter,transform] duration-300
+    hover:-translate-y-1
+    hover:drop-shadow-[0_18px_26px_rgba(5,34,70,0.32)]
   "
 >
   <div
@@ -36,20 +36,9 @@
       to-blue-500
       px-5 py-6
       text-left
-      [clip-path:polygon(0_0,86%_0,100%_14%,100%_100%,0_100%)]
+      [clip-path:polygon(0_0,calc(100%_-_2.75rem)_0,100%_2.75rem,100%_100%,0_100%)]
     "
   >
-    <div
-      aria-hidden="true"
-      class="
-        pointer-events-none absolute
-        right-0 top-0
-        size-11
-        bg-black
-        [clip-path:polygon(0_0,100%_0,100%_100%)]
-      "
-    ></div>
-
     <h3
       class="
         shrink-0
@@ -77,5 +66,27 @@
     >
       {description}
     </p>
+  </div>
+
+  <div
+    aria-hidden="true"
+    class="
+      pointer-events-none absolute
+      right-0 top-0 z-20
+      size-11
+      drop-shadow-[-2px_3px_3px_rgba(5,34,70,0.28)]
+    "
+  >
+    <div
+      class="
+        size-full
+        rounded-bl-lg
+        bg-gradient-to-br
+        from-white
+        via-blue-100
+        to-blue-300
+        [clip-path:polygon(0_0,100%_100%,0_100%)]
+      "
+    ></div>
   </div>
 </a>

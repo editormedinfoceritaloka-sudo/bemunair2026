@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { playBookSound, playPageSound } from '$lib/sound';
 
   import ChevronLeft from '@lucide/svelte/icons/chevron-left';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -24,6 +25,7 @@
 
   let currentPage = $state(0);
   let isAnimating = $state(false);
+  let logoShown = $state(false);
 
   let reduceMotion = false;
 
@@ -42,6 +44,7 @@
     }
 
     isAnimating = true;
+    playPageSound();
 
     gsap.to(page, {
       rotationY: -180,
@@ -72,6 +75,7 @@
     }
 
     isAnimating = true;
+    playPageSound();
 
     gsap.set(page, {
       zIndex: totalPages - previousIndex
@@ -123,15 +127,14 @@
           }
         );
 
+        logoShown = true;
+
         return;
       }
 
       gsap.set(bookFrame, {
         autoAlpha: 0,
-        y: 65,
-        scale: 0.96,
-        rotationX: 5,
-        transformOrigin: 'center bottom'
+        y: 24
       });
 
       gsap.set(bookControls, {
@@ -148,15 +151,17 @@
             invalidateOnRefresh: true
           }
         })
+        .call(() => playBookSound(), [], 0)
         .to(bookFrame, {
           autoAlpha: 1,
           y: 0,
-          scale: 1,
-          rotationX: 0,
-          duration: 0.95,
+          duration: 0.55,
           ease: 'power3.out',
           clearProps:
-            'transform,opacity,visibility'
+            'transform,opacity,visibility',
+          onComplete: () => {
+            logoShown = true;
+          }
         })
         .to(
           bookControls,
@@ -316,6 +321,7 @@
         >
           <Page1
             active={currentPage === 1}
+            {logoShown}
           />
         </div>
 
@@ -332,6 +338,7 @@
         >
           <Page2
             active={currentPage === 2}
+            {logoShown}
           />
         </div>
       </div>

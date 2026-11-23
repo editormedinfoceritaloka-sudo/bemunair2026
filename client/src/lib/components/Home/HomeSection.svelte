@@ -1,15 +1,36 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
+  import { playShineSound } from '$lib/sound';
 
   let heroSection: HTMLElement;
   let leftSide: HTMLDivElement;
   let rightSide: HTMLDivElement;
   let bottomSide: HTMLDivElement;
   let centerText: HTMLDivElement;
+  let taglineElement: HTMLParagraphElement;
+  let introOverlay: HTMLDivElement;
+  let cloudLeft: HTMLDivElement;
+  let cloudRight: HTMLDivElement;
+  let introSky: HTMLDivElement;
+  let introLogo: HTMLDivElement;
+  let introLogoGlow: HTMLDivElement;
+  let introVideo: HTMLVideoElement;
+
+  const logoHold = 3.5;
+
+  let useAlphaVideo = $state(true);
 
   onMount(() => {
+    useAlphaVideo = !/^((?!chrome|android|crios|fxios).)*safari/i.test(
+      navigator.userAgent
+    );
+
     const context = gsap.context(() => {
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+
       gsap.set(leftSide, {
         xPercent: -110
       });
@@ -27,11 +48,167 @@
         opacity: 0
       });
 
+      gsap.set(taglineElement, {
+        autoAlpha: 0,
+        y: 16,
+        filter: 'blur(6px)'
+      });
+
+      gsap.set(introLogo, {
+        autoAlpha: 0,
+        scale: 0.82,
+        filter: 'blur(8px)'
+      });
+
+      gsap.set(introLogoGlow, {
+        autoAlpha: 0,
+        scale: 0.6
+      });
+
       const timeline = gsap.timeline({
         defaults: {
           ease: 'power3.out'
         }
       });
+
+      if (reduceMotion) {
+        gsap.set(introOverlay, {
+          autoAlpha: 0
+        });
+
+        timeline.addLabel('reveal', 0);
+      } else {
+        timeline
+          .to(
+            cloudLeft,
+            {
+              xPercent: -105,
+              duration: 2.6,
+              ease: 'sine.inOut'
+            },
+            0.4
+          )
+          .to(
+            cloudLeft,
+            {
+              opacity: 0,
+              duration: 3.2,
+              ease: 'power1.in'
+            },
+            0.4
+          )
+          .to(
+            cloudRight,
+            {
+              xPercent: 105,
+              duration: 2.6,
+              ease: 'sine.inOut'
+            },
+            0.4
+          )
+          .to(
+            cloudRight,
+            {
+              opacity: 0,
+              duration: 3.2,
+              ease: 'power1.in'
+            },
+            0.4
+          )
+          .to(
+            introLogo,
+            {
+              autoAlpha: 1,
+              scale: 1,
+              filter: 'blur(0px)',
+              duration: 1.6,
+              ease: 'power2.out'
+            },
+            1
+          )
+          .call(
+            () => {
+              introVideo.currentTime = 0;
+              introVideo.playbackRate = 1.25;
+              void introVideo.play().catch(() => {});
+            },
+            [],
+            1
+          )
+          .to(
+            introLogoGlow,
+            {
+              autoAlpha: 1,
+              scale: 1.15,
+              duration: 1.2,
+              ease: 'sine.out'
+            },
+            1.6 + logoHold
+          )
+          .to(
+            introLogo,
+            {
+              y: -6,
+              duration: 0.9,
+              ease: 'sine.inOut',
+              yoyo: true,
+              repeat: 1
+            },
+            2.2 + logoHold
+          )
+          .call(
+            () => {
+              const rect = heroSection.getBoundingClientRect();
+              const heroVisible =
+                rect.bottom > window.innerHeight * 0.4 &&
+                rect.top < window.innerHeight * 0.6;
+
+              if (heroVisible) {
+                playShineSound();
+              }
+            },
+            [],
+            3.3 + logoHold
+          )
+          .to(
+            introLogoGlow,
+            {
+              autoAlpha: 0,
+              scale: 1.4,
+              duration: 1,
+              ease: 'sine.inOut'
+            },
+            3.5 + logoHold
+          )
+          .to(
+            introLogo,
+            {
+              autoAlpha: 0,
+              scale: 1.06,
+              filter: 'blur(6px)',
+              duration: 1,
+              ease: 'sine.inOut'
+            },
+            3.6 + logoHold
+          )
+          .to(
+            introSky,
+            {
+              autoAlpha: 0,
+              duration: 1.6,
+              ease: 'sine.inOut'
+            },
+            3.4 + logoHold
+          )
+          .set(
+            introOverlay,
+            {
+              autoAlpha: 0
+            },
+            5 + logoHold
+          )
+          .addLabel('reveal', 3.9 + logoHold);
+      }
 
       timeline
         .to(
@@ -40,7 +217,7 @@
             xPercent: 0,
             duration: 1.2
           },
-          0
+          'reveal'
         )
         .to(
           rightSide,
@@ -48,7 +225,7 @@
             xPercent: 0,
             duration: 1.2
           },
-          0
+          'reveal'
         )
         .call(
           () => {
@@ -57,7 +234,7 @@
             );
           },
           [],
-          0.85
+          'reveal+=0.85'
         )
         .to(
           bottomSide,
@@ -66,7 +243,7 @@
             opacity: 1,
             duration: 0.9
           },
-          0.85
+          'reveal+=0.85'
         )
         .to(
           centerText,
@@ -75,7 +252,19 @@
             duration: 0.8,
             ease: 'power2.out'
           },
-          1.55
+          'reveal+=1.55'
+        )
+        .to(
+          taglineElement,
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.9,
+            ease: 'power2.out',
+            clearProps: 'transform,filter'
+          },
+          'reveal+=1.9'
         );
     }, heroSection);
 
@@ -109,9 +298,9 @@
       <div
         bind:this={centerText}
         class="
-          flex h-full  flex-col
-          items-center justify-center gap-2 px-1
-          md:justify-start md:gap-4 md:px-0 md:py-24
+          relative isolate flex h-full flex-col
+          items-center justify-center gap-2 px-1 pt-6
+          md:justify-start md:gap-4 md:px-0 md:pt-32 md:pb-24
         "
       >
         <h1
@@ -151,11 +340,11 @@
         </p>
 
         <p
+          bind:this={taglineElement}
           class="
-            text-center
-            text-sm
-            sm:text-base
-            lg:text-lg
+            max-w-md px-2 text-center
+            text-[clamp(0.95rem,2.2vw,1.35rem)]
+            sm:max-w-lg
           "
         >
           BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
@@ -185,6 +374,100 @@
         class="block h-auto w-full object-cover object-bottom"
         draggable="false"
       />
+    </div>
+  </div>
+
+  <div
+    bind:this={introOverlay}
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 z-30 overflow-hidden"
+  >
+    <div
+      bind:this={introSky}
+      class="absolute inset-0 bg-linear-to-b from-[#a9cbf0] via-[#c6ddf6] to-[#e4eefa]"
+    ></div>
+
+    <div
+      bind:this={cloudLeft}
+      class="absolute -inset-y-[10%] -left-[10%] w-[72%] will-change-[transform,opacity]"
+    >
+      <img
+        src="/landing/home/cloud-left.webp"
+        alt=""
+        class="h-full w-full object-cover object-right"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-1.webp"
+        alt=""
+        class="absolute left-[50%] top-[4%] w-[80%] max-w-none"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-2.webp"
+        alt=""
+        class="absolute left-[58%] top-[46%] w-[75%] max-w-none"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-3.webp"
+        alt=""
+        class="absolute left-[70%] top-[24%] w-[60%] max-w-none"
+        draggable="false"
+      />
+    </div>
+
+    <div
+      bind:this={cloudRight}
+      class="absolute -inset-y-[10%] -right-[10%] w-[72%] will-change-[transform,opacity]"
+    >
+      <img
+        src="/landing/home/cloud-right.webp"
+        alt=""
+        class="h-full w-full object-cover object-left"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-3.webp"
+        alt=""
+        class="absolute right-[50%] top-[22%] w-[80%] max-w-none -scale-x-100"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-1.webp"
+        alt=""
+        class="absolute right-[58%] top-[60%] w-[75%] max-w-none -scale-x-100"
+        draggable="false"
+      />
+      <img
+        src="/landing/home/cloud-puff-2.webp"
+        alt=""
+        class="absolute right-[70%] top-[2%] w-[60%] max-w-none -scale-x-100"
+        draggable="false"
+      />
+    </div>
+
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div
+        bind:this={introLogoGlow}
+        class="absolute size-80 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,rgba(191,219,254,0.55)_40%,rgba(255,255,255,0)_70%)] blur-xl md:size-[28rem]"
+      ></div>
+
+      <div
+        bind:this={introLogo}
+        class={`relative will-change-[transform,opacity,filter] ${useAlphaVideo ? '' : 'mix-blend-darken'}`}
+      >
+        <video
+          bind:this={introVideo}
+          src={useAlphaVideo
+            ? '/landing/home/logo-motion.webm'
+            : '/landing/home/logo-motion.mp4'}
+          muted
+          playsinline
+          preload="auto"
+          class="size-44 object-contain md:size-72"
+        ></video>
+      </div>
     </div>
   </div>
 </section>

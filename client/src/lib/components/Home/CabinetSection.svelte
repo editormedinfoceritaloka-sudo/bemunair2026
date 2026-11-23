@@ -200,10 +200,10 @@
     <div
       bind:this={sliderElement}
       class="
-        mt-10 w-full
+        mt-8 w-full
         will-change-[opacity,transform]
-        sm:mt-14
-        md:mt-16
+        sm:mt-10
+        md:mt-12
       "
     >
       <MenkoSlider autoplayDelay={3000}  kemenkoan={cabinet.kemenkoan} />

@@ -5,12 +5,18 @@
   import type { PageData } from './$types';
   import MenkoCard from '$lib/components/menko/MenkoCard.svelte';
   import KementrianCard from '$lib/components/menko/KementrianCard.svelte';
+  import { playFlipSound } from '$lib/sound';
 
   let {
     data
   }: {
     data: PageData;
   } = $props();
+
+  type DescriptionPart = {
+    text: string;
+    highlighted: boolean;
+  };
 
   const unit = $derived(data.unit);
 
@@ -71,6 +77,76 @@
           '/logo/logo-kabinet.webp'
       }));
   });
+
+  const menkoDescription = $derived(
+    unit.description ??
+      `${unit.name} merupakan unit koordinator yang menaungi kementerian dalam bidangnya.`
+  );
+
+  const descriptionParts =
+    $derived.by<DescriptionPart[]>(() => {
+      const normalizedTitle =
+        menkoDescription
+          .split(' merupakan')[0]
+          .trim() || unit.name?.trim() || '';
+
+      if (!normalizedTitle) {
+        return [
+          {
+            text: menkoDescription,
+            highlighted: false
+          }
+        ];
+      }
+
+      const lowerDescription =
+        menkoDescription.toLocaleLowerCase('id-ID');
+
+      const lowerTitle =
+        normalizedTitle.toLocaleLowerCase('id-ID');
+
+      const parts: DescriptionPart[] = [];
+      let currentIndex = 0;
+
+      while (currentIndex < menkoDescription.length) {
+        const matchIndex = lowerDescription.indexOf(
+          lowerTitle,
+          currentIndex
+        );
+
+        if (matchIndex === -1) {
+          parts.push({
+            text: menkoDescription.slice(currentIndex),
+            highlighted: false
+          });
+
+          break;
+        }
+
+        if (matchIndex > currentIndex) {
+          parts.push({
+            text: menkoDescription.slice(
+              currentIndex,
+              matchIndex
+            ),
+            highlighted: false
+          });
+        }
+
+        parts.push({
+          text: menkoDescription.slice(
+            matchIndex,
+            matchIndex + normalizedTitle.length
+          ),
+          highlighted: true
+        });
+
+        currentIndex =
+          matchIndex + normalizedTitle.length;
+      }
+
+      return parts;
+    });
 
   let sectionElement!: HTMLElement;
   let glowElement!: HTMLDivElement;
@@ -328,6 +404,7 @@
             filter: 'blur(0px)',
             duration: 0.85
           })
+          .call(() => playFlipSound(), [], 0.25)
           .to(
             kementrianCards,
             {
@@ -443,21 +520,21 @@
         bind:this={headingElement}
         class="
           max-w-4xl
-          text-xl leading-[0.98] font-black
+          text-2xl leading-[1.12] font-black
           tracking-[-0.055em]
           text-blue-700
           [-webkit-text-stroke:2px_white]
           [paint-order:stroke_fill]
           drop-shadow-[0_10px_0_rgba(5,34,70,0.75)]
-          sm:text-2xl
-          md:text-3xl
-          lg:text-5xl
+          sm:text-3xl
+          md:text-4xl
+          lg:text-6xl
         "
       >
         {headingPrefix}
 
         {#if headingSuffix}
-          <span class="block">
+          <span class="mt-1 block sm:mt-2">
             {headingSuffix}
           </span>
         {/if}
@@ -466,14 +543,31 @@
       <p
         bind:this={descriptionElement}
         class="
-          mt-7 max-w-3xl
-          text-sm leading-6 font-semibold
+          mt-8 max-w-3xl
+          text-base leading-7 font-semibold
           text-white
           drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]
-          sm:text-base sm:leading-7
+          sm:text-lg sm:leading-8
+          md:text-lg md:leading-9
         "
       >
-        {unit.description}
+        {#each descriptionParts as part, index (`${index}-${part.text}`)}
+          <span
+            class={part.highlighted
+              ? 'group relative isolate inline-block px-1 font-black text-white'
+              : ''}
+          >
+            {#if part.highlighted}
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 bottom-[0.12em] z-0 h-[0.42em] origin-left scale-x-0 rounded-sm bg-gradient-to-r from-[#fde047]/0 via-[#fde047]/90 to-[#fde047]/0 transition-transform duration-300 ease-out will-change-[transform] group-hover:scale-x-100 motion-reduce:transition-none"
+              ></span>
+            {/if}
+            <span class={part.highlighted ? 'relative z-10' : ''}>
+              {part.text}
+            </span>
+          </span>
+        {/each}
       </p>
     </header>
 
@@ -517,11 +611,12 @@
         bind:this={kementrianGridElement}
         class="
           mx-auto mt-10 grid
-          w-full max-w-5xl
-          grid-cols-2
+          w-full
+          {kementrian.length === 2
+            ? 'max-w-2xl grid-cols-2'
+            : 'max-w-5xl grid-cols-2 md:grid-cols-3'}
           gap-5
           sm:gap-7
-          md:grid-cols-3
           lg:gap-10
         "
       >

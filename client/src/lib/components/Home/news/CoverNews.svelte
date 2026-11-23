@@ -1,6 +1,8 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
 
+  import NewspaperSpread from './NewspaperSpread.svelte';
+
   type NewsItem = {
     slug: string;
     title: string;
@@ -12,10 +14,12 @@
 
   let {
     item,
+    photos = [],
     logo = '/logo/logo-kabinet.webp',
     organization = 'Kabinet Cerita Loka'
   }: {
     item: NewsItem;
+    photos?: string[];
     logo?: string;
     organization?: string;
   } = $props();
@@ -47,31 +51,17 @@
   >
     <div
       class="
-        relative min-h-[260px] overflow-hidden
-        rounded-[20px] bg-blue-100
+        relative min-h-[260px]
         sm:min-h-[340px]
         md:min-h-[390px]
       "
     >
-      <img
-        src={item.coverImage}
-        alt={item.title}
-        draggable="false"
-        loading="eager"
-        fetchpriority="high"
-        class="
-          absolute inset-0 h-full w-full object-cover
-          transition duration-700
-          group-hover:scale-[1.035]
-        "
+      <NewspaperSpread
+        title={item.title}
+        coverImage={item.coverImage}
+        {photos}
+        {logo}
       />
-
-      <div
-        class="
-          pointer-events-none absolute inset-0
-          bg-gradient-to-t from-black/15 via-transparent to-transparent
-        "
-      ></div>
     </div>
 
     <div class="flex flex-col justify-center py-1 md:py-4">

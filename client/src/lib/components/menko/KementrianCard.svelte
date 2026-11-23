@@ -9,6 +9,25 @@
     slug: string;
     logo: string;
   } = $props();
+
+  const titleLines = $derived.by(() => {
+    const words = title
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (words.length <= 1) {
+      return {
+        first: title,
+        second: ''
+      };
+    }
+
+    return {
+      first: words[0],
+      second: words.slice(1).join(' ')
+    };
+  });
 </script>
 
 <a
@@ -120,7 +139,15 @@
         sm:text-sm
       "
     >
-      {title}
+      <span class="block">
+        {titleLines.first}
+      </span>
+
+      {#if titleLines.second}
+        <span class="block">
+          {titleLines.second}
+        </span>
+      {/if}
     </h3>
 
     <span

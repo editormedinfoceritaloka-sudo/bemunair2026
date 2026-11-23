@@ -26,12 +26,32 @@
     };
   });
 
-  let failedImages = $state<Record<string, boolean>>({});
+  let failedImages = $state<
+    Record<string, boolean>
+  >({});
+
+  const displayedImages = $derived(
+    images.slice(0, 6)
+  );
+
+  const visibleImages = $derived(
+    displayedImages.filter(
+      (src) => !failedImages[src]
+    )
+  );
 
   $effect(() => {
-    images.join('|');
+    displayedImages.join('|');
+
     failedImages = {};
   });
+
+  function handleImageError(
+    src: string
+  ): void {
+    failedImages[src] = true;
+  }
+
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -265,41 +285,36 @@
       </g>
     </svg>
 
-    <div class="relative z-10 flex flex-wrap justify-center gap-2.5">
-      {#each images as imageSrc, index (`${imageSrc}:${index}`)}
-        <figure class="documentation-slot aspect-[4/3] w-full max-w-lg sm:w-[calc((100%-0.625rem)/2)] lg:w-[calc((100%-1.25rem)/3)]">
-          {#if !failedImages[imageSrc]}
-            <button
-              type="button"
-              class="block h-full w-full cursor-zoom-in"
-              onclick={() => activeImage = imageSrc}
-              aria-label={`Perbesar dokumentasi ${index + 1}`}
-            >
-              <img
-                src={imageSrc}
-                alt={`Dokumentasi program kerja ${index + 1}`}
-                loading="lazy"
-                decoding="async"
-                onerror={() => {
-                  failedImages[imageSrc] = true;
-                }}
-                class="
-                  h-full w-full
-                  object-cover
-                  object-center
-                  transition-transform
-                  duration-500
-                  hover:scale-[1.04]
-                "
-              />
-            </button>
-          {:else}
-            <div
-              class="documentation-placeholder"
-              role="img"
-              aria-label="Dokumentasi belum tersedia"
-            ></div>
-          {/if}
+    <div
+      class="documentation-grid relative z-10"
+      data-count={visibleImages.length}
+    >
+      {#each visibleImages as imageSrc, index (imageSrc)}
+        <figure class="documentation-slot">
+          <button
+            type="button"
+            class="block h-full w-full cursor-zoom-in"
+            onclick={() => activeImage = imageSrc}
+            aria-label={`Perbesar dokumentasi ${index + 1}`}
+          >
+            <img
+              src={imageSrc}
+              alt={`Dokumentasi program kerja ${index + 1}`}
+              loading="lazy"
+              decoding="async"
+              onerror={() => {
+                handleImageError(imageSrc);
+              }}
+              class="
+                h-full w-full
+                object-cover
+                object-center
+                transition-transform
+                duration-500
+                hover:scale-[1.04]
+              "
+            />
+          </button>
         </figure>
       {/each}
     </div>
@@ -354,38 +369,90 @@
     box-shadow: 0 4px 12px rgba(5, 34, 70, 0.08);
   }
 
-  .documentation-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: #f8fafc;
-    background-image:
-      linear-gradient(
-        45deg,
-        #e5e7eb 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        -45deg,
-        #e5e7eb 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        45deg,
-        transparent 75%,
-        #e5e7eb 75%
-      ),
-      linear-gradient(
-        -45deg,
-        transparent 75%,
-        #e5e7eb 75%
-      );
-
-    background-size: 24px 24px;
-    background-position:
-      0 0,
-      0 12px,
-      12px -12px,
-      -12px 0;
+  .documentation-grid[data-count='1'] {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 220px;
   }
 
+  @media (min-width: 640px) {
+    .documentation-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 160px;
+      gap: 0.65rem;
+    }
+
+    .documentation-grid[data-count='1'] {
+      grid-auto-rows: 300px;
+    }
+
+    .documentation-slot {
+      border-radius: 14px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .documentation-grid:not([data-count='6']) {
+      height: auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: 220px;
+    }
+
+    .documentation-grid[data-count='1'] {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 380px;
+    }
+
+    .documentation-grid[data-count='2'],
+    .documentation-grid[data-count='4'] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .documentation-grid[data-count='6'] {
+      height: clamp(330px, 40vw, 450px);
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(7, minmax(0, 1fr));
+      grid-auto-rows: auto;
+      gap: 0.65rem;
+    }
+
+    .documentation-slot {
+      border-radius: 16px;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(1) {
+      grid-column: 1 / 6;
+      grid-row: 1 / 4;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(2) {
+      grid-column: 6 / 10;
+      grid-row: 1 / 4;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(3) {
+      grid-column: 10 / 13;
+      grid-row: 1 / 5;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(4) {
+      grid-column: 1 / 5;
+      grid-row: 4 / 8;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(5) {
+      grid-column: 5 / 10;
+      grid-row: 4 / 8;
+    }
+
+    .documentation-grid[data-count='6']
+      .documentation-slot:nth-child(6) {
+      grid-column: 10 / 13;
+      grid-row: 5 / 8;
+    }
+  }
 </style>

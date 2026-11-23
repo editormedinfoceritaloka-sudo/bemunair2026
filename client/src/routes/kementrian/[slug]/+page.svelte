@@ -5,6 +5,7 @@
 
   import MemberCard from '$lib/components/kementrian/MemberCard.svelte';
   import ListProker from '$lib/components/kementrian/ListProker.svelte';
+  import { playFlipSound } from '$lib/sound';
 
   import type {
     OrganizationMember,
@@ -42,21 +43,66 @@
 
   const unit = $derived(data.unit);
 
+  const fullUnitNames: Record<string, string> = {
+    SESKAB: 'Sekretaris Kabinet',
+    BENKAB: 'Bendahara Kabinet'
+  };
+
+  const unitDescriptions: Record<string, string> = {
+    SESKAB:
+      'Sekretaris Kabinet merupakan unsur organisasi yang bertanggung jawab dalam mengelola administrasi dan kesekretariatan kabinet serta memastikan seluruh proses administrasi berjalan secara tertib, sistematis, dan terkoordinasi. Sekretaris Kabinet juga berperan dalam menyusun dan mengelola Standar Operasional Prosedur (SOP), mengatur alur birokrasi organisasi, serta memastikan kelancaran komunikasi dan koordinasi administratif antarunsur kabinet.',
+    BENKAB:
+      'Bendahara Kabinet merupakan unsur organisasi yang bertanggung jawab atas pengelolaan keuangan kabinet, mulai dari perencanaan anggaran, pencatatan pemasukan dan pengeluaran, hingga pengawasan serta pelaporan keuangan. Bendahara Kabinet berperan memastikan pengelolaan dana organisasi berjalan secara transparan, akuntabel, tertib, dan sesuai dengan kebutuhan serta perencanaan program kerja kabinet.',
+    PAK: 'Pendayagunaan Aparatur Kabinet (PAK) merupakan unsur organisasi yang bertugas melakukan evaluasi, pengawasan, audit, dan pengendalian terhadap kinerja kementerian serta seluruh fungsionaris BEM. PAK berperan memastikan setiap unsur kabinet menjalankan tugas dan tanggung jawabnya sesuai dengan fungsi, target, dan ketentuan organisasi. Selain itu, PAK menjadi instrumen evaluasi untuk mengidentifikasi kendala, meningkatkan efektivitas kerja, serta mendorong optimalisasi kinerja aparatur kabinet.'
+  };
+
   const title = $derived(
-    unit.name ??
+    fullUnitNames[unit.code] ??
+      unit.name ??
       unit.short_name ??
       'Kementerian'
   );
 
   const description = $derived(
-    unit.description ??
+    unitDescriptions[unit.code] ??
+      unit.description ??
       `${title} merupakan bagian dari Kabinet Cerita Loka BEM Universitas Airlangga 2026.`
   );
+
+  const singleLineTitle = $derived(
+    unit.code === 'SESKAB' || unit.code === 'BENKAB'
+  );
+
+  const membersHeading = $derived(
+    singleLineTitle ? 'Struktur' : 'Struktur Kementerian'
+  );
+
+  const memberImages: Record<string, string> = {
+    'Gheahaq Danty El Zahra':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
+    'Fathimah Nuurun':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_NUURUN.png',
+    'Najwa Nur Hafidza':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_NAJWA.png',
+    'Inez Faradina Kasih':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
+    'Ananda Magfira Nurochma':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_ANANDA.png',
+    'M. Salman Al Farisi':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_SALMAN.png',
+    'Deri Bayu Setiawan':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png',
+    'Mevlana El Fithra':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_MEVLANA.png',
+    'Nayla Khansa Abbylia':
+      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_NAYLA.png'
+  };
 
   function getMemberImage(
     member: OrganizationMember
   ): string {
     return (
+      memberImages[member.name] ??
       member.photo?.url ??
       member.photo?.thumbnail_url ??
       '/kementrian/test.webp'
@@ -66,6 +112,14 @@
   function getMemberRole(
     member: OrganizationMember
   ): string {
+    if (
+      (unit.code === 'SESKAB' ||
+        unit.code === 'BENKAB') &&
+      member.position_type === 'MENTERI'
+    ) {
+      return fullUnitNames[unit.code];
+    }
+
     const roles: Record<string, string> = {
       MENKO: 'Menteri Koordinator',
       MENTERI: 'Menteri',
@@ -155,6 +209,13 @@
       };
     }
 
+    if (singleLineTitle) {
+      return {
+        first: title,
+        second: ''
+      };
+    }
+
     if (words.length === 1) {
       return {
         first: words[0],
@@ -162,9 +223,7 @@
       };
     }
 
-    const splitIndex = Math.floor(
-      words.length / 2
-    );
+    const splitIndex = 1;
 
     return {
       first: words
@@ -573,7 +632,8 @@
               rotateY: 0,
               duration: 1.15,
               stagger: 0.16,
-              ease: 'power3.inOut'
+              ease: 'power3.inOut',
+              onStart: () => playFlipSound()
             },
             0.35
           )
@@ -748,13 +808,14 @@
       >
         <span
           bind:this={firstTitleElement}
-          class="
+          class={`
             block text-blue-600
             [-webkit-text-stroke:2px_white]
             [paint-order:stroke_fill]
             drop-shadow-[0_10px_0_rgba(30,64,175,0.55)]
             sm:[-webkit-text-stroke:3px_white]
-          "
+            ${singleLineTitle ? 'whitespace-nowrap' : ''}
+          `}
         >
           {titleLines.first}
         </span>
@@ -789,10 +850,18 @@
         {#each descriptionParts as part, index (`${index}-${part.text}`)}
           <span
             class={part.highlighted
-              ? 'font-black text-white'
+              ? 'group relative isolate inline-block px-1 font-black text-white'
               : ''}
           >
-            {part.text}
+            {#if part.highlighted}
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 bottom-[0.12em] z-0 h-[0.42em] origin-left scale-x-0 rounded-sm bg-gradient-to-r from-[#fde047]/0 via-[#fde047]/90 to-[#fde047]/0 transition-transform duration-300 ease-out will-change-[transform] group-hover:scale-x-100 motion-reduce:transition-none"
+              ></span>
+            {/if}
+            <span class={part.highlighted ? 'relative z-10' : ''}>
+              {part.text}
+            </span>
           </span>
         {/each}
       </p>
@@ -815,7 +884,7 @@
           lg:text-6xl
         "
       >
-        Struktur Kementerian
+        {membersHeading}
       </h2>
 
       <div
