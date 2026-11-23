@@ -46,11 +46,12 @@ func (c *controller) createArticleDraft(ctx *gin.Context) {
 		utils.Error(ctx, http.StatusInternalServerError, utils.InternalError, err.Error())
 		return
 	}
-	body := fmt.Sprintf(
-		"<h1>%s</h1><p>#CeritaHariIni</p><h2>Kepala berita</h2><p>Mulai tulis inti kegiatan di sini.</p><h2>Tubuh berita</h2><p>Kembangkan rangkaian kegiatan, peserta, tujuan, dan hasil.</p><h2>Ekor berita</h2><p>Tutup artikel dengan kesimpulan atau tindak lanjut.</p><p><strong>Sumber naskah:</strong> <a href=\"%s\">Google Docs pengaju</a></p>",
-		html.EscapeString(submission.Title),
-		html.EscapeString(stringValue(submission.ArticleDriveLink)),
-	)
+	body := "<p></p>"
+	if source := stringValue(submission.ArticleDriveLink); source != "" {
+		body = fmt.Sprintf("<p><a href=\"%s\">Naskah dari pengaju</a></p>", html.EscapeString(source))
+		body = utils.SanitizeArticleHTML(body)
+	}
+
 	article := entities.Article{
 		Slug: slug, Title: submission.Title, Body: body,
 		AuthorID:           middlewares.CurrentClaims(ctx).UserID,
