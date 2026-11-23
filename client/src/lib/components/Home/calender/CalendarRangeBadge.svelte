@@ -37,6 +37,10 @@
       Math.round(difference / 86400000) + 1
     );
   });
+
+  const showEndJump = $derived(
+    !continuesBefore && dayCount > 1
+  );
 </script>
 
 <div>
@@ -77,13 +81,8 @@
           : 'rounded-l-full'
       }
 
-      ${
-        continuesAfter
-          ? 'rounded-r-lg pr-10'
-          : dayCount > 1
-            ? 'rounded-r-full pr-10'
-            : 'rounded-r-full pr-3'
-      }
+      ${continuesAfter ? 'rounded-r-lg' : 'rounded-r-full'}
+      ${showEndJump ? 'pr-10' : 'pr-3'}
     `}
   >
     {#if continuesBefore}
@@ -130,7 +129,7 @@
     </span>
   </a>
 
-  {#if dayCount > 1}
+  {#if showEndJump}
     <button
       type="button"
       aria-label={`Lihat tanggal selesai ${event.title}`}
