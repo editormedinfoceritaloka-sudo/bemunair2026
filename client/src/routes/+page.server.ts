@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     cabinet,
     articles,
     seo: {
-      title: 'BEM Universitas Airlangga 2026 | Kabinet Cerita Loka',
+      title: 'BEM UNAIR - Universitas Airlangga',
       description:
         'Website resmi BEM Universitas Airlangga 2026 Kabinet Cerita Loka. Temukan informasi kabinet, kementerian, program kerja, agenda, dan berita terbaru BEM UNAIR.',
       image: '/og-image.png'
