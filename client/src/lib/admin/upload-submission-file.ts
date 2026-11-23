@@ -52,10 +52,10 @@ export async function uploadSubmissionFile(
     };
     xhr.onerror = () => reject(new Error('Koneksi upload terputus.'));
     xhr.onload = () => {
-      let result: Record<string, any> = {};
+      let result: { message?: unknown; data?: Partial<UploadedSubmissionFile> } = {};
       try { result = JSON.parse(xhr.responseText); } catch { /* handled below */ }
       const data = result?.data;
-      if (xhr.status < 200 || xhr.status >= 300 || !data) {
+      if (xhr.status < 200 || xhr.status >= 300 || !data?.file_id || !data.url) {
         reject(new Error(String(result?.message || 'Upload file gagal.')));
         return;
       }

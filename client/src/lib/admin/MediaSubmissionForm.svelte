@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteDate } from 'svelte/reactivity';
   import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import type { MediaSubmissionSetting, User } from '$lib/types';
@@ -41,7 +42,7 @@
   const allAccepted = $derived(agreements.every(Boolean));
   const minimumDays = $derived(setting.minimum_lead_days ?? setting.MinimumLeadDays ?? (service === 'CONTENT' ? 7 : 3));
   const minimumDate = $derived.by(() => {
-    const date = new Date();
+    const date = new SvelteDate();
     date.setDate(date.getDate() + minimumDays);
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     return date.toISOString().slice(0, 10);
@@ -60,7 +61,6 @@
       ]
     : [
         ['LINK SOP', settingValue('sop_url', 'SOPURL')],
-        ['TEMPLATE ARTIKEL', settingValue('ministry_template_url', 'MinistryTemplateURL')],
         ['TEMPLATE CAPTION', settingValue('caption_template_url', 'CaptionTemplateURL')]
       ]);
 
@@ -151,9 +151,9 @@
   {#if draftRestored}<Alert class="mb-5 border-blue-200 bg-blue-50"><Save class="size-4" /><AlertDescription>Draft terakhir berhasil dipulihkan.</AlertDescription></Alert>{/if}
 
   <section class="mb-6 grid gap-3 sm:grid-cols-3">
-    {#each references as reference}
+    {#each references as reference (reference[0])}
       {#if reference[1]}
-        <a href={reference[1]} target="_blank" rel="noreferrer" class="flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-white p-4 text-sm font-bold text-blue-800 underline-offset-4 shadow-sm hover:border-blue-300 hover:underline">
+        <a href={reference[1]} target="_blank" rel="external noreferrer" class="flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-white p-4 text-sm font-bold text-blue-800 underline-offset-4 shadow-sm hover:border-blue-300 hover:underline">
           <span class="flex items-center gap-2"><FileText class="size-4" />{reference[0]}</span><ExternalLink class="size-4 shrink-0" />
         </a>
       {/if}
@@ -194,7 +194,7 @@
           <div class="field sm:col-span-2">
             <Label>Jenis Pengajuan *</Label>
             <div class="grid gap-3 sm:grid-cols-3">
-              {#each [['FEED_INSTAGRAM', 'Feed Instagram'], ['REELS_INSTAGRAM', 'Reels Instagram'], ['INSTASTORY', 'Instastory']] as option}
+              {#each [['FEED_INSTAGRAM', 'Feed Instagram'], ['REELS_INSTAGRAM', 'Reels Instagram'], ['INSTASTORY', 'Instastory']] as option (option[0])}
                 <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-blue-100 bg-white p-4 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
                   <input type="radio" bind:group={contentFormat} value={option[0]} onchange={saveDraft} /><span class="text-sm font-semibold">{option[1]}</span>
                 </label>
@@ -254,7 +254,7 @@
           'Saya memastikan seluruh informasi benar dan dapat dipertanggungjawabkan.',
           'Saya memahami jadwal publikasi menyesuaikan kebijakan dan antrean Medinfo.',
           service === 'CONTENT' ? 'Saya telah mengisi brief konten dengan lengkap dan jelas.' : 'Saya memastikan naskah artikel di Google Docs telah diisi dengan lengkap dan jelas.'
-        ] as text, index}
+        ] as text, index (text)}
           <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-blue-100 bg-white p-4 text-sm leading-6"><input class="mt-1 size-5 accent-blue-500" type="checkbox" bind:checked={agreements[index]} onchange={saveDraft} required /><span>{text}</span></label>
         {/each}
       </div>

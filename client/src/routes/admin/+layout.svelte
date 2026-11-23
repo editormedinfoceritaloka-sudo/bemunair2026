@@ -7,7 +7,7 @@
   let mobileNavOpen = $state(false);
 
   $effect(() => {
-    page.url.pathname;
+    void page.url.pathname;
     mobileNavOpen = false;
   });
 </script>

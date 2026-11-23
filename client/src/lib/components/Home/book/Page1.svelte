@@ -126,9 +126,7 @@
   }
 
   $effect(() => {
-    active;
-    isInView;
-    mounted;
+    void [active, isInView, mounted];
 
     playEntrance();
   });

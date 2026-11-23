@@ -8,7 +8,6 @@
   let sectionElement!: HTMLElement;
   let glowElement!: HTMLDivElement;
   let orbitElement!: HTMLDivElement;
-  let badgeElement!: HTMLDivElement;
   let codeElement!: HTMLDivElement;
   let titleElement!: HTMLHeadingElement;
   let descriptionElement!: HTMLParagraphElement;
@@ -41,13 +40,15 @@
     if (
       !savedRoute ||
       !savedRoute.startsWith('/') ||
+      savedRoute.startsWith('//') ||
       savedRoute.startsWith('/admin') ||
       savedRoute === page.url.pathname
     ) {
       return null;
     }
 
-    return savedRoute;
+    const destination = new URL(savedRoute, window.location.origin);
+    return destination.origin === window.location.origin ? destination.href : null;
   }
 
   async function goHome(): Promise<void> {
@@ -56,7 +57,7 @@
 
   async function goBack(): Promise<void> {
     if (previousRoute) {
-      await goto(previousRoute);
+      window.location.assign(previousRoute);
       return;
     }
 
@@ -82,7 +83,6 @@
     const context = gsap.context(() => {
       gsap.set(
         [
-          badgeElement,
           codeElement,
           titleElement,
           descriptionElement,
@@ -93,11 +93,6 @@
           opacity: 0
         }
       );
-
-      gsap.set(badgeElement, {
-        y: -30,
-        scale: 0.9
-      });
 
       gsap.set(codeElement, {
         y: 80,
@@ -148,16 +143,6 @@
             duration: 1.5
           },
           0
-        )
-        .to(
-          badgeElement,
-          {
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 0.7
-          },
-          0.15
         )
         .to(
           codeElement,

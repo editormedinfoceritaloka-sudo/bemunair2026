@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import { untrack } from 'svelte';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -191,13 +193,13 @@
       .slice(0, 5)
   );
 
-  let currentMonth = $state(
+  let currentMonth = $state(untrack(() =>
     startOfMonth(
       initialMonth
         ? parseDate(initialMonth)
         : new Date()
     )
-  );
+  ));
 
   let sectionElement = $state<
     HTMLElement | undefined
@@ -485,7 +487,7 @@
           {#each upcomingEvents as event (event.id)}
             <li>
               <a
-                href={buildProgramWorkHref(event)}
+                href={resolve(buildProgramWorkHref(event))}
                 class="
                   flex flex-col gap-1
                   rounded-xl border

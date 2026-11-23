@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onDestroy, untrack } from 'svelte';
   import { goto } from '$app/navigation';
   import NotionEditor from './NotionEditor.svelte';
@@ -21,7 +22,7 @@
   let saveState = $state<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
   let coverUploading = $state(false);
   let coverInput: HTMLInputElement;
-  let initialized = $state(false);
+  let initialized = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   const isEdit = Boolean(initial);
@@ -99,7 +100,7 @@
     const response = await fetch(endpoint, { method: 'POST' });
     if (response.ok) {
       toast.success(article?.status === 'PUBLISHED' ? 'Artikel dikembalikan ke draft' : 'Artikel dipublikasikan');
-      await goto('/admin/articles');
+      await goto(resolve('/admin/articles'));
     } else {
       toast.error('Status publikasi gagal diperbarui');
     }
@@ -110,10 +111,7 @@
   }
 
   $effect(() => {
-    title;
-    excerpt;
-    cover;
-    body;
+    void [title, excerpt, cover, body];
     if (!isEdit) return;
     if (!initialized) {
       initialized = true;

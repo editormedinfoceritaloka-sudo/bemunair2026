@@ -102,14 +102,15 @@ const UPLOAD_ROOT = (env.UPLOAD_DIR || '/app/uploads').replace(/\/+$/, '');
 
 export async function uploadImage(file: File, purpose: ImagePurpose) {
   const folder = PURPOSE_FOLDERS[purpose];
-  const name = `${randomUUID()}-${safeFileName(file.name)}`;
+  const fileId = randomUUID();
+  const name = `${fileId}-${safeFileName(file.name)}`;
   const directory = join(UPLOAD_ROOT, folder);
   await mkdir(directory, { recursive: true });
   await writeFile(join(directory, name), new Uint8Array(await file.arrayBuffer()));
 
   const url = `/uploads/${folder}/${name}`;
   return {
-    fileId: `${folder}/${name}`,
+    fileId,
     name,
     filePath: url,
     url,

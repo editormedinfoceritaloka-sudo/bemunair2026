@@ -1,11 +1,10 @@
-import { invalidateAll } from '$app/navigation';
 import type { SubmitFunction } from '@sveltejs/kit';
 import { toast } from 'svelte-sonner';
 
 export function useFormSubmit(message: string, onSuccess?: () => void): SubmitFunction {
-  return async () => async ({ update }) => {
+  return async () => async ({ result, update }) => {
     await update();
-    await invalidateAll();
+    if (result.type !== 'success') return;
     onSuccess?.();
     toast.success(message);
   };

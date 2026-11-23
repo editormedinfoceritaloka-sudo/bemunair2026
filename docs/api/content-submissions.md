@@ -370,3 +370,9 @@ Menghapus pengajuan konten.
 curl -X DELETE http://localhost:8081/api/content-submissions/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
+
+## POST /api/v1/content-submissions/:id/article-draft
+
+Memerlukan role `ADMIN_MEDINFO`. Pengajuan harus bertipe `ARTICLE` dan berstatus `APPROVED`, `SCHEDULED`, atau `PUBLISHED`.
+
+Respons `201` mengembalikan `data.id` draft baru dan `data.created: true`. Jika draft sudah tersedia, respons `200` mengembalikan ID draft yang sama dengan `data.created: false`. Draft baru memuat tautan naskah pengaju jika tersedia.

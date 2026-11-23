@@ -225,7 +225,7 @@ export function monthLabel(
 
 export function buildProgramWorkHref(
   event: CalendarEvent
-): string {
+): `/program-kerja/${string}` {
   const programSlug =
     encodeURIComponent(
       event.programSlug

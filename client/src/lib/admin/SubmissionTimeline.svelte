@@ -9,7 +9,7 @@
   <h2 class="font-serif text-xl font-semibold">Progress & timeline</h2>
   <p class="mt-1 text-sm text-muted-foreground">Riwayat status dan penetapan PJ secara kronologis.</p>
   <ol class="mt-5 space-y-0">
-    {#each history as item, index}
+    {#each history as item, index (`${item.id}:${item.event_type ?? "status"}`)}
       {@const assignment = item.event_type === 'PJ_ASSIGNED' || item.event_type === 'PJ_REASSIGNED'}
       <li class="relative grid grid-cols-[28px_1fr] gap-3 pb-6 last:pb-0">
         {#if index < history.length - 1}<span class="absolute left-[13px] top-6 h-full w-px bg-border"></span>{/if}

@@ -1,19 +1,21 @@
-# Upload gambar ImageKit
+# Upload media
 
-Endpoint SvelteKit ini melakukan upload server-side dengan SDK resmi ImageKit. Private API key tidak pernah dikirim ke browser.
+Endpoint SvelteKit ini menyimpan file di direktori upload server dan mengembalikan URL di bawah `/uploads/`.
 
 ## `POST /api/uploads/imagekit`
 
-Memerlukan cookie sesi admin yang valid dan role `ADMIN`.
+Memerlukan cookie sesi admin yang valid dan role `ADMIN` atau `ADMIN_MEDINFO`.
 
 Request menggunakan `multipart/form-data`:
 
 | Field | Wajib | Nilai |
 | --- | --- | --- |
 | `file` | Ya | JPEG, PNG, WebP, GIF, atau AVIF |
-| `purpose` | Tidak | `article`, `cover`, `profile`, atau `submission`; default `article` |
+| `purpose` | Tidak | `article`, `cover`, `profile`, `documentation`, `submission_media`, `submission_brief`, atau `letter_template`. Default `article`. |
 
-Batas ukuran default adalah 10 MB dan dapat diubah melalui `IMAGEKIT_MAX_UPLOAD_BYTES`.
+PDF diterima untuk `letter_template`. PDF, DOC, dan DOCX diterima untuk `submission_brief`.
+
+Batas ukuran default adalah 10 MB dan dapat diubah melalui `UPLOAD_MAX_BYTES`.
 
 Contoh:
 
@@ -29,26 +31,25 @@ Response berhasil:
 ```json
 {
   "status": true,
-  "message": "Gambar berhasil diunggah.",
+  "message": "File berhasil diunggah.",
   "data": {
-    "file_id": "imagekit-file-id",
-    "name": "cover_unique.webp",
-    "file_path": "/bemunair/article-covers/cover_unique.webp",
-    "url": "https://ik.imagekit.io/example/cover_unique.webp",
-    "thumbnail_url": "https://ik.imagekit.io/example/tr:n-media_library_thumbnail/cover_unique.webp",
-    "width": 1600,
-    "height": 900,
+    "file_id": "f59c7d20-b778-4d34-b564-48732e92ee13",
+    "name": "f59c7d20-b778-4d34-b564-48732e92ee13-cover.webp",
+    "file_path": "/uploads/article-covers/f59c7d20-b778-4d34-b564-48732e92ee13-cover.webp",
+    "url": "/uploads/article-covers/f59c7d20-b778-4d34-b564-48732e92ee13-cover.webp",
+    "thumbnail_url": "/uploads/article-covers/f59c7d20-b778-4d34-b564-48732e92ee13-cover.webp",
+    "width": null,
+    "height": null,
     "size": 245000,
-    "file_type": "image"
+    "file_type": "image/webp"
   }
 }
 ```
 
 ## Keamanan
 
-- Private key hanya dibaca dari environment server.
 - Endpoint memvalidasi sesi melalui backend dan membatasi akses ke admin.
 - MIME type, ukuran, dan signature biner file diperiksa sebelum upload.
 - SVG tidak diterima untuk mencegah active-content injection.
 - Folder upload dipetakan dari allowlist dan tidak menerima path bebas dari pengguna.
-- Nama file dinormalisasi dan ImageKit menggunakan nama unik.
+- Nama file dinormalisasi. ID file berupa UUID dan terpisah dari path penyimpanan.

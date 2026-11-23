@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   const year = 2026;
 
   const navigation = [
@@ -97,7 +98,7 @@
             {#each navigation as item (item.href)}
               <li>
                 <a
-                  href={item.href}
+                  href={resolve(item.href)}
                   class="inline-flex text-sm text-blue-100 transition-colors duration-200 hover:text-white hover:underline hover:underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
                   {item.label}
@@ -179,7 +180,7 @@
             <a
               href={social.href}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="external noopener noreferrer"
               aria-label={`${social.label} ${social.username}`}
               title={`${social.label} — ${social.username}`}
               class="group relative flex size-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:scale-95"

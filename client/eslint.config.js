@@ -40,13 +40,15 @@ export default defineConfig(
 		rules: {}
 	},
 	{
-		// ArticleBody renders trusted CMS HTML stored in the database
-		// (written by admins, delivered via the server API), not raw
-		// user input. svelte-ignore is unreliable for {@html} with the
-		// Svelte 5 AST, so the rule is disabled for this component only.
-		files: ['**/src/lib/components/news/ArticleBody.svelte'],
+		// These components sanitize HTML with DOMPurify before rendering.
+		files: ['**/src/lib/components/news/ArticleBody.svelte', '**/src/routes/api/docs/+page.svelte', '**/src/routes/admin/articles/*/preview/+page.svelte'],
 		rules: {
 			'svelte/no-at-html-tags': 'off'
 		}
+	},
+	{
+		// The shared Button forwards links. Call sites own route resolution.
+		files: ['**/src/lib/components/ui/button/button.svelte'],
+		rules: { 'svelte/no-navigation-without-resolve': ['error', { ignoreLinks: true }] }
 	}
 );

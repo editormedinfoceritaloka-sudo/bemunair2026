@@ -31,10 +31,6 @@
     normalizePath(page.url.pathname) === normalizePath(landingPath)
   );
 
-  function getNavigationHref(hash: string): string {
-    return isLanding ? hash : `${landingPath}${hash}`;
-  }
-
   function isActive(hash: string): boolean {
     return isLanding && activeHash === hash;
   }
@@ -391,7 +387,7 @@
   });
 </script>
 
-<header
+<div
   role="banner"
   bind:this={headerElement}
   onmouseenter={handleInteractionStart}
@@ -524,7 +520,7 @@
     >
       {#each publicNavigation as item (item.hash)}
         <a
-          href={getNavigationHref(item.hash)}
+          href={resolve(item.href)}
           aria-current={isActive(item.hash) ? 'location' : undefined}
           style:color={isLanding
             ? undefined
@@ -617,4 +613,4 @@
       </span>
     </div>
   </div>
-</header>
+</div>

@@ -1,5 +1,6 @@
 
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -45,31 +46,11 @@
     }
   );
 
-  const formatCache = new Map<string, string>();
-
-  function formatPublishedAt(
-    value: string | null
-  ): string {
+  function formatPublishedAt(value: string | null): string {
     if (!value) return '';
 
-    const cached = formatCache.get(value);
-
-    if (cached !== undefined) {
-      return cached;
-    }
-
     const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      formatCache.set(value, value);
-      return value;
-    }
-
-    const formatted = dateFormatter.format(date);
-
-    formatCache.set(value, formatted);
-
-    return formatted;
+    return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
   }
 
   // ========================================
@@ -108,10 +89,10 @@
   let glowElement: HTMLDivElement;
   let headingElement: HTMLHeadingElement;
 
-  let featuredElement: HTMLDivElement;
-  let latestSectionElement: HTMLElement;
-  let latestHeaderElement: HTMLDivElement;
-  let cardsElement: HTMLDivElement;
+  let featuredElement = $state<HTMLDivElement>();
+  let latestSectionElement = $state<HTMLElement>();
+  let latestHeaderElement = $state<HTMLDivElement>();
+  let cardsElement = $state<HTMLDivElement>();
 
   // ========================================
   // GSAP ANIMATION
@@ -516,7 +497,7 @@
           <!-- View all news link -->
 
           <a
-            href="/news"
+            href={resolve('/news')}
             aria-label="Lihat semua berita"
             class="
               group

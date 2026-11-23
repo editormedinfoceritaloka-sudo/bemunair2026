@@ -1,40 +1,10 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import { gsap } from 'gsap';
   import Card from './Card.svelte';
 
-  type ApiImage = {
-    id?: number;
-    file_id?: string;
-    url?: string | null;
-    thumbnail_url?: string | null;
-    name?: string;
-    alt_text?: string;
-  };
-
-  type KemenkoMember = {
-    id: number;
-    name: string;
-    position: string;
-    position_type?: string;
-    photo?: ApiImage | null;
-    display_order?: number;
-    is_leader?: boolean;
-  };
-
-  type Kemenkoan = {
-    id: number;
-    code: string;
-    name: string;
-    unit_type: string;
-    slug: string;
-    short_name?: string | null;
-    logo?: ApiImage | null;
-    display_order?: number;
-    is_active?: boolean;
-    is_published?: boolean;
-    members?: KemenkoMember[];
-  };
+  import type { OrganizationUnit } from '$lib/types';
 
   type CabinetItem = {
     id: string;
@@ -49,7 +19,7 @@
     kemenkoan = []
   }: {
     autoplayDelay?: number;
-    kemenkoan?: Kemenkoan[];
+    kemenkoan?: OrganizationUnit[];
   } = $props();
 
   const cabinetItems = $derived.by<CabinetItem[]>(() =>
@@ -107,7 +77,7 @@
   let isAnimating = $state(false);
   let mounted = $state(false);
 
-  const cards = new Map<number, HTMLDivElement>();
+  const cards = new SvelteMap<number, HTMLDivElement>();
 
   let autoplayTimer: ReturnType<typeof setInterval> | undefined;
   let resizeObserver: ResizeObserver | undefined;
@@ -321,7 +291,7 @@
     initialSignature = signature;
 
     stopAutoplay();
-    gsap.killTweensOf(track);
+    if (track) gsap.killTweensOf(track);
 
     isAnimating = false;
     currentIndex = items.length;

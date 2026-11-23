@@ -88,7 +88,7 @@
           bg-[#164f88]
         "
       >
-        {#each weekDayLabels as label, index}
+        {#each weekDayLabels as label, index (index)}
           <div
             role="columnheader"
             class={`

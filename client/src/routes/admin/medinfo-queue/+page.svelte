@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import { useFormSubmit } from '$lib/hooks/use-form-submit.svelte';
   import PageHeader from '$lib/admin/PageHeader.svelte';
   import EmptyState from '$lib/admin/EmptyState.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -8,8 +10,6 @@
   import { Alert, AlertDescription } from '$lib/components/ui/alert';
   import { Plus, Trash2, UserCheck, BriefcaseBusiness } from '@lucide/svelte';
   import { enhance } from '$app/forms';
-  import { invalidateAll } from '$app/navigation';
-  import { toast } from 'svelte-sonner';
 
   let { data, form } = $props();
   let open = $state(false);
@@ -18,9 +18,7 @@
   let available = $derived(data.users.filter((user) =>
     user.role === 'ADMIN_MEDINFO' && user.ministry === 'MEDINFO' &&
     !data.queue.some((item) => item.user_id === user.id)));
-  const done = (message: string) => () => async ({ update }: any) => {
-    await update(); await invalidateAll(); toast.success(message); open = false;
-  };
+  const done = (message: string) => useFormSubmit(message, () => { open = false; });
 </script>
 
 <PageHeader title="Roster PJ Medinfo" description="Kelola petugas yang dapat dipilih untuk menangani satu task aktif.">
@@ -31,7 +29,7 @@
 
 {#if roster.length}
   <div class="grid max-w-5xl gap-4 md:grid-cols-2">
-    {#each roster as item}
+    {#each roster as item (item.id)}
       <article class="rounded-xl border bg-card p-5 shadow-sm">
         <div class="flex items-start gap-4">
           <div class="grid size-11 place-items-center rounded-xl bg-blue-50 text-blue-700">
@@ -44,7 +42,7 @@
             </div>
             <p class="mt-1 text-xs text-muted-foreground">{item.user?.email || '—'}</p>
             {#if item.is_busy}
-              <a href={item.active_task_type === 'LETTER' ? `/admin/letter-submissions/${item.active_task_id}` : `/admin/content-submissions/${item.active_task_id}`} class="mt-3 block rounded-lg bg-blue-50 p-3 text-sm text-blue-800 hover:underline">
+              <a href={item.active_task_type === 'LETTER' ? resolve('/admin/letter-submissions/[id]', { id: String(item.active_task_id) }) : resolve('/admin/content-submissions/[id]', { id: String(item.active_task_id) })} class="mt-3 block rounded-lg bg-blue-50 p-3 text-sm text-blue-800 hover:underline">
                 {item.active_request_code || 'Task aktif'} · {item.active_task_title}
               </a>
             {:else}
@@ -72,7 +70,7 @@
           <Label for="user_id">Pengguna</Label>
           <select id="user_id" name="user_id" bind:value={userId} required class="h-10 w-full rounded-lg border bg-card px-3 text-sm">
             <option value="" disabled>Pilih pengguna</option>
-            {#each available as user}<option value={user.id}>{user.name} · {user.email}</option>{/each}
+            {#each available as user (user.id)}<option value={user.id}>{user.name} · {user.email}</option>{/each}
           </select>
           <p class="text-xs text-muted-foreground">Akun baru yang dibuat setelah proses seeding akan otomatis muncul sebagai pilihan selama memenuhi role dan kementerian.</p>
         </div>

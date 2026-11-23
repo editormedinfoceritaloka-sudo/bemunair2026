@@ -3,7 +3,6 @@
 
 	import TimelinePelaksanaan from '$lib/components/program-kerja/TimelinePelaksanaan.svelte';
 	import Documentation from '$lib/components/program-kerja/Documentation.svelte';
-	import WorkProgramTimeline from '$lib/features/work-program/components/WorkProgramTimeline.svelte';
 
 	import type { PageData } from './$types';
 
@@ -13,9 +12,9 @@
 
 	let pageElement: HTMLElement;
 	let titleElement: HTMLHeadingElement;
-	let descriptionElement: HTMLParagraphElement;
-	let timelineElement: HTMLDivElement;
-	let documentationElement: HTMLDivElement;
+	let descriptionElement = $state<HTMLParagraphElement>();
+	let timelineElement = $state<HTMLDivElement>();
+	let documentationElement = $state<HTMLDivElement>();
 
 	function splitTitleLines(name: string): { first: string; second: string } {
 		const words = name.trim().split(/\s+/);
@@ -186,17 +185,6 @@
 			>
 				{program.description}
 			</p>
-		{/if}
-
-		{#if program.milestones?.length}
-			<div class="mt-16 w-full">
-				<h2 class="text-center text-2xl font-black text-blue-900 sm:text-3xl">
-					Tahapan program
-				</h2>
-				<div class="mt-6">
-					<WorkProgramTimeline milestones={program.milestones} />
-				</div>
-			</div>
 		{/if}
 
 		{#if startDate && endDate}

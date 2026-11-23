@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
     return {
       unit: response.data
     };
-  } catch (err) {
+  } catch {
 
 
     error(404, 'Kemenkoan atau kementerian tidak ditemukan');

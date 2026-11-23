@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 		return {
 			program: response.data
 		};
-	} catch (err) {
+	} catch {
 		error(404, 'Program kerja tidak ditemukan');
 	}
 };

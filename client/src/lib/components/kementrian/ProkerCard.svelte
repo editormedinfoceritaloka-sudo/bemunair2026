@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   let {
     title,
     description,
@@ -11,7 +12,7 @@
 </script>
 
 <a
-  href={`/program-kerja/${slug}`}
+  href={resolve('/program-kerja/[slug]', { slug })}
   data-program-card
   class="
     group relative mx-auto

@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { BookOpen, Braces, Check, ChevronRight, Copy, Menu, Search, Server, X } from '@lucide/svelte';
-  import { tick } from 'svelte';
+  import { BookOpen, Braces, Check, ChevronRight, Menu, Search, Server, X } from '@lucide/svelte';
+  import { onMount, tick } from 'svelte';
+  import DOMPurify from 'isomorphic-dompurify';
 
   type DocItem = { slug: string; title: string; order: number; group?: string };
   type Heading = { id: string; text: string; level: number };
@@ -16,17 +17,18 @@
     { slug: 'wa-engine', title: 'WA Engine', order: 8, group: 'Integration' }
   ];
 
-  let docs: DocItem[] = fallbackDocs;
+  let docs = $state<DocItem[]>(fallbackDocs);
   let active = $state('overview');
   let markdown = $state('');
   let query = $state('');
   let loading = $state(true);
   let error = $state('');
   let drawerOpen = $state(false);
+  let copied = $state('');
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
   let headings = $state<Heading[]>([]);
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api';
+  const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
 
   const activeDoc = $derived(docs.find((item) => item.slug === active));
   const filtered = $derived(docs.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())));
@@ -38,11 +40,15 @@
     PUT: countMethod('PUT'),
     DELETE: countMethod('DELETE')
   });
-  const html = $derived(renderMarkdown(markdown));
+  const html = $derived(DOMPurify.sanitize(renderMarkdown(markdown)));
 
   async function loadIndex() {
     loading = true;
     try {
+      const response = await fetch(`${apiBase.replace(/\/$/, '')}/docs`);
+      if (response.ok) {
+        docs = (await response.json() as DocItem[]).sort((a, b) => a.order - b.order);
+      }
       await loadDoc(active);
     } catch {
       error = 'Dokumentasi tidak dapat dimuat.';
@@ -150,7 +156,7 @@
     }
   }
 
-  loadIndex();
+  onMount(() => { void loadIndex(); });
   $effect(() => {
     document.addEventListener('click', handleClick);
     return () => {
@@ -169,7 +175,7 @@
         <strong>BEM UNAIR</strong>
         <span>API Reference</span>
       </div>
-      <button aria-label="Close navigation" on:click={() => (drawerOpen = false)}><X size={18} /></button>
+      <button aria-label="Close navigation" onclick={() => (drawerOpen = false)}><X size={18} /></button>
     </div>
 
     <label class="search">
@@ -178,10 +184,10 @@
     </label>
 
     <nav>
-      {#each Object.entries(grouped) as [group, items]}
+      {#each Object.entries(grouped) as [group, items] (group)}
         <p>{group}</p>
-        {#each items as item}
-          <button class:active={item.slug === active} on:click={() => loadDoc(item.slug)}>
+        {#each items as item (item.slug)}
+          <button class:active={item.slug === active} onclick={() => loadDoc(item.slug)}>
             <BookOpen size={15} />
             <span>{item.title}</span>
             <ChevronRight size={14} />
@@ -193,7 +199,7 @@
 
   <section class="content-shell">
     <header>
-      <button class="menu" aria-label="Open navigation" on:click={() => (drawerOpen = true)}><Menu size={20} /></button>
+      <button class="menu" aria-label="Open navigation" onclick={() => (drawerOpen = true)}><Menu size={20} /></button>
       <div>
         <span>Digital Submission System</span>
         <strong>{activeDoc?.title ?? 'API Docs'}</strong>
@@ -219,7 +225,7 @@
           <article>{@html html}</article>
           <aside class="toc">
             <strong>On this page</strong>
-            {#each headings.slice(0, 18) as heading}
+            {#each headings.slice(0, 18) as heading (heading.id)}
               <a class:sub={heading.level > 2} href={`#${heading.id}`}>{heading.text}</a>
             {/each}
           </aside>

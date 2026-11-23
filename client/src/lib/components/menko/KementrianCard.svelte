@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   let {
     title,
     slug,
@@ -11,7 +12,7 @@
 </script>
 
 <a
-  href={`/kementrian/${slug}`}
+  href={resolve('/kementrian/[slug]', { slug })}
   aria-label={`Lihat halaman ${title}`}
   class="
     group relative block

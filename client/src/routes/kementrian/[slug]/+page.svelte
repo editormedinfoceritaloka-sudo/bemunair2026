@@ -821,21 +821,17 @@
       <div
         bind:this={membersGridElement}
         class="
-          mx-auto mt-14 grid
-          w-full max-w-6xl
-          grid-cols-1 items-center
-          gap-10
-          md:grid-cols-3
-          md:gap-8
-          lg:gap-14
+          mx-auto mt-14 flex w-full max-w-6xl
+          flex-wrap items-center justify-center gap-10
+          md:gap-8 lg:gap-14
         "
       >
         {#if members.length > 0}
           {#each members as member (member.id)}
             <div
               class={member.featured
-                ? 'md:col-start-2 md:row-start-1'
-                : ''}
+                ? 'flex w-full justify-center'
+                : 'flex w-full justify-center sm:w-[calc((100%-2.5rem)/2)] md:w-[calc((100%-4rem)/3)] lg:w-[calc((100%-7rem)/3)]'}
             >
               <MemberCard
                 role={member.role}

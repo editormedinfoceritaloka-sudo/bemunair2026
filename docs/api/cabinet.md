@@ -87,11 +87,11 @@ Endpoint admin memerlukan JWT dan role admin. `ADMIN_MEDINFO` dapat mengelola se
 | `POST` | `/api/v1/admin/work-programs/:id/milestones` | Admin sesuai scope | Menambah milestone |
 | `POST` | `/api/v1/admin/work-programs/:id/documentations` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Menambah relasi dokumentasi |
 | `PUT` | `/api/v1/admin/work-programs/:id/documentations/reorder` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Mengatur urutan dokumentasi |
-| `POST` | `/api/v1/admin/media-assets` | Admin sesuai scope | Menyimpan metadata hasil upload ImageKit |
+| `POST` | `/api/v1/admin/media-assets` | Admin sesuai scope | Menyimpan metadata hasil upload |
 
 ## Documentation Request
 
-Upload file memakai mekanisme ImageKit yang sudah tersedia. Setelah upload berhasil, simpan metadata media lalu hubungkan media tersebut ke program kerja.
+Unggah file melalui `POST /api/uploads/imagekit` dengan `purpose=documentation`. Simpan metadata menggunakan `POST /api/v1/admin/media-assets`, lalu hubungkan media ke program kerja. Galeri menampilkan semua dokumentasi yang tersedia.
 
 ```json
 {

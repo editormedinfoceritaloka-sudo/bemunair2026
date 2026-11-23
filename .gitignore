@@ -22,5 +22,8 @@ node_modules/
 # Repomix generated output
 repomix-output.*
 
+# Graphify generated output
+/graphify-out/
+
 .pnpm-store/
 node_modules/

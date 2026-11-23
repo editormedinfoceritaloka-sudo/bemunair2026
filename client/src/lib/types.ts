@@ -123,6 +123,8 @@ export interface MediaSubmissionSetting {
   PublishTimeStart?: string;
   PublishTimeEnd?: string;
   SlotIntervalMinutes?: number;
+  daily_capacity?: number | null;
+  DailyCapacity?: number | null;
   terms: string[];
 }
 export interface SubmissionHistory { id: number; event_type?: "STATUS_CHANGED" | "PJ_ASSIGNED" | "PJ_REASSIGNED"; actor?: UserSummary; from_status?: string; to_status?: string; from_pj?: UserSummary; to_pj?: UserSummary; note?: string; created_at: string }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
 
@@ -143,7 +144,7 @@
 </script>
 
 <a
-  href={`/menko/${encodeURIComponent(id)}`}
+  href={resolve('/menko/[slug]', { slug: id })}
   aria-label={`Lihat detail ${title}`}
   aria-disabled={!active}
   tabindex={active ? 0 : -1}
@@ -271,7 +272,7 @@
         <div
           class="
             pointer-events-none absolute inset-x-0
-            bottom-0 z-20 flex h-[64%] w-full
+            bottom-0 z-20 flex h-[76%] w-full
             items-end justify-center overflow-hidden
           "
         >

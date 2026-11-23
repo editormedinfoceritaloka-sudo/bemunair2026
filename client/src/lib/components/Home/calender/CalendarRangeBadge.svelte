@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { buildProgramWorkHref } from './calendar-utils';
   import type { CalendarEvent } from './types';
 
@@ -18,7 +19,7 @@
 </script>
 
 <a
-  href={buildProgramWorkHref(event)}
+  href={resolve(buildProgramWorkHref(event))}
   aria-label={`Lihat program kerja ${event.title}`}
   title={event.title}
   style={positionStyle}

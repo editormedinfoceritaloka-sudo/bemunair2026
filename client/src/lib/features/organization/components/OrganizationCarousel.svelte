@@ -35,12 +35,10 @@
   bind:this={root}
   role="region"
   aria-label="Kumpulan Kemenkoan"
-  tabindex="0"
-  onkeydown={handleKeydown}
 >
   <div class="relative mx-auto h-[330px] max-w-5xl">
     {#each units as unit, index (unit.id)}
-      <a data-carousel-card href={resolve('/menko/[slug]', { slug: unit.slug })} aria-label={`Buka ${unit.name}`} class="absolute left-1/2 top-1/2 block w-[min(78vw,390px)] -translate-x-1/2 -translate-y-1/2 rounded-[22px] border-2 border-blue-600 bg-gradient-to-br from-blue-50 via-blue-200 to-blue-500 p-6 shadow-2xl">
+      <a onkeydown={handleKeydown} data-carousel-card href={resolve('/menko/[slug]', { slug: unit.slug })} aria-label={`Buka ${unit.name}`} class="absolute left-1/2 top-1/2 block w-[min(78vw,390px)] -translate-x-1/2 -translate-y-1/2 rounded-[22px] border-2 border-blue-600 bg-gradient-to-br from-blue-50 via-blue-200 to-blue-500 p-6 shadow-2xl">
         <div class="grid aspect-[1.15] place-items-center rounded-2xl border border-white/70 bg-white/70 p-8">
           {#if unit.logo?.url}<img src={unit.logo.url} alt={unit.logo.alt_text} loading="lazy" decoding="async" width="128" height="128" class="size-32 object-contain" />{:else}<span class="text-7xl font-black text-blue-700">{unit.name.slice(0, 1)}</span>{/if}
         </div>
@@ -49,6 +47,6 @@
       <span class="sr-only">{index === active ? 'Aktif' : ''}</span>
     {/each}
   </div>
-  <button type="button" aria-label="Kartu sebelumnya" onclick={() => move(-1)} class="absolute left-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-blue-800 text-white shadow-lg transition hover:bg-blue-700 sm:left-4"><ChevronLeft /></button>
-  <button type="button" aria-label="Kartu berikutnya" onclick={() => move(1)} class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-blue-800 text-white shadow-lg transition hover:bg-blue-700 sm:right-4"><ChevronRight /></button>
+  <button type="button" aria-label="Kartu sebelumnya" onkeydown={handleKeydown} onclick={() => move(-1)} class="absolute left-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-blue-800 text-white shadow-lg transition hover:bg-blue-700 sm:left-4"><ChevronLeft /></button>
+  <button type="button" aria-label="Kartu berikutnya" onkeydown={handleKeydown} onclick={() => move(1)} class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-blue-800 text-white shadow-lg transition hover:bg-blue-700 sm:right-4"><ChevronRight /></button>
 </div>

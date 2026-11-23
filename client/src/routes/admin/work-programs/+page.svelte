@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { SubmitFunction } from '@sveltejs/kit';
   import { workProgramStatuses } from '$lib/constants/cabinet';
   import { enhance } from '$app/forms';
   import { resolve } from '$app/paths';
@@ -16,9 +17,9 @@
   let { data, form } = $props<{ data: { units: OrganizationUnit[]; programs: WorkProgram[]; unitId: number | null }; form?: { error?: string } }>();
   let saving = $state(false);
   let dateError = $state('');
-  const save = () => {
+  const save: SubmitFunction = () => {
     saving = true;
-    return async ({ update, result }: any) => {
+    return async ({ update, result }) => {
       await update();
       saving = false;
       if (result.type === 'success') toast.success('Program kerja tersimpan');

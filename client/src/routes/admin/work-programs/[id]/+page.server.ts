@@ -6,26 +6,6 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ fetch, cookies, params }) => ({ program: (await apiRequest<WorkProgram>(fetch, tokenFrom(cookies), `/admin/work-programs/${params.id}`)).data });
 
 export const actions: Actions = {
-  milestone: async ({ request, fetch, cookies, params }) => {
-    const form = await request.formData();
-    try {
-      await apiRequest(fetch, tokenFrom(cookies), "/admin/work-programs/" + params.id + "/milestones", {
-        method: "POST",
-        body: JSON.stringify({
-          title: formValue(form, "title"),
-          description: nullable(form, "description"),
-          start_date: nullable(form, "start_date"),
-          end_date: nullable(form, "end_date"),
-          status: formValue(form, "status"),
-          display_order: Number(formValue(form, "display_order") || 0)
-        })
-      });
-      return { success: true };
-    } catch (error) {
-      const result = actionError(error);
-      return fail(result.status, { error: result.message });
-    }
-  },
   documentation: async ({ request, fetch, cookies, params }) => {
     const form = await request.formData();
     try {
@@ -52,8 +32,7 @@ export const actions: Actions = {
           media_asset_id: media.data.id,
           title: nullable(form, "title"),
           caption: nullable(form, "caption"),
-          display_order: Number(formValue(form, "display_order") || 0),
-          is_cover: form.has("is_cover")
+          display_order: Number(formValue(form, "display_order") || 0)
         })
       });
       return { success: true };

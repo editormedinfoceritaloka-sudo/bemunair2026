@@ -50,6 +50,9 @@ export const actions: Actions = {
     let articleID: number;
     try {
       const result = await apiRequest<{ id: number }>(fetch, tokenFrom(cookies), `/content-submissions/${params.id}/article-draft`, { method: 'POST' });
+      if (!Number.isSafeInteger(result.data?.id) || result.data.id <= 0) {
+        return fail(502, { error: 'API tidak mengembalikan ID draft artikel yang valid.' });
+      }
       articleID = result.data.id;
     } catch (error) { const result = actionError(error); return fail(result.status, { error: result.message }); }
     redirect(303, `/admin/articles/${articleID}/edit`);

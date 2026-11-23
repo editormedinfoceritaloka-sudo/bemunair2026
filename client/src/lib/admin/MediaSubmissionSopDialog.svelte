@@ -88,7 +88,7 @@
       {/if}
 
       {#if sopUrl}
-        <a href={sopUrl} target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 font-semibold text-blue-700 underline underline-offset-4 hover:text-blue-900">
+        <a href={sopUrl} target="_blank" rel="external noreferrer" class="inline-flex items-center gap-2 font-semibold text-blue-700 underline underline-offset-4 hover:text-blue-900">
           Buka SOP lengkap <ExternalLink class="size-4" />
         </a>
       {/if}

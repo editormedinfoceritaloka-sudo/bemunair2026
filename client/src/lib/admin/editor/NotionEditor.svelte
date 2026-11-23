@@ -11,7 +11,7 @@
   import { toast } from 'svelte-sonner';
   import { Bold, Italic, Underline, Strikethrough, Code, Link, ImagePlus, Undo2, Redo2, List, ListOrdered, Quote, Minus, Pilcrow, Heading2, Heading3, LoaderCircle } from '@lucide/svelte';
 
-  let { value = '', onchange = (_html: string) => {} }: { value?: string; onchange?: (html: string) => void } = $props();
+  let { value = '', onchange = () => {} }: { value?: string; onchange?: (html: string) => void } = $props();
   let editorElement: HTMLElement;
   let bubbleElement: HTMLElement;
   let wrapper: HTMLElement;
@@ -152,7 +152,7 @@
   {#if slashOpen}
     <div class="slash-menu" style:top={`${slashTop}px`} style:left={`${slashLeft}px`}>
       <div class="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-widest text-black-200">Basic blocks</div>
-      {#each slashItems as item, index}
+      {#each slashItems as item, index (item.label)}
         <button type="button" class:selected={index === selected} onmouseenter={() => selected = index} onclick={() => runSlash(index)}>
           <span class="grid size-9 place-items-center rounded-md border bg-card"><Pilcrow class="size-4" /></span>
           <span><strong>{item.label}</strong><small>{item.description}</small></span>

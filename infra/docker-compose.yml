@@ -114,6 +114,7 @@ services:
       API_INTERNAL_URL: http://server:8080/api/v1
       WA_INTERNAL_URL: http://wa-engine:3001
       UPLOAD_DIR: /app/uploads
+      BODY_SIZE_LIMIT: 25M
       UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-20971520}
     expose:
       - "3000"

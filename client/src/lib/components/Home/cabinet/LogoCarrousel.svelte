@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import type { Cabinet } from '$lib/types';
@@ -148,7 +149,7 @@
         bind:this={track}
         class="flex w-max will-change-transform"
       >
-        {#each [0, 1] as copy}
+        {#each [0, 1] as copy (copy)}
           <div
             aria-hidden={copy === 1}
             class="
@@ -160,7 +161,7 @@
           >
             {#each cabinetLogos as logo (`${copy}-${logo.id}`)}
               <a
-                href={`/kementrian/${encodeURIComponent(logo.slug)}`}
+                href={resolve('/kementrian/[slug]', { slug: logo.slug })}
                 aria-label={`Lihat ${logo.name}`}
                 tabindex={copy === 0 ? 0 : -1}
                 class="

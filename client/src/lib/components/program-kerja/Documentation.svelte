@@ -3,14 +3,6 @@
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-  type SlotId =
-    | 'a'
-    | 'b'
-    | 'c'
-    | 'd'
-    | 'e'
-    | 'f';
-
   let {
     images,
     title = 'Dokumentasi'
@@ -18,15 +10,6 @@
     images: string[];
     title?: string;
   } = $props();
-
-  const slots: SlotId[] = [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f'
-  ];
 
   let frameElement: HTMLDivElement;
   let activeImage = $state<string | null>(null);
@@ -43,39 +26,12 @@
     };
   });
 
-  let failedSlots = $state<
-    Record<SlotId, boolean>
-  >({
-    a: false,
-    b: false,
-    c: false,
-    d: false,
-    e: false,
-    f: false
-  });
-
-  const displayedImages = $derived(
-    images.slice(0, 6)
-  );
+  let failedImages = $state<Record<string, boolean>>({});
 
   $effect(() => {
-    displayedImages.join('|');
-
-    failedSlots = {
-      a: false,
-      b: false,
-      c: false,
-      d: false,
-      e: false,
-      f: false
-    };
+    images.join('|');
+    failedImages = {};
   });
-
-  function handleImageError(
-    slot: SlotId
-  ): void {
-    failedSlots[slot] = true;
-  }
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -309,14 +265,10 @@
       </g>
     </svg>
 
-    <div class="documentation-grid relative z-10">
-      {#each slots as slot, index (slot)}
-        {@const imageSrc = displayedImages[index]}
-
-        <figure
-          class={`documentation-slot slot-${slot}`}
-        >
-          {#if imageSrc && !failedSlots[slot]}
+    <div class="relative z-10 flex flex-wrap justify-center gap-2.5">
+      {#each images as imageSrc, index (`${imageSrc}:${index}`)}
+        <figure class="documentation-slot aspect-[4/3] w-full max-w-lg sm:w-[calc((100%-0.625rem)/2)] lg:w-[calc((100%-1.25rem)/3)]">
+          {#if !failedImages[imageSrc]}
             <button
               type="button"
               class="block h-full w-full cursor-zoom-in"
@@ -329,7 +281,7 @@
                 loading="lazy"
                 decoding="async"
                 onerror={() => {
-                  handleImageError(slot);
+                  failedImages[imageSrc] = true;
                 }}
                 class="
                   h-full w-full
@@ -392,13 +344,6 @@
 />
 
 <style>
-  .documentation-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 125px;
-    gap: 0.5rem;
-  }
-
   .documentation-slot {
     position: relative;
     min-width: 0;
@@ -443,59 +388,4 @@
       -12px 0;
   }
 
-  @media (min-width: 640px) {
-    .documentation-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-auto-rows: 160px;
-      gap: 0.65rem;
-    }
-
-    .documentation-slot {
-      border-radius: 14px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .documentation-grid {
-      height: clamp(330px, 40vw, 450px);
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows: repeat(7, minmax(0, 1fr));
-      grid-auto-rows: auto;
-      gap: 0.65rem;
-    }
-
-    .documentation-slot {
-      border-radius: 16px;
-    }
-
-    .slot-a {
-      grid-column: 1 / 6;
-      grid-row: 1 / 4;
-    }
-
-    .slot-b {
-      grid-column: 6 / 10;
-      grid-row: 1 / 4;
-    }
-
-    .slot-c {
-      grid-column: 10 / 13;
-      grid-row: 1 / 5;
-    }
-
-    .slot-d {
-      grid-column: 1 / 5;
-      grid-row: 4 / 8;
-    }
-
-    .slot-e {
-      grid-column: 5 / 10;
-      grid-row: 4 / 8;
-    }
-
-    .slot-f {
-      grid-column: 10 / 13;
-      grid-row: 5 / 8;
-    }
-  }
 </style>

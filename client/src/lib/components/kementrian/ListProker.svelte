@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { onMount, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -105,7 +106,9 @@
       );
     }
 
-    await goto(url, {
+    const slug = page.params.slug;
+    if (!slug) return;
+    await goto(resolve(`/kementrian/${encodeURIComponent(slug)}${url.search}${url.hash}`), {
       keepFocus: true,
       noScroll: true,
       replaceState: false
@@ -150,13 +153,8 @@
   }
 
   $effect(() => {
-    const activePage = currentPage;
-
-    const activeIds = displayedPrograms
-      .map((program) => program.id)
-      .join('|');
-
     if (
+      !displayedPrograms.length ||
       !mounted ||
       !hasEntered ||
       reduceMotion
@@ -164,11 +162,7 @@
       return;
     }
 
-    void tick().then(() => {
-      activePage;
-      activeIds;
-      animateCards();
-    });
+    void tick().then(animateCards);
   });
 
   onMount(() => {
