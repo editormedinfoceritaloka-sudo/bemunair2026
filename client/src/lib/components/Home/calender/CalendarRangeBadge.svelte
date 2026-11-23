@@ -80,7 +80,9 @@
       ${
         continuesAfter
           ? 'rounded-r-lg pr-10'
-          : 'rounded-r-full pr-3'
+          : dayCount > 1
+            ? 'rounded-r-full pr-10'
+            : 'rounded-r-full pr-3'
       }
     `}
   >
@@ -128,16 +130,16 @@
     </span>
   </a>
 
-  {#if continuesAfter}
+  {#if dayCount > 1}
     <button
       type="button"
       aria-label={`Lihat tanggal selesai ${event.title}`}
       onclick={onShowEnd}
-      class="
+      class={`
         absolute top-0 right-0
         flex h-8 w-9
         items-center justify-center
-        rounded-r-lg
+        ${continuesAfter ? 'rounded-r-lg' : 'rounded-r-full'}
         text-white/75
         transition duration-200
         hover:bg-white/15
@@ -145,7 +147,7 @@
         focus-visible:outline-2
         focus-visible:outline-offset-1
         focus-visible:outline-orange-500
-      "
+      `}
     >
       <svg
         viewBox="0 0 24 24"
