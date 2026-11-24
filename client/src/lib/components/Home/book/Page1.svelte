@@ -393,13 +393,15 @@
     <div
       bind:this={speechCard}
       class="
-        absolute top-1/2
+        absolute top-[6%]
         left-[3%] z-20
-        w-[84%]
-        -translate-y-1/2
+        w-[94%]
+        translate-y-0
         will-change-transform
+        sm:top-1/2
         sm:left-[4%]
         sm:w-[76%]
+        sm:-translate-y-1/2
         md:left-[5%]
         md:w-[70%]
         lg:left-[6%]
@@ -457,7 +459,7 @@
             <p
               class="
                 text-justify
-                text-[7px]
+                text-[9.5px]
                 leading-[1.5]
                 text-[#0a2445]
                 sm:text-[8px]
@@ -572,7 +574,7 @@
         pointer-events-none
         absolute -right-[1%]
         bottom-0 z-30
-        h-[38%]
+        h-[68%]
         w-auto
         object-contain
         object-bottom

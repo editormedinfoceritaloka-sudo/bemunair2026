@@ -115,13 +115,13 @@
   ): string {
     const roles: Record<string, string> = {
       MENKO: 'Menteri Koordinator',
-      MENTERI: 'Menteri',
-      MINISTER: 'Menteri',
-      DIRJEN: 'Direktur Jenderal',
-      DIRECTOR_GENERAL: 'Direktur Jenderal',
-      DEPUTI: 'Deputi',
-      KEPALA: 'Kepala',
-      KABIRO: 'Kepala Biro'
+      MENTERI: 'MENTERI',
+      MINISTER: 'MENTERI',
+      DIRJEN: 'DIREKTUR JENDRAL',
+      DIRECTOR_GENERAL: 'DIREKTUR JENDRAL',
+      DEPUTI: 'DEPUTI',
+      KEPALA: 'KEPALA PAK',
+      KABIRO: 'KEPALA BIRO'
     };
 
     return (

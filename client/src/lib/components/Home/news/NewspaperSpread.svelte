@@ -3,7 +3,11 @@
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-  import { playBookSound, playPageSound } from '$lib/sound';
+  import {
+    playBookSound,
+    playNewsSound,
+    playPageSound
+  } from '$lib/sound';
 
   let {
     title,
@@ -71,6 +75,8 @@
   let rootElement: HTMLDivElement;
   let paperElement: HTMLDivElement;
   let shadowElement: HTMLDivElement;
+  let timeline: gsap.core.Timeline | undefined;
+  let newsSoundPlayed = false;
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -121,11 +127,12 @@
         width: '50%'
       });
 
-      const timeline = gsap.timeline({
+      const localTimeline = gsap.timeline({
         paused: true
       });
+      timeline = localTimeline;
 
-      timeline
+      localTimeline
         .to(paperElement, {
           autoAlpha: 1,
           y: 0,
@@ -151,17 +158,17 @@
         const isLast = index === lastIndex;
         const duration = isFirst || isLast ? 1.4 : 1.2;
 
-        timeline.to(leaf, {
+        localTimeline.to(leaf, {
           rotationY: -180,
           duration,
           ease: 'power2.inOut'
         }, time);
 
-        timeline.set(leaf, {
+        localTimeline.set(leaf, {
           zIndex: 100 + index
         }, time + duration / 2);
 
-        timeline.call(() => {
+        localTimeline.call(() => {
           if (isFirst || isLast) {
             playBookSound();
           } else {
@@ -170,7 +177,7 @@
         }, [], time);
 
         if (isFirst) {
-          timeline
+          localTimeline
             .to(paperElement, {
               xPercent: 0,
               rotation: -2,
@@ -186,7 +193,7 @@
         }
 
         if (isLast) {
-          timeline
+          localTimeline
             .to(paperElement, {
               xPercent: 25,
               rotation: -3,
@@ -204,17 +211,70 @@
         time += duration + (isLast ? 0 : 1.8);
       });
 
+      let isInView = false;
+      let isPageVisible =
+        document.visibilityState === 'visible';
+
+      const syncPlayback = () => {
+        if (
+          isInView &&
+          isPageVisible &&
+          timeline
+        ) {
+          if (!newsSoundPlayed) {
+            newsSoundPlayed = true;
+            playNewsSound();
+          }
+
+          timeline.play();
+        } else {
+          timeline?.pause();
+        }
+      };
+
+      const handleVisibilityChange = () => {
+        isPageVisible =
+          document.visibilityState === 'visible';
+        syncPlayback();
+      };
+
+      document.addEventListener(
+        'visibilitychange',
+        handleVisibilityChange
+      );
+
       ScrollTrigger.create({
         trigger: rootElement,
         start: 'top 72%',
-        once: true,
+        end: 'bottom 10%',
         onEnter: () => {
-          timeline.play();
+          isInView = true;
+          syncPlayback();
+        },
+        onEnterBack: () => {
+          isInView = true;
+          syncPlayback();
+        },
+        onLeave: () => {
+          isInView = false;
+          syncPlayback();
+        },
+        onLeaveBack: () => {
+          isInView = false;
+          syncPlayback();
         }
       });
+
+      return () => {
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange
+        );
+      };
     }, rootElement);
 
     return () => {
+      timeline?.pause();
       context.revert();
     };
   });

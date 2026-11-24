@@ -6,7 +6,8 @@ type SoundName =
   | 'flip'
   | 'swipe'
   | 'type'
-  | 'shine';
+  | 'shine'
+  | 'news';
 
 const SOUND_URLS: Record<SoundName, string> = {
   book: '/audio/book-open.mp3',
@@ -14,7 +15,8 @@ const SOUND_URLS: Record<SoundName, string> = {
   flip: '/audio/flip-card.mp3',
   swipe: '/audio/swipe.mp3',
   type: '/audio/keyboard-typing.mp3',
-  shine: '/audio/shine.mp3'
+  shine: '/audio/shine.mp3',
+  news: '/audio/newspaper-open.mp3'
 };
 
 type QueuedSound = {
@@ -25,6 +27,7 @@ type QueuedSound = {
 
 let context: AudioContext | null = null;
 let unlocked = false;
+let introComplete = false;
 
 const buffers = new Map<SoundName, AudioBuffer>();
 const pending = new Map<SoundName, Promise<AudioBuffer | null>>();
@@ -54,12 +57,20 @@ function getContext(): AudioContext | null {
 function unlock(): void {
   if (unlocked || typeof window === 'undefined') return;
   unlocked = true;
-  getContext();
 
+  const ctx = getContext();
   const queued = queuedSounds.splice(0);
-  queued.forEach(({ name, volume, rate }) => {
-    play(name, volume, rate);
-  });
+  const flush = () => {
+    queued.forEach(({ name, volume, rate }) => {
+      play(name, volume, rate);
+    });
+  };
+
+  if (ctx && ctx.state === 'suspended') {
+    void ctx.resume().then(flush).catch(flush);
+  } else {
+    flush();
+  }
 }
 
 function loadBuffer(name: SoundName): Promise<AudioBuffer | null> {
@@ -92,16 +103,24 @@ function loadBuffer(name: SoundName): Promise<AudioBuffer | null> {
   return task;
 }
 
-function play(name: SoundName, volume: number, rate = 1): void {
+function play(
+  name: SoundName,
+  volume: number,
+  rate = 1,
+  duringIntro = false
+): void {
+  if (!introComplete && !duringIntro) return;
+
   const ctx = getContext();
   if (!ctx || document.hidden) return;
 
   if (!unlocked) {
+    queuedSounds.push({ name, volume, rate });
     return;
   }
 
-  void loadBuffer(name).then((buffer) => {
-    if (!buffer || document.hidden) return;
+  const start = (buffer: AudioBuffer) => {
+    if (document.hidden) return;
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
@@ -112,6 +131,19 @@ function play(name: SoundName, volume: number, rate = 1): void {
 
     source.connect(gain).connect(ctx.destination);
     source.start();
+  };
+
+  void loadBuffer(name).then((buffer) => {
+    if (!buffer || document.hidden) return;
+
+    if (ctx.state === 'suspended') {
+      void ctx
+        .resume()
+        .then(() => start(buffer))
+        .catch(() => {});
+    } else {
+      start(buffer);
+    }
   });
 }
 
@@ -151,6 +183,22 @@ export function playSwipeSound(): void {
 
 export function playShineSound(): void {
   play('shine', 0.45);
+}
+
+export function playNewsSound(): void {
+  play('news', 0.7);
+}
+
+export function playIntroSound(): void {
+  play('shine', 0.45, 1, true);
+}
+
+export function beginIntro(): void {
+  introComplete = false;
+}
+
+export function finishIntro(): void {
+  introComplete = true;
 }
 
 export function playTypeSound(): void {

@@ -265,7 +265,7 @@
       bind:this={bookFrame}
       class="
         relative
-        h-[330px]
+        h-[540px]
         w-full
         rounded-xl
         bg-white/20

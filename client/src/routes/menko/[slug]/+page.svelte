@@ -623,12 +623,21 @@
           lg:gap-10
         "
       >
-        {#each kementrian as item (item.id)}
-          <KementrianCard
-            title={item.title}
-            slug={item.slug}
-            logo={item.logo}
-          />
+        {#each kementrian as item, index (item.id)}
+          <div
+            class={
+              kementrian.length % 2 === 1 &&
+              index === kementrian.length - 1
+                ? 'col-span-2 mx-auto w-1/2 md:col-span-1 md:w-full'
+                : ''
+            }
+          >
+            <KementrianCard
+              title={item.title}
+              slug={item.slug}
+              logo={item.logo}
+            />
+          </div>
         {/each}
       </div>
     </div>

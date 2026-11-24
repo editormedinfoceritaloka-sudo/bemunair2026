@@ -1,7 +1,15 @@
+<script module lang="ts">
+  let introPlayed = false;
+</script>
+
 <script lang="ts">
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
-  import { playShineSound } from '$lib/sound';
+  import {
+    beginIntro,
+    finishIntro,
+    playIntroSound
+  } from '$lib/sound';
 
   let heroSection: HTMLElement;
   let leftSide: HTMLDivElement;
@@ -18,13 +26,53 @@
   let introVideo: HTMLVideoElement;
 
   const logoHold = 3.5;
+  const shouldPlayIntro = !introPlayed;
 
   let useAlphaVideo = $state(true);
+  let videoFailed = $state(false);
 
   onMount(() => {
-    useAlphaVideo = !/^((?!chrome|android|crios|fxios).)*safari/i.test(
+    if (introPlayed) {
+      finishIntro();
+
+      gsap.set(introOverlay, {
+        autoAlpha: 0,
+        pointerEvents: 'none'
+      });
+      gsap.set(leftSide, {
+        xPercent: 0
+      });
+      gsap.set(rightSide, {
+        xPercent: 0
+      });
+      gsap.set(bottomSide, {
+        yPercent: 0,
+        opacity: 1
+      });
+      gsap.set(centerText, {
+        opacity: 1
+      });
+      gsap.set(taglineElement, {
+        autoAlpha: 1,
+        y: 0,
+        filter: 'none'
+      });
+
+      return;
+    }
+
+    introPlayed = true;
+    beginIntro();
+
+    const isIOS = /iPad|iPhone|iPod/i.test(
       navigator.userAgent
     );
+
+    useAlphaVideo =
+      !isIOS &&
+      !/^((?!chrome|android|crios|fxios).)*safari/i.test(
+        navigator.userAgent
+      );
 
     const context = gsap.context(() => {
       const reduceMotion = window.matchMedia(
@@ -73,9 +121,11 @@
 
       if (reduceMotion) {
         gsap.set(introOverlay, {
-          autoAlpha: 0
+          autoAlpha: 0,
+          pointerEvents: 'none'
         });
 
+        finishIntro();
         timeline.addLabel('reveal', 0);
       } else {
         timeline
@@ -130,7 +180,9 @@
             () => {
               introVideo.currentTime = 0;
               introVideo.playbackRate = 1.25;
-              void introVideo.play().catch(() => {});
+              void introVideo
+                .play()
+                .catch(() => (videoFailed = true));
             },
             [],
             1
@@ -155,20 +207,6 @@
               repeat: 1
             },
             2.2 + logoHold
-          )
-          .call(
-            () => {
-              const rect = heroSection.getBoundingClientRect();
-              const heroVisible =
-                rect.bottom > window.innerHeight * 0.4 &&
-                rect.top < window.innerHeight * 0.6;
-
-              if (heroVisible) {
-                playShineSound();
-              }
-            },
-            [],
-            3.3 + logoHold
           )
           .to(
             introLogoGlow,
@@ -203,11 +241,22 @@
           .set(
             introOverlay,
             {
-              autoAlpha: 0
+              autoAlpha: 0,
+              pointerEvents: 'none'
             },
             5 + logoHold
           )
-          .addLabel('reveal', 3.9 + logoHold);
+          .call(
+            finishIntro,
+            [],
+            5 + logoHold
+          )
+          .call(
+            playIntroSound,
+            [],
+            5.25 + logoHold
+          )
+          .addLabel('reveal', 5 + logoHold);
       }
 
       timeline
@@ -367,12 +416,16 @@
       BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
     </p>
   </div>
+</section>
 
-  <div
-    bind:this={introOverlay}
-    aria-hidden="true"
-    class="pointer-events-none absolute inset-0 z-30 overflow-hidden"
-  >
+<div
+  bind:this={introOverlay}
+  aria-hidden="true"
+  class="fixed inset-0 z-[9999] overflow-hidden"
+  class:pointer-events-auto={shouldPlayIntro}
+  class:pointer-events-none={!shouldPlayIntro}
+  class:invisible={!shouldPlayIntro}
+>
     <div
       bind:this={introSky}
       class="absolute inset-0 bg-linear-to-b from-[#a9cbf0] via-[#c6ddf6] to-[#e4eefa]"
@@ -441,12 +494,12 @@
     <div class="absolute inset-0 flex items-center justify-center">
       <div
         bind:this={introLogoGlow}
-        class="absolute size-80 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,rgba(191,219,254,0.55)_40%,rgba(255,255,255,0)_70%)] blur-xl md:size-[28rem]"
+        class="absolute size-72 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,rgba(191,219,254,0.55)_40%,rgba(255,255,255,0)_70%)] blur-xl sm:size-80 md:size-[32rem]"
       ></div>
 
       <div
         bind:this={introLogo}
-        class={`relative will-change-[transform,opacity,filter] ${useAlphaVideo ? '' : 'mix-blend-darken'}`}
+        class={`relative will-change-[transform,opacity,filter] ${videoFailed ? '' : useAlphaVideo ? '' : 'mix-blend-darken'}`}
       >
         <video
           bind:this={introVideo}
@@ -456,12 +509,20 @@
           muted
           playsinline
           preload="auto"
-          class="size-44 object-contain md:size-72"
+          onerror={() => (videoFailed = true)}
+          class={`size-52 object-contain sm:size-64 md:size-80 ${videoFailed ? 'hidden' : ''}`}
         ></video>
+
+        {#if videoFailed}
+          <img
+            src="/logo/logo-kabinet.webp"
+            alt="Logo Kabinet Cerita Loka"
+            class="size-52 object-contain sm:size-64 md:size-80"
+          />
+        {/if}
       </div>
     </div>
   </div>
-</section>
 
 <style>
   .hero {

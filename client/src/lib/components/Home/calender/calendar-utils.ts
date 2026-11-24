@@ -174,6 +174,27 @@ export function getEventsForDay(
     );
 }
 
+export function getSpanningEventsForDay(
+  day: Date,
+  events: CalendarEvent[]
+): CalendarEvent[] {
+  const selectedDate = dateKey(day);
+
+  return events
+    .filter(
+      (event) =>
+        selectedDate >= event.startDate &&
+        selectedDate <=
+          (event.endDate ?? event.startDate)
+    )
+    .sort((first, second) =>
+      first.title.localeCompare(
+        second.title,
+        'id-ID'
+      )
+    );
+}
+
 export function isCurrentMonth(
   date: Date,
   currentMonth: Date

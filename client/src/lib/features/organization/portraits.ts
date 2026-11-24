@@ -28,7 +28,7 @@ const legacyPortraits: Partial<Record<string, string>> = {
   "/images/Seni_dan_Olahraga/menteri_seniora_alaina_atwa_awali_harahap":
     "MENTERISENIORA_ALAINA",
   "/images/Menko/menko_kemahasiswaan_johanes_richard_darmawan":
-    "MENKO_KEMAHASISWAAAN_RICHIE",
+    "RICHIE_MENKO_KEMAHASISWAAN",
   "/images/Menko/menko_kemasyarakatan_muhammad_ziyaad_difa_ul_haq":
     "ZIYAAD_MENKO_KEMASYARAKATAN",
   "/images/Menko/menko_kominfo_andrean_marcellino":

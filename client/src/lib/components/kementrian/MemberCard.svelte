@@ -173,7 +173,7 @@
           drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)]
         "
       >
-        Kabinet Cerita Loka
+        BEM UNAIR 2026
       </p>
 
       <p
@@ -183,7 +183,7 @@
           text-blue-50/85
         "
       >
-        Universitas Airlangga
+        Kabinet Cerita Loka
       </p>
     </div>
   </div>
