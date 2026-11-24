@@ -25,7 +25,6 @@
 
   let currentPage = $state(0);
   let isAnimating = $state(false);
-  let logoShown = $state(false);
 
   let reduceMotion = false;
 
@@ -127,8 +126,6 @@
           }
         );
 
-        logoShown = true;
-
         return;
       }
 
@@ -158,10 +155,7 @@
           duration: 0.55,
           ease: 'power3.out',
           clearProps:
-            'transform,opacity,visibility',
-          onComplete: () => {
-            logoShown = true;
-          }
+            'transform,opacity,visibility'
         })
         .to(
           bookControls,
@@ -321,7 +315,6 @@
         >
           <Page1
             active={currentPage === 1}
-            {logoShown}
           />
         </div>
 
@@ -338,7 +331,6 @@
         >
           <Page2
             active={currentPage === 2}
-            {logoShown}
           />
         </div>
       </div>
