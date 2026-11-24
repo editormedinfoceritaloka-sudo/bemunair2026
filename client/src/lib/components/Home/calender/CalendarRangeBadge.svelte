@@ -43,7 +43,7 @@
   );
 </script>
 
-<div>
+<div
   style={positionStyle}
   class="
     group/range absolute z-20

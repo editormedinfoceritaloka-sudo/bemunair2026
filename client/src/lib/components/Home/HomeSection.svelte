@@ -291,7 +291,7 @@
       <img
         src="/landing/home/left.webp"
         alt="Ilustrasi landing bagian kiri"
-        class="h-full w-full -rotate-4 object-contain object-top md:rotate-0"
+        class="h-full w-full -rotate-4 object-contain object-[left_top] md:rotate-0"
         draggable="false"
       />
     </div>
@@ -303,7 +303,7 @@
       <img
         src="/landing/home/right.webp"
         alt="Ilustrasi landing bagian kanan"
-        class="h-full w-full object-contain object-top"
+        class="h-full w-full object-contain object-[right_top]"
         draggable="false"
       />
     </div>

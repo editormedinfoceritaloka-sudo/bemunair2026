@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
+  import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
   import { gsap } from 'gsap';
   import { playSwipeSound } from '$lib/sound';
   import Card from './Card.svelte';
@@ -111,13 +112,14 @@
           pathType
         ),
       subtitle: leader?.name ?? item.name,
-      image:
+      image: resolveOrganizationPortrait(
         cabinetImages[item.slug] ??
-        leader?.photo?.url ??
-        leader?.photo?.thumbnail_url ??
-        item.logo?.url ??
-        item.logo?.thumbnail_url ??
-        '/landing/speech/p.webp',
+          leader?.photo?.url ??
+          leader?.photo?.thumbnail_url ??
+          item.logo?.url ??
+          item.logo?.thumbnail_url ??
+          '/landing/speech/p.webp'
+      ),
       pathType,
       backgroundImage: '/landing/cabinet/bg-card.webp'
     };
