@@ -86,7 +86,7 @@ Endpoint admin memerlukan JWT dan role admin. `ADMIN_MEDINFO` dapat mengelola se
 | `PUT` | `/api/v1/admin/work-programs/:id/publish` | Admin sesuai scope | Publish/unpublish program |
 | `POST` | `/api/v1/admin/work-programs/:id/milestones` | Admin sesuai scope | Menambah milestone |
 | `POST` | `/api/v1/admin/work-programs/:id/documentations` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Menambah relasi dokumentasi |
-| `DELETE` | `/api/v1/admin/work-programs/:id/documentations/:documentationId` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Melepas foto dari galeri program |
+| `DELETE` | `/api/v1/admin/work-programs/:id/documentations/:documentationId` | Akun kementerian (`ADMIN`) sesuai cakupan unit, atau `ADMIN_MEDINFO` | Melepas foto dari galeri program |
 | `PUT` | `/api/v1/admin/work-programs/:id/documentations/reorder` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Mengatur urutan dokumentasi |
 | `POST` | `/api/v1/admin/media-assets` | Admin sesuai scope | Menyimpan metadata hasil upload |
 
