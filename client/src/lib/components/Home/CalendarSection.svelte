@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import { untrack } from 'svelte';
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
@@ -10,11 +9,6 @@
 
   import {
     addMonths,
-    buildProgramWorkHref,
-    dateKey,
-    formatEventRange,
-    getEventsForDay,
-    getEventsForMonth,
     parseDate,
     startOfMonth
   } from './calender/calendar-utils';
@@ -193,18 +187,6 @@
     )
   ));
 
-  let selectedDate = $state<Date | null>(null);
-  const dateFormatter = new Intl.DateTimeFormat('id-ID', { dateStyle: 'full' });
-  const agendaEvents = $derived(
-    selectedDate
-      ? getEventsForDay(selectedDate, resolvedEvents)
-      : getEventsForMonth(currentMonth, resolvedEvents)
-  );
-
-  function selectDate(day: Date): void {
-    selectedDate = selectedDate && dateKey(selectedDate) === dateKey(day) ? null : day;
-  }
-
   let sectionElement = $state<
     HTMLElement | undefined
   >(undefined);
@@ -224,7 +206,6 @@
   function changeMonth(
     amount: number
   ): void {
-    selectedDate = null;
     const grid = gridElement;
 
     if (!grid) {
@@ -476,64 +457,7 @@
     <div
       bind:this={gridElement}
     >
-      <CalendarGrid
-        {currentMonth}
-        events={resolvedEvents}
-        selectedDate={selectedDate ? dateKey(selectedDate) : null}
-        onSelectDate={selectDate}
-      />
-    </div>
-
-    <div class="mx-auto mt-6 w-full max-w-4xl">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="text-lg font-black text-blue-900" aria-live="polite">
-          {selectedDate ? `Program mulai ${dateFormatter.format(selectedDate)}` : 'Agenda bulan ini'}
-        </h3>
-        {#if selectedDate}
-          <button
-            type="button"
-            class="rounded-md px-2 py-1 text-sm font-semibold text-blue-800 underline hover:bg-blue-50"
-            onclick={() => selectedDate = null}
-          >
-            Semua agenda bulan ini
-          </button>
-        {/if}
-      </div>
-
-      {#if agendaEvents.length}
-        <ul class="mt-4 grid gap-3">
-          {#each agendaEvents as event (event.id)}
-            <li>
-              <a
-                href={resolve(buildProgramWorkHref(event))}
-                class="
-                  flex flex-col gap-1
-                  rounded-xl border
-                  border-blue-900/10
-                  bg-white p-4
-                  no-underline shadow-sm
-                  transition
-                  hover:border-orange-400
-                  hover:shadow-md
-                  sm:flex-row
-                  sm:items-center
-                  sm:justify-between
-                "
-              >
-                <span class="font-semibold text-blue-900">
-                  {event.title}
-                </span>
-
-                <span class="text-sm text-muted-foreground">
-                  {formatEventRange(event)} · {event.ministryName}
-                </span>
-              </a>
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <p class="mt-3 text-sm text-muted-foreground">Belum ada agenda untuk bulan ini.</p>
-      {/if}
+      <CalendarGrid {currentMonth} events={resolvedEvents} />
     </div>
   </div>
 </section>

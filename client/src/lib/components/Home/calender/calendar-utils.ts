@@ -174,22 +174,6 @@ export function getEventsForDay(
     );
 }
 
-export function getEventsForMonth(
-  month: Date,
-  events: CalendarEvent[]
-): CalendarEvent[] {
-  const firstDay = dateKey(startOfMonth(month));
-  const lastDay = dateKey(endOfMonth(month));
-
-  return events.filter((event) => {
-    const lastEventDay = event.endDate && event.endDate >= event.startDate
-      ? event.endDate
-      : event.startDate;
-
-    return event.startDate <= lastDay && lastEventDay >= firstDay;
-  });
-}
-
 export function isCurrentMonth(
   date: Date,
   currentMonth: Date

@@ -15,11 +15,10 @@
   aria-label={`Lihat program kerja ${event.title}, ${formatEventRange(event)}, dari ${event.ministryName}`}
   title={`${event.title} — ${formatEventRange(event)} — ${event.ministryName}`}
   class="
-    group flex min-h-9
-    min-w-0 items-center
-    gap-2 rounded-xl
+    group flex min-h-8 min-w-7 max-w-full
+    items-center justify-center gap-1.5 rounded-lg
     border border-blue-900/10
-    bg-white px-2 py-1.5
+    bg-white p-0.5
     shadow-sm
     transition duration-200
     hover:-translate-y-px
@@ -28,11 +27,12 @@
     focus-visible:outline-2
     focus-visible:outline-offset-1
     focus-visible:outline-orange-500
+    sm:min-w-0 sm:justify-start sm:px-1.5
   "
 >
   <span
     class="
-      flex size-6 shrink-0
+      flex size-5 shrink-0
       items-center justify-center
       rounded-lg bg-blue-50
       p-0.5
@@ -52,7 +52,7 @@
 
   <span
     class="
-      min-w-0 truncate
+      hidden min-w-0 truncate sm:block
       text-[10px] leading-tight
       font-extrabold
       text-[#164f88]
