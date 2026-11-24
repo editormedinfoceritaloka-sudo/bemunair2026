@@ -78,6 +78,23 @@
     };
   };
 
+  let deletingDocumentation = $state(false);
+  const deleteDocumentation: SubmitFunction = ({ cancel }) => {
+    if (deletingDocumentation || !confirm('Hapus foto ini dari galeri program kerja?')) {
+      cancel();
+      return;
+    }
+    deletingDocumentation = true;
+    return async ({ update, result }) => {
+      try {
+        await update();
+        if (result.type === 'success') toast.success('Dokumentasi dihapus');
+      } finally {
+        deletingDocumentation = false;
+      }
+    };
+  };
+
   function clearUpload() {
     uploaded = null;
     altText = "";
@@ -105,4 +122,13 @@
     <div class="sm:col-span-2"><Button type="submit" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan perubahan'}</Button></div>
   </form>
 </section>
-<section class="rounded-2xl border bg-card p-6"><h2 class="text-xl font-black text-blue-900">Dokumentasi</h2><div class="mt-6"><DocumentationGallery items={data.program.documentations} /></div><form method="POST" action="?/documentation" use:enhance={saveDocumentation} class="mt-8 space-y-4 border-t pt-6"><input type="hidden" name="file_id" value={uploaded?.file_id || ""} required /><input type="hidden" name="file_path" value={uploaded?.file_path || ""} /><input type="hidden" name="url" value={uploaded?.url || ""} required /><input type="hidden" name="thumbnail_url" value={uploaded?.thumbnail_url || ""} /><input type="hidden" name="name" value={uploaded?.name || ""} required /><input type="hidden" name="mime_type" value={uploaded?.file_type || ""} required /><input type="hidden" name="size_bytes" value={uploaded?.size || 0} required /><input type="hidden" name="width" value={uploaded?.width || ""} /><input type="hidden" name="height" value={uploaded?.height || ""} /><div class="space-y-2"><Label for="documentation-upload">File dokumentasi</Label><input bind:this={documentationInput} id="documentation-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="sr-only" onchange={uploadDocumentation} /><div class="flex items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50 p-4">{#if uploaded}<img src={uploaded.url} alt="Preview dokumentasi" class="size-20 rounded-lg object-cover" /><div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold text-blue-900">{uploaded.name}</p><p class="text-xs text-black-300">Upload selesai</p></div><Button type="button" variant="ghost" size="icon" onclick={clearUpload} aria-label="Hapus file"><Trash2 class="text-red-600" /></Button>{:else}<button type="button" class="flex w-full flex-col items-center justify-center gap-1 py-3 text-blue-700" onclick={() => documentationInput?.click()} disabled={uploading}>{#if uploading}<LoaderCircle class="size-6 animate-spin" /><span class="text-sm font-semibold">Mengunggah…</span>{:else}<UploadCloud class="size-6" /><span class="text-sm font-semibold">Pilih gambar dokumentasi</span><span class="text-xs text-black-300">JPEG, PNG, WebP, GIF, atau AVIF · maksimum 10 MB</span>{/if}</button>{/if}</div>{#if uploadError}<p class="text-sm text-red-600">{uploadError}</p>{/if}</div><div class="space-y-2"><Label for="alt_text">Alt text</Label><Input id="alt_text" name="alt_text" bind:value={altText} required disabled={!uploaded} /></div><div class="space-y-2"><Label for="doc_title">Judul</Label><Input id="doc_title" name="title" /></div><div class="space-y-2"><Label for="caption">Caption</Label><Textarea id="caption" name="caption" rows={3} /></div><Button type="submit" disabled={!uploaded || uploading || savingDocumentation}>Tambah dokumentasi</Button></form></section>
+<section class="rounded-2xl border bg-card p-6"><h2 class="text-xl font-black text-blue-900">Dokumentasi</h2><div class="mt-6"><DocumentationGallery items={data.program.documentations}>
+      {#snippet actions(item)}
+        <form method="POST" action="?/deleteDocumentation" use:enhance={deleteDocumentation}>
+          <input type="hidden" name="documentation_id" value={item.id} />
+          <Button type="submit" variant="outline" size="sm" class="text-red-700" disabled={deletingDocumentation}>
+            <Trash2 /> Hapus foto
+          </Button>
+        </form>
+      {/snippet}
+    </DocumentationGallery></div><form method="POST" action="?/documentation" use:enhance={saveDocumentation} class="mt-8 space-y-4 border-t pt-6"><input type="hidden" name="file_id" value={uploaded?.file_id || ""} required /><input type="hidden" name="file_path" value={uploaded?.file_path || ""} /><input type="hidden" name="url" value={uploaded?.url || ""} required /><input type="hidden" name="thumbnail_url" value={uploaded?.thumbnail_url || ""} /><input type="hidden" name="name" value={uploaded?.name || ""} required /><input type="hidden" name="mime_type" value={uploaded?.file_type || ""} required /><input type="hidden" name="size_bytes" value={uploaded?.size || 0} required /><input type="hidden" name="width" value={uploaded?.width || ""} /><input type="hidden" name="height" value={uploaded?.height || ""} /><div class="space-y-2"><Label for="documentation-upload">File dokumentasi</Label><input bind:this={documentationInput} id="documentation-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" class="sr-only" onchange={uploadDocumentation} /><div class="flex items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50 p-4">{#if uploaded}<img src={uploaded.url} alt="Preview dokumentasi" class="size-20 rounded-lg object-contain" /><div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold text-blue-900">{uploaded.name}</p><p class="text-xs text-black-300">Upload selesai</p></div><Button type="button" variant="ghost" size="icon" onclick={clearUpload} aria-label="Hapus file"><Trash2 class="text-red-600" /></Button>{:else}<button type="button" class="flex w-full flex-col items-center justify-center gap-1 py-3 text-blue-700" onclick={() => documentationInput?.click()} disabled={uploading}>{#if uploading}<LoaderCircle class="size-6 animate-spin" /><span class="text-sm font-semibold">Mengunggah…</span>{:else}<UploadCloud class="size-6" /><span class="text-sm font-semibold">Pilih gambar dokumentasi</span><span class="text-xs text-black-300">JPEG, PNG, WebP, GIF, atau AVIF · maksimum 10 MB · rasio bebas</span>{/if}</button>{/if}</div>{#if uploadError}<p class="text-sm text-red-600">{uploadError}</p>{/if}</div><div class="space-y-2"><Label for="alt_text">Alt text</Label><Input id="alt_text" name="alt_text" bind:value={altText} required disabled={!uploaded} /></div><div class="space-y-2"><Label for="doc_title">Judul</Label><Input id="doc_title" name="title" /></div><div class="space-y-2"><Label for="caption">Caption</Label><Textarea id="caption" name="caption" rows={3} /></div><Button type="submit" disabled={!uploaded || uploading || savingDocumentation}>Tambah dokumentasi</Button></form></section>

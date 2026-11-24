@@ -1,6 +1,32 @@
 const portraitBase = 'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/';
 
 const legacyPortraits: Partial<Record<string, string>> = {
+  "/images/ADKESMA/menteri_adkesma_elsa_putri_aprizalni":
+    "menteri_adkesma_elsa_ADKESMA",
+  "/images/PENGPROF/menteri_pengprof_m_rifqy_yusuf":
+    "Menteri_PENGPROFM._Rifqy_Yusuf",
+  "/images/PSDM/menteri_psdm_labib_azka_asysyafiq":
+    "MENTERIPSDM_LABIB",
+  "/images/Menkes/menteri_menkes_an_nadhofah_adlin":
+    "MENTERIKESEHATAN_AN_NADHOFAH",
+  "/images/Pengabdian_Masyarakat/menteri_pengmas_sahrul_efendi":
+    "MENTERI_OENGMAS_SAHRUL",
+  "/images/Hubungan_Luar/menteri_hublu_zalfaa_putri_arfiliesia":
+    "MENTERI_HUBUNGAN_LUAR_ZALFA",
+  "/images/Medinfo/menteri_medinfo_ganesya_intantalia":
+    "1",
+  "/images/Sinergitas_Mahasiswa/menteri_sinema_eugenius_nathaniel":
+    "menteri_sinema_nathan",
+  "/images/KKG/menteri_kkg_farrel_ardisto_samai":
+    "MENTERI_KEMENTERIAN_KEADILAN_DAN_KESTARAAN_GENDER_FARREL",
+  "/images/Sosial_dan_Politik/menteri_sospol_daniel_nikon_martua_situmorang":
+    "MENTERI_SOSPOL_DANIEL",
+  "/images/EDIGPRO/menteri_edigpro_farhan_kamil":
+    "MENTERI_EDIGPRO_FARHAN_KAMIL",
+  "/images/Riset_dan_Keilmuan/menteri_risel_farrel_bisma_abyakta":
+    "MENTERIRISKEL_BISMA",
+  "/images/Seni_dan_Olahraga/menteri_seniora_alaina_atwa_awali_harahap":
+    "MENTERISENIORA_ALAINA",
   "/images/Menko/menko_kemahasiswaan_johanes_richard_darmawan":
     "MENKO_KEMAHASISWAAAN_RICHIE",
   "/images/Menko/menko_kemasyarakatan_muhammad_ziyaad_difa_ul_haq":

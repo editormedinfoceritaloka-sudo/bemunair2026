@@ -277,104 +277,95 @@
 <section
   bind:this={heroSection}
   id="home"
-  class="relative h-[45vh] overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white sm:h-[80vh] md:h-screen"
+  class="
+    hero relative isolate flex items-center justify-center
+    overflow-hidden bg-linear-to-b from-blue-200 via-blue-50 to-white
+    px-4 sm:px-6
+  "
 >
-  <div class="absolute inset-0 flex flex-col">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0">
     <div
-      class="grid min-h-0 flex-1 grid-cols-[0.7fr_1.6fr_0.7fr] items-start md:grid-cols-3"
+      bind:this={leftSide}
+      class="absolute top-0 left-0 h-[78%] w-1/3 will-change-transform"
     >
-      <div
-        bind:this={leftSide}
-        class="flex h-full min-w-0 items-start justify-center will-change-transform"
-      >
-        <img
-          src="/landing/home/left.webp"
-          alt="Ilustrasi landing bagian kiri"
-          class="h-full w-full -rotate-4 object-contain object-top md:rotate-0"
-          draggable="false"
-        />
-      </div>
+      <img
+        src="/landing/home/left.webp"
+        alt="Ilustrasi landing bagian kiri"
+        class="h-full w-full -rotate-4 object-contain object-top md:rotate-0"
+        draggable="false"
+      />
+    </div>
 
-      <div
-        bind:this={centerText}
-        class="
-          relative isolate flex h-full flex-col
-          items-center justify-center gap-2 px-1 pt-6
-          md:justify-start md:gap-4 md:px-0 md:pt-32 md:pb-24
-        "
-      >
-        <h1
-          class="
-            whitespace-nowrap
-            bg-linear-to-b
-            from-blue-900
-            via-blue-700
-          to-blue-400
-            bg-clip-text
-            text-[clamp(2rem,9vw,3.5rem)]
-            leading-none
-            font-black
-            tracking-[-0.06em]
-            text-transparent
-            drop-shadow-[0_8px_6px_rgba(15,23,42,0.28)]
-            md:text-[clamp(3.5rem,11vw,9rem)]
-          "
-        >
-          BEM UNAIR
-        </h1>
-
-        <p
-          class="
-            whitespace-nowrap
-            text-center
-            text-[clamp(1rem,4vw,1.5rem)]
-            leading-none
-            font-black
-            tracking-[-0.04em]
-            text-orange-600
-            drop-shadow-[0_4px_3px_rgba(120,53,15,0.35)]
-            md:text-[clamp(1.5rem,3vw,3.5rem)]
-          "
-        >
-          Kabinet Cerita Loka
-        </p>
-
-        <p
-          bind:this={taglineElement}
-          class="
-            max-w-md px-2 text-center
-            text-[clamp(0.95rem,2.2vw,1.35rem)]
-            sm:max-w-lg
-          "
-        >
-          BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
-        </p>
-      </div>
-
-      <div
-        bind:this={rightSide}
-        class="flex h-full min-w-0 items-start justify-center will-change-transform"
-      >
-        <img
-          src="/landing/home/right.webp"
-          alt="Ilustrasi landing bagian kanan"
-          class="h-full w-full object-contain object-top"
-          draggable="false"
-        />
-      </div>
+    <div
+      bind:this={rightSide}
+      class="absolute top-0 right-0 h-[78%] w-1/3 will-change-transform"
+    >
+      <img
+        src="/landing/home/right.webp"
+        alt="Ilustrasi landing bagian kanan"
+        class="h-full w-full object-contain object-top"
+        draggable="false"
+      />
     </div>
 
     <div
       bind:this={bottomSide}
-      class="relative z-10 w-full shrink-0 will-change-transform"
+      class="hero-wave absolute inset-x-0 bottom-0 w-full will-change-transform"
     >
       <img
         src="/landing/home/bottom.webp"
         alt="Ilustrasi landing bagian bawah"
-        class="block h-auto w-full object-cover object-bottom"
+        class="block h-auto w-full"
         draggable="false"
       />
     </div>
+  </div>
+
+  <div
+    bind:this={centerText}
+    class="
+      relative z-10 flex w-full max-w-5xl min-w-0 flex-col
+      items-center gap-3 text-center sm:gap-5 md:gap-6
+    "
+  >
+    <h1
+      class="
+        hero-title bg-linear-to-b
+        from-blue-900
+        via-blue-700
+        to-blue-400
+        bg-clip-text
+        leading-none
+        font-black
+        tracking-[-0.06em]
+        text-transparent
+        drop-shadow-[0_8px_6px_rgba(15,23,42,0.28)]
+      "
+    >
+      BEM UNAIR
+    </h1>
+
+    <p
+      class="
+        hero-subtitle text-center
+        leading-none
+        font-black
+        tracking-[-0.04em]
+        text-orange-600
+        drop-shadow-[0_4px_3px_rgba(120,53,15,0.35)]
+      "
+    >
+      Kabinet Cerita Loka
+    </p>
+
+    <p
+      bind:this={taglineElement}
+      class="
+        hero-tagline max-w-xl text-center leading-relaxed
+      "
+    >
+      BEM UNAIR sebagai Rumah dan Kompas Gerakan yang Berlandaskan Spirit Panca Loka guna Kebermanfaatan Bersama bagi Airlangga dan Indonesia.
+    </p>
   </div>
 
   <div
@@ -471,3 +462,39 @@
     </div>
   </div>
 </section>
+
+<style>
+  .hero {
+    --hero-wave-space: clamp(6rem, 18vw, 12rem);
+    min-height: 45svh;
+    padding-block: clamp(6rem, 12vh, 9rem) var(--hero-wave-space);
+  }
+
+  .hero-wave img {
+    max-height: var(--hero-wave-space);
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 9.5vw, 9rem);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.25rem, 3.5vw, 3.5rem);
+  }
+
+  .hero-tagline {
+    font-size: clamp(0.95rem, 1.65vw, 1.35rem);
+  }
+
+  @media (min-width: 40rem) {
+    .hero {
+      min-height: 80svh;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .hero {
+      min-height: 100svh;
+    }
+  }
+</style>

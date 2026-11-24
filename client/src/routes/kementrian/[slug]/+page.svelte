@@ -133,7 +133,8 @@
     };
 
     return (
-      roles[member.position_type] ??
+      member.position?.trim() ||
+      roles[member.position_type] ||
       member.position_type
     );
   }
@@ -839,6 +840,7 @@
 
       <p
         bind:this={descriptionElement}
+        class:lg:max-w-5xl={unit.code === 'PAK'}
         class="
           mx-auto mt-8 max-w-4xl
           text-sm leading-6 font-medium

@@ -6,6 +6,19 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ fetch, cookies, params }) => ({ program: (await apiRequest<WorkProgram>(fetch, tokenFrom(cookies), `/admin/work-programs/${params.id}`)).data });
 
 export const actions: Actions = {
+  deleteDocumentation: async ({ request, fetch, cookies, params }) => {
+    const id = formValue(await request.formData(), 'documentation_id');
+    if (!/^[1-9]\d*$/.test(id)) return fail(400, { error: 'ID dokumentasi tidak valid.' });
+    try {
+      await apiRequest(fetch, tokenFrom(cookies), `/admin/work-programs/${params.id}/documentations/${id}`, {
+        method: 'DELETE'
+      });
+      return { success: true };
+    } catch (error) {
+      const result = actionError(error);
+      return fail(result.status, { error: result.message });
+    }
+  },
   documentation: async ({ request, fetch, cookies, params }) => {
     const form = await request.formData();
     try {

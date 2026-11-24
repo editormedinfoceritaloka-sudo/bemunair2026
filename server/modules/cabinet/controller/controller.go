@@ -318,6 +318,31 @@ func (c *Controller) CreateDocumentation(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusCreated, response.BuildResponseSuccess("Dokumentasi ditambahkan", value))
 }
+
+func (c *Controller) DeleteDocumentation(ctx *gin.Context) {
+	programID, programErr := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	documentationID, documentationErr := strconv.ParseUint(ctx.Param("documentationId"), 10, 64)
+	if programErr != nil || documentationErr != nil || programID == 0 || documentationID == 0 {
+		response.Error(ctx, http.StatusBadRequest, response.ValidationError, "ID program kerja atau dokumentasi tidak valid")
+		return
+	}
+
+	deleted, err := c.service.DeleteDocumentation(programID, documentationID, middlewares.CurrentClaims(ctx))
+	if err != nil {
+		if errors.Is(err, service.ErrUnitAccessDenied) {
+			response.Error(ctx, http.StatusForbidden, response.Forbidden, err.Error())
+			return
+		}
+		response.Error(ctx, http.StatusInternalServerError, response.InternalError, "Gagal menghapus dokumentasi")
+		return
+	}
+	if !deleted {
+		response.Error(ctx, http.StatusNotFound, response.NotFound, "Dokumentasi tidak ditemukan pada program kerja ini")
+		return
+	}
+	response.OK(ctx, "Dokumentasi dihapus", nil)
+}
+
 func (c *Controller) ReorderDocumentation(ctx *gin.Context) {
 	var req struct {
 		IDs []uint64 `json:"ids"`

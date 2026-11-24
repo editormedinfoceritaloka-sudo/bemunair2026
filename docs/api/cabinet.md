@@ -86,6 +86,7 @@ Endpoint admin memerlukan JWT dan role admin. `ADMIN_MEDINFO` dapat mengelola se
 | `PUT` | `/api/v1/admin/work-programs/:id/publish` | Admin sesuai scope | Publish/unpublish program |
 | `POST` | `/api/v1/admin/work-programs/:id/milestones` | Admin sesuai scope | Menambah milestone |
 | `POST` | `/api/v1/admin/work-programs/:id/documentations` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Menambah relasi dokumentasi |
+| `DELETE` | `/api/v1/admin/work-programs/:id/documentations/:documentationId` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Melepas foto dari galeri program |
 | `PUT` | `/api/v1/admin/work-programs/:id/documentations/reorder` | `ADMIN` atau `ADMIN_MEDINFO` sesuai scope | Mengatur urutan dokumentasi |
 | `POST` | `/api/v1/admin/media-assets` | Admin sesuai scope | Menyimpan metadata hasil upload |
 
@@ -103,7 +104,7 @@ Unggah file melalui `POST /api/uploads/imagekit` dengan `purpose=documentation`.
 }
 ```
 
-`media_asset_id` harus menunjuk media aktif. Satu program dapat memiliki banyak dokumentasi dan hanya relasinya yang diubah saat reorder atau remove.
+`media_asset_id` harus menunjuk media aktif. Penghapusan dokumentasi hanya melepas relasinya dari program kerja dan mempertahankan file media. Endpoint penghapusan mengembalikan `404` jika dokumentasi tidak ditemukan pada program tersebut.
 
 ## Status dan Validation
 

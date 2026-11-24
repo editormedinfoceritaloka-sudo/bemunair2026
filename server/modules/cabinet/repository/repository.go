@@ -40,6 +40,7 @@ type Repository interface {
 	DeleteProgram(id uint64) error
 	CreateMilestone(value *entities.WorkProgramMilestone) error
 	CreateDocumentation(value *entities.WorkProgramDocumentation) error
+	DeleteDocumentation(programID, documentationID uint64) (bool, error)
 	ReorderDocumentations(programID uint64, ids []uint64) error
 	CreateMedia(value *entities.MediaAsset) error
 	MediaByID(id uint64) (*entities.MediaAsset, error)
@@ -358,6 +359,12 @@ func (r *cabinetRepository) CreateDocumentation(value *entities.WorkProgramDocum
 		}
 		return tx.Create(value).Error
 	})
+}
+
+func (r *cabinetRepository) DeleteDocumentation(programID, documentationID uint64) (bool, error) {
+	result := r.db.Where("work_program_id = ? AND id = ?", programID, documentationID).
+		Delete(&entities.WorkProgramDocumentation{})
+	return result.RowsAffected > 0, result.Error
 }
 
 func (r *cabinetRepository) ReorderDocumentations(programID uint64, ids []uint64) error {

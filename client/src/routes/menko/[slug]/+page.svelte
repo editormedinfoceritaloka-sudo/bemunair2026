@@ -6,6 +6,7 @@
   import MenkoCard from '$lib/components/menko/MenkoCard.svelte';
   import KementrianCard from '$lib/components/menko/KementrianCard.svelte';
   import { playFlipSound } from '$lib/sound';
+  import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
 
   let {
     data
@@ -48,11 +49,13 @@
   );
 
   const leaderImage = $derived(
-    leader?.photo?.url ??
-      leader?.photo?.thumbnail_url ??
-      unit.logo?.url ??
-      unit.logo?.thumbnail_url ??
-      '/menko/test.webp'
+    resolveOrganizationPortrait(
+      leader?.photo?.url ??
+        leader?.photo?.thumbnail_url ??
+        unit.logo?.url ??
+        unit.logo?.thumbnail_url ??
+        '/menko/test.webp'
+    )
   );
 
   const kementrian = $derived.by(() => {

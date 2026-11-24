@@ -1,12 +1,26 @@
 <script lang="ts">
   import type { Documentation } from '$lib/types';
-  let { items = [] }: { items?: Documentation[] } = $props();
+  import type { Snippet } from 'svelte';
+
+  let { items = [], actions }: { items?: Documentation[]; actions?: Snippet<[Documentation]> } = $props();
 </script>
 
 {#if items.length}
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {#each items as item (item.id)}
-      {#if item.media?.url}<figure class="overflow-hidden rounded-2xl bg-blue-100"><img loading="lazy" src={item.media.url} alt={item.media.alt_text} class="aspect-[4/3] size-full object-cover" />{#if item.caption}<figcaption class="p-3 text-sm text-blue-900">{item.caption}</figcaption>{/if}</figure>{/if}
+      <div class="min-w-0 overflow-hidden rounded-2xl border bg-card">
+        <figure>
+          {#if item.media?.url}
+            <div class="relative aspect-[4/3] bg-blue-50">
+              <img loading="lazy" src={item.media.url} alt={item.media.alt_text} class="absolute inset-0 size-full object-contain" />
+            </div>
+          {:else}
+            <p class="p-3 text-sm text-muted-foreground">Foto tidak tersedia.</p>
+          {/if}
+          {#if item.caption}<figcaption class="p-3 text-sm text-blue-900">{item.caption}</figcaption>{/if}
+        </figure>
+        {#if actions}<div class="p-3">{@render actions(item)}</div>{/if}
+      </div>
     {/each}
   </div>
 {:else}

@@ -49,6 +49,7 @@ type Service interface {
 	PublishProgram(id uint64, published bool, actor *middlewares.Claims) (*dto.ProgramResponse, error)
 	CreateMilestone(req dto.MilestoneRequest, actor *middlewares.Claims) (*dto.MilestoneResponse, error)
 	CreateDocumentation(programID uint64, req dto.DocumentationRequest, actor *middlewares.Claims) (*dto.DocumentationResponse, error)
+	DeleteDocumentation(programID, documentationID uint64, actor *middlewares.Claims) (bool, error)
 	ReorderDocumentation(programID uint64, ids []uint64, actor *middlewares.Claims) error
 	CreateMedia(req dto.MediaRequest, actor *middlewares.Claims) (*dto.MediaResponse, error)
 }
@@ -648,6 +649,20 @@ func (s *cabinetService) CreateDocumentation(programID uint64, req dto.Documenta
 	}
 	result := documentationToDTO(*value)
 	return result, nil
+}
+
+func (s *cabinetService) DeleteDocumentation(programID, documentationID uint64, actor *middlewares.Claims) (bool, error) {
+	var program entities.WorkProgram
+	if err := s.repo.DB().First(&program, programID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	if !s.canManage(actor, program.MinistryID) {
+		return false, ErrUnitAccessDenied
+	}
+	return s.repo.DeleteDocumentation(programID, documentationID)
 }
 
 func (s *cabinetService) ReorderDocumentation(programID uint64, ids []uint64, actor *middlewares.Claims) error {

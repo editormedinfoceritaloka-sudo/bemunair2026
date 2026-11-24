@@ -30,18 +30,14 @@
     Record<string, boolean>
   >({});
 
-  const displayedImages = $derived(
-    images.slice(0, 6)
-  );
-
   const visibleImages = $derived(
-    displayedImages.filter(
+    images.filter(
       (src) => !failedImages[src]
     )
   );
 
   $effect(() => {
-    displayedImages.join('|');
+    images.join('|');
 
     failedImages = {};
   });
@@ -289,7 +285,7 @@
       class="documentation-grid relative z-10"
       data-count={visibleImages.length}
     >
-      {#each visibleImages as imageSrc, index (imageSrc)}
+      {#each visibleImages as imageSrc, index (`${imageSrc}:${index}`)}
         <figure class="documentation-slot">
           <button
             type="button"
@@ -307,11 +303,8 @@
               }}
               class="
                 h-full w-full
-                object-cover
+                object-contain
                 object-center
-                transition-transform
-                duration-500
-                hover:scale-[1.04]
               "
             />
           </button>
@@ -359,6 +352,13 @@
 />
 
 <style>
+  .documentation-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 180px;
+    gap: 0.65rem;
+  }
+
   .documentation-slot {
     position: relative;
     min-width: 0;
@@ -378,7 +378,6 @@
     .documentation-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-auto-rows: 160px;
-      gap: 0.65rem;
     }
 
     .documentation-grid[data-count='1'] {
@@ -412,7 +411,6 @@
       grid-template-columns: repeat(12, minmax(0, 1fr));
       grid-template-rows: repeat(7, minmax(0, 1fr));
       grid-auto-rows: auto;
-      gap: 0.65rem;
     }
 
     .documentation-slot {
