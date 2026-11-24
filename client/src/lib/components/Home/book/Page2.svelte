@@ -11,7 +11,7 @@
   } = $props();
 
   const speech = {
-    name: 'Shintya Iftitah',
+    name: 'Shintya Iftitah Dzikrullah',
     role: 'Vice President of BEM UNAIR 2026',
     message:
       'Halo Ksatria Airlangga! Menjadi mahasiswa adalah sebuah privilege untuk menghadirkan makna yang lebih besar. Badan Eksekutif Mahasiswa hadir untuk mengkolektifkan semangat kebermaknaan itu melalui berbagai gagasan yang diharapkan mampu menjawab kebutuhan mahasiswa dan masyarakat Indonesia. Universitas Airlangga adalah cerita tentang rumah dengan selaksa cinta di dalamnya. Berpartisipasi dalam menuliskan cerita bersamanya adalah pengalaman paling menyenangkan yang tidak boleh sampai dilewatkan.',

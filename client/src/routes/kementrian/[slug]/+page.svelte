@@ -81,7 +81,7 @@
   const memberImages: Record<string, string> = {
     'Gheahaq Danty El Zahra':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
-    'Fathimah Nuurun':
+    'Fathimah Nuurun Najma As-Salman':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_NUURUN.png',
     'Najwa Nur Hafidza':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_NAJWA.png',
@@ -89,11 +89,11 @@
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
     'Ananda Magfira Nurochma':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_ANANDA.png',
-    'M. Salman Al Farisi':
+    'M. Salman Al Farisi Al Ghofsah':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_SALMAN.png',
     'Deri Bayu Setiawan':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png',
-    'Mevlana El Fithra':
+    'Mevlana El Fithra Abdullah':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_MEVLANA.png',
     'Nayla Khansa Abbylia':
       'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_NAYLA.png'
@@ -113,14 +113,6 @@
   function getMemberRole(
     member: OrganizationMember
   ): string {
-    if (
-      (unit.code === 'SESKAB' ||
-        unit.code === 'BENKAB') &&
-      member.position_type === 'MENTERI'
-    ) {
-      return fullUnitNames[unit.code];
-    }
-
     const roles: Record<string, string> = {
       MENKO: 'Menteri Koordinator',
       MENTERI: 'Menteri',

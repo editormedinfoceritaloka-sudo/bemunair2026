@@ -178,16 +178,15 @@ export function getEventsForMonth(
   month: Date,
   events: CalendarEvent[]
 ): CalendarEvent[] {
-  return events.filter((event) => {
-    const eventDate =
-      parseDate(event.startDate);
+  const firstDay = dateKey(startOfMonth(month));
+  const lastDay = dateKey(endOfMonth(month));
 
-    return (
-      eventDate.getMonth() ===
-        month.getMonth() &&
-      eventDate.getFullYear() ===
-        month.getFullYear()
-    );
+  return events.filter((event) => {
+    const lastEventDay = event.endDate && event.endDate >= event.startDate
+      ? event.endDate
+      : event.startDate;
+
+    return event.startDate <= lastDay && lastEventDay >= firstDay;
   });
 }
 

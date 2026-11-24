@@ -13,6 +13,8 @@
     buildProgramWorkHref,
     dateKey,
     formatEventRange,
+    getEventsForDay,
+    getEventsForMonth,
     parseDate,
     startOfMonth
   } from './calender/calendar-utils';
@@ -183,16 +185,6 @@
       );
     });
 
-  const upcomingEvents = $derived(
-    resolvedEvents
-      .filter(
-        (event) =>
-          event.startDate >=
-          dateKey(new Date())
-      )
-      .slice(0, 5)
-  );
-
   let currentMonth = $state(untrack(() =>
     startOfMonth(
       initialMonth
@@ -200,6 +192,18 @@
         : new Date()
     )
   ));
+
+  let selectedDate = $state<Date | null>(null);
+  const dateFormatter = new Intl.DateTimeFormat('id-ID', { dateStyle: 'full' });
+  const agendaEvents = $derived(
+    selectedDate
+      ? getEventsForDay(selectedDate, resolvedEvents)
+      : getEventsForMonth(currentMonth, resolvedEvents)
+  );
+
+  function selectDate(day: Date): void {
+    selectedDate = selectedDate && dateKey(selectedDate) === dateKey(day) ? null : day;
+  }
 
   let sectionElement = $state<
     HTMLElement | undefined
@@ -220,6 +224,7 @@
   function changeMonth(
     amount: number
   ): void {
+    selectedDate = null;
     const grid = gridElement;
 
     if (!grid) {
@@ -275,18 +280,6 @@
         );
       }
     });
-  }
-
-  function showMonthOf(
-    date: Date
-  ): void {
-    const amount =
-      (date.getFullYear() - currentMonth.getFullYear()) * 12 +
-      (date.getMonth() - currentMonth.getMonth());
-
-    if (amount !== 0) {
-      changeMonth(amount);
-    }
   }
 
   function showPreviousMonth(): void {
@@ -486,18 +479,30 @@
       <CalendarGrid
         {currentMonth}
         events={resolvedEvents}
-        onShowDate={showMonthOf}
+        selectedDate={selectedDate ? dateKey(selectedDate) : null}
+        onSelectDate={selectDate}
       />
     </div>
 
-    {#if upcomingEvents.length}
-      <div class="mx-auto mt-10 w-full max-w-4xl">
-        <h3 class="text-lg font-black text-blue-900">
-          Agenda mendatang
+    <div class="mx-auto mt-6 w-full max-w-4xl">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-lg font-black text-blue-900" aria-live="polite">
+          {selectedDate ? `Program mulai ${dateFormatter.format(selectedDate)}` : 'Agenda bulan ini'}
         </h3>
+        {#if selectedDate}
+          <button
+            type="button"
+            class="rounded-md px-2 py-1 text-sm font-semibold text-blue-800 underline hover:bg-blue-50"
+            onclick={() => selectedDate = null}
+          >
+            Semua agenda bulan ini
+          </button>
+        {/if}
+      </div>
 
+      {#if agendaEvents.length}
         <ul class="mt-4 grid gap-3">
-          {#each upcomingEvents as event (event.id)}
+          {#each agendaEvents as event (event.id)}
             <li>
               <a
                 href={resolve(buildProgramWorkHref(event))}
@@ -526,7 +531,9 @@
             </li>
           {/each}
         </ul>
-      </div>
-    {/if}
+      {:else}
+        <p class="mt-3 text-sm text-muted-foreground">Belum ada agenda untuk bulan ini.</p>
+      {/if}
+    </div>
   </div>
 </section>
