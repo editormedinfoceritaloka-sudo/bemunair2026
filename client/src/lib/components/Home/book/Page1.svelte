@@ -328,7 +328,7 @@
       class="
         speech-star
         absolute -top-2 -right-2
-        w-12 object-contain opacity-75
+        w-16 object-contain opacity-75
         sm:w-16
         md:w-20
         lg:w-24
@@ -348,7 +348,7 @@
         class="
           speech-star
           block
-          w-14 object-contain opacity-65
+          w-20 object-contain opacity-65
           sm:w-20
           md:w-24
           lg:w-28
@@ -365,7 +365,7 @@
         speech-star
         absolute bottom-[2%]
         left-[25%]
-        w-10 -rotate-12
+        w-14 -rotate-12
         object-contain opacity-55
         sm:w-12
         md:w-16
@@ -381,10 +381,77 @@
         speech-star
         absolute top-[7%]
         left-[55%]
-        w-8 rotate-12
+        w-14 rotate-12
         object-contain opacity-55
         sm:w-10
         md:w-14
+      "
+    />
+
+    <div
+      class="
+        absolute right-[2%] bottom-[8%]
+        hidden aspect-square w-[34%]
+        rounded-full
+        bg-[radial-gradient(circle,rgba(147,197,253,0.35)_0%,rgba(147,197,253,0)_70%)]
+        sm:block
+      "
+    ></div>
+
+    <div
+      class="
+        absolute bottom-[7%] left-[36%]
+        hidden h-16 w-36
+        bg-[radial-gradient(rgba(255,255,255,0.4)_1px,transparent_1.6px)]
+        bg-size-[12px_12px]
+        opacity-60
+        [mask-image:radial-gradient(ellipse,black_40%,transparent_75%)]
+        sm:block
+        md:h-20 md:w-44
+      "
+    ></div>
+
+    <span
+      class="
+        absolute top-[1%] left-[3%]
+        hidden
+        font-serif text-[110px]
+        leading-none
+        text-white/10
+        sm:block
+        md:text-[150px]
+      "
+    >
+      “
+    </span>
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle twinkle-delay
+        speech-star
+        absolute top-[14%] left-[30%]
+        hidden w-7 rotate-[18deg]
+        object-contain opacity-45
+        sm:block
+        md:w-9
+      "
+    />
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle
+        speech-star
+        absolute bottom-[16%] left-[58%]
+        hidden w-5 -rotate-[10deg]
+        object-contain opacity-40
+        sm:block
+        md:w-7
       "
     />
   </div>
@@ -430,7 +497,7 @@
         <div
           class="
             relative
-            max-h-[275px]
+            max-h-[62%]
             overflow-y-auto
             rounded-xl
             bg-blue-100/95
@@ -456,29 +523,36 @@
           "
         >
           <div bind:this={speechCopy}>
-            <p
-              class="
-                text-justify
-                text-[9.5px]
-                leading-[1.5]
-                text-[#0a2445]
-                sm:text-[8px]
-                sm:leading-[1.6]
-                md:text-[10px]
-                md:leading-[1.65]
-                lg:text-xs
-                lg:leading-[1.7]
-              "
-            >
-              {typedMessage}
-            </p>
+            <div class="speech-message">
+              <span
+                class="speech-wrap-shape speech-wrap-right"
+                aria-hidden="true"
+              ></span>
+
+              <p
+                class="
+                  text-justify
+                  text-[9.5px]
+                  leading-[1.5]
+                  text-[#0a2445]
+                  sm:text-[8px]
+                  sm:leading-[1.6]
+                  md:text-[10px]
+                  md:leading-[1.65]
+                  lg:text-xs
+                  lg:leading-[1.7]
+                "
+              >
+                {typedMessage}
+              </p>
+            </div>
 
             <div
               class="
                 mt-3
-                text-right
+                text-left
                 text-[#0a2445]
-                sm:mt-4
+                sm:mt-4 sm:text-right
                 md:mt-5
               "
             >
@@ -565,6 +639,69 @@
       </div>
     </div>
 
+    <div
+      aria-hidden="true"
+      class="
+        pointer-events-none
+        absolute bottom-[6%] left-[4%] z-20
+        flex w-[44%] flex-col items-start
+        text-left
+        sm:hidden
+      "
+    >
+      <span
+        class="
+          -mb-5
+          font-serif text-[72px]
+          leading-none
+          text-white/25
+        "
+      >
+        “
+      </span>
+
+      <p
+        class="
+          mt-2
+          text-[8px]
+          font-bold uppercase
+          tracking-[0.25em]
+          text-sky-200/90
+        "
+      >
+        President
+      </p>
+
+      <p
+        class="
+          mt-1
+          whitespace-nowrap
+          text-[13px]
+          leading-tight
+          font-black
+          text-white
+        "
+      >
+        Merajut Cerita,
+        <br />
+        Tumbuh Bersama
+      </p>
+
+      <span class="mt-2.5 h-px w-14 bg-white/40"></span>
+
+      <p
+        class="
+          mt-2
+          text-[8px]
+          font-semibold uppercase
+          tracking-[0.2em]
+          text-white/70
+        "
+      >
+        Kabinet Cerita Loka
+      </p>
+    </div>
+
     <img
       bind:this={portrait}
       src="https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/PRESIDENT_SENJA"
@@ -608,3 +745,56 @@
     </p>
   </div>
 </div>
+
+<style>
+  @media (max-width: 639px) {
+    .speech-message::after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+
+    /*
+      Kontur kepala + bahu (mobile). Float selebar teks, tingginya
+      dipakai juga sebagai tinggi minimum paragraf.
+      - sumbu X pakai %, relatif ke lebar kolom teks
+      - sumbu Y pakai px, relatif ke atas paragraf
+      Atas (y 0-26px)  : takik/notch kanan card
+      Tengah           : kosong -> teks melebar penuh
+      y ~121px & ke bawah : kepala -> leher -> bahu -> badan
+    */
+    .speech-wrap-shape {
+      display: block;
+      width: 100%;
+      height: 270px;
+      margin: 0;
+    }
+
+    .speech-wrap-right {
+      float: right;
+      shape-outside: polygon(
+        47.7% 0,
+        100% 0,
+        100% 270px,
+        43.2% 270px,
+        48% 249px,
+        54.7% 226px,
+        58.8% 208px,
+        57.2% 186px,
+        55.6% 162px,
+        56.3% 142px,
+        59.8% 128px,
+        67.4% 121px,
+        99.9% 121px,
+        99.9% 26px,
+        55.6% 26px
+      );
+    }
+  }
+
+  @media (min-width: 640px) {
+    .speech-wrap-shape {
+      display: none;
+    }
+  }
+</style>

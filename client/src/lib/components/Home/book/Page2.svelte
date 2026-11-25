@@ -343,7 +343,7 @@
       class="
         speech-star
         absolute -top-2 -right-2
-        w-12 object-contain opacity-75
+        w-16 object-contain opacity-75
         sm:w-16
         md:w-20
         lg:w-24
@@ -357,7 +357,7 @@
       class="
         speech-star
         absolute -bottom-2 -left-2
-        w-14 rotate-180
+        w-20 rotate-180
         object-contain opacity-65
         sm:w-20
         md:w-24
@@ -374,7 +374,7 @@
         speech-star
         absolute top-[7%]
         left-[25%]
-        w-8 -rotate-12
+        w-14 -rotate-12
         object-contain opacity-55
         sm:w-10
         md:w-14
@@ -388,12 +388,79 @@
       class="
         twinkle twinkle-delay
         speech-star
-        absolute right-[15%]
+        absolute         right-[15%]
         bottom-[3%]
-        w-9 rotate-12
+        w-14 rotate-12
         object-contain opacity-55
         sm:w-12
         md:w-16
+      "
+    />
+
+    <div
+      class="
+        absolute left-[2%] bottom-[8%]
+        hidden aspect-square w-[34%]
+        rounded-full
+        bg-[radial-gradient(circle,rgba(147,197,253,0.35)_0%,rgba(147,197,253,0)_70%)]
+        sm:block
+      "
+    ></div>
+
+    <div
+      class="
+        absolute bottom-[7%] right-[34%]
+        hidden h-16 w-36
+        bg-[radial-gradient(rgba(255,255,255,0.4)_1px,transparent_1.6px)]
+        bg-size-[12px_12px]
+        opacity-60
+        [mask-image:radial-gradient(ellipse,black_40%,transparent_75%)]
+        sm:block
+        md:h-20 md:w-44
+      "
+    ></div>
+
+    <span
+      class="
+        absolute top-[1%] right-[9%]
+        hidden
+        font-serif text-[110px]
+        leading-none
+        text-white/10
+        sm:block
+        md:text-[150px]
+      "
+    >
+      ”
+    </span>
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle twinkle-delay
+        speech-star
+        absolute top-[14%] right-[30%]
+        hidden w-7 rotate-[18deg]
+        object-contain opacity-45
+        sm:block
+        md:w-9
+      "
+    />
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle
+        speech-star
+        absolute bottom-[16%] left-[42%]
+        hidden w-5 -rotate-[10deg]
+        object-contain opacity-40
+        sm:block
+        md:w-7
       "
     />
   </div>
@@ -407,19 +474,83 @@
       class="
         pointer-events-none
         absolute -bottom-[1%]
-        -left-[1%] z-30
+        -left-[8%] z-30
         h-[68%]
         w-auto
         object-contain
         object-bottom
         will-change-transform
         drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)]
+        sm:-left-[1%]
         sm:h-[65%]
         md:-left-[2%]
         md:h-[78%]
         lg:h-[85%]
       "
     />
+
+    <div
+      aria-hidden="true"
+      class="
+        pointer-events-none
+        absolute bottom-[6%] right-[4%] z-20
+        flex w-[44%] flex-col items-end
+        text-right
+        sm:hidden
+      "
+    >
+      <span
+        class="
+          -mb-5
+          font-serif text-[72px]
+          leading-none
+          text-white/25
+        "
+      >
+        ”
+      </span>
+
+      <p
+        class="
+          mt-2
+          text-[8px]
+          font-bold uppercase
+          tracking-[0.25em]
+          text-sky-200/90
+        "
+      >
+        Vice President
+      </p>
+
+      <p
+        class="
+          mt-1
+          whitespace-nowrap
+          text-[13px]
+          leading-tight
+          font-black
+          text-white
+        "
+      >
+        Merajut Cerita,
+        <br />
+        Tumbuh Bersama
+      </p>
+
+      <span class="mt-2.5 h-px w-14 bg-white/40"></span>
+
+      <p
+        class="
+          mt-2
+          text-[8px]
+          font-semibold uppercase
+          tracking-[0.2em]
+          text-white/70
+        "
+      >
+        Kabinet Cerita Loka
+      </p>
+    </div>
 
     <div
       bind:this={speechCard}
@@ -461,7 +592,7 @@
         <div
           class="
             relative
-            max-h-[275px]
+            max-h-[62%]
             overflow-y-auto
             rounded-xl
             bg-blue-100/95
@@ -487,44 +618,51 @@
           "
         >
           <div bind:this={speechCopy}>
-            <p
-              class="
-                text-justify
-                text-[9.5px]
-                leading-[1.5]
-                text-[#0a2445]
-                sm:text-[8px]
-                sm:leading-[1.6]
-                md:text-[10px]
-                md:leading-[1.65]
-                lg:text-xs
-                lg:leading-[1.7]
-              "
-            >
-              {typedMessage}
-            </p>
+            <div class="speech-message">
+              <span
+                class="speech-wrap-shape speech-wrap-left"
+                aria-hidden="true"
+              ></span>
 
-            <p
-              class="
-                mt-3
-                text-[7px]
-                leading-[1.5]
-                text-[#0a2445]
-                sm:text-[8px]
-                md:mt-4
-                md:text-[10px]
-                lg:text-xs
-              "
-            >
-              {typedClosing}
-            </p>
+              <p
+                class="
+                  text-justify
+                  text-[9.5px]
+                  leading-[1.5]
+                  text-[#0a2445]
+                  sm:text-[8px]
+                  sm:leading-[1.6]
+                  md:text-[10px]
+                  md:leading-[1.65]
+                  lg:text-xs
+                  lg:leading-[1.7]
+                "
+              >
+                {typedMessage}
+              </p>
+
+              <p
+                class="
+                  mt-3
+                  text-[9.5px]
+                  leading-[1.5]
+                  text-[#0a2445]
+                  sm:text-[8px]
+                  md:mt-4
+                  md:text-[10px]
+                  lg:text-xs
+                "
+              >
+                {typedClosing}
+              </p>
+            </div>
 
             <div
               class="
                 mt-2
-                text-left
+                text-right
                 text-[#0a2445]
-                sm:mt-3
+                sm:mt-3 sm:text-left
               "
             >
               <p
@@ -631,3 +769,52 @@
     </p>
   </div>
 </div>
+
+<style>
+  @media (max-width: 639px) {
+    .speech-message::after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+
+    /*
+      Kontur kepala + bahu (mobile), versi mirror: foto di kiri.
+      Float selebar teks, tingginya juga jadi tinggi minimum paragraf.
+      - sumbu X pakai %, relatif ke lebar kolom teks
+      - sumbu Y pakai px, relatif ke atas paragraf
+      Atas (y 0-26px)   : takik/notch kiri card
+      Tengah            : kosong -> teks melebar penuh
+      y ~128px & ke bawah : hijab -> leher -> bahu
+    */
+    .speech-wrap-shape {
+      display: block;
+      width: 100%;
+      height: 200px;
+      margin: 0;
+    }
+
+    .speech-wrap-left {
+      float: left;
+      shape-outside: polygon(
+        0 0,
+        47.7% 0,
+        44.5% 26px,
+        0.1% 26px,
+        0.1% 134px,
+        23.7% 134px,
+        29.4% 144px,
+        33.2% 154px,
+        35.7% 184px,
+        35.1% 200px,
+        0 200px
+      );
+    }
+  }
+
+  @media (min-width: 640px) {
+    .speech-wrap-shape {
+      display: none;
+    }
+  }
+</style>

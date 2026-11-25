@@ -122,6 +122,71 @@
     };
   }
 
+  function buildRoundedPath(
+    points: { x: number; y: number }[]
+  ): string {
+    if (points.length === 0) {
+      return '';
+    }
+
+    if (points.length === 1) {
+      return `M ${points[0].x} ${points[0].y}`;
+    }
+
+    const radius = 22;
+    let path = `M ${points[0].x} ${points[0].y}`;
+
+    for (
+      let index = 1;
+      index < points.length - 1;
+      index += 1
+    ) {
+      const previous = points[index - 1];
+      const current = points[index];
+      const next = points[index + 1];
+
+      const inLength = Math.hypot(
+        current.x - previous.x,
+        current.y - previous.y
+      );
+      const outLength = Math.hypot(
+        next.x - current.x,
+        next.y - current.y
+      );
+
+      if (inLength === 0 || outLength === 0) {
+        continue;
+      }
+
+      const corner = Math.min(
+        radius,
+        inLength / 2,
+        outLength / 2
+      );
+
+      const startX =
+        current.x +
+        ((previous.x - current.x) * corner) / inLength;
+      const startY =
+        current.y +
+        ((previous.y - current.y) * corner) / inLength;
+      const endX =
+        current.x +
+        ((next.x - current.x) * corner) / outLength;
+      const endY =
+        current.y +
+        ((next.y - current.y) * corner) / outLength;
+
+      path += ` L ${startX} ${startY} Q ${current.x} ${current.y} ${endX} ${endY}`;
+    }
+
+    const last = points[points.length - 1];
+
+    path += ` L ${last.x} ${last.y}`;
+
+    return path;
+  }
+
   function programToEvent(
     program: WorkProgram,
     unit: OrganizationUnit,
@@ -334,10 +399,14 @@
     width: number;
     height: number;
     points: { x: number; y: number }[];
+    path: string;
     event: CalendarEvent;
   } | null>(null);
   let barElement = $state<
-    SVGPolylineElement | undefined
+    SVGPathElement | undefined
+  >(undefined);
+  let sparkleElement = $state<
+    SVGPathElement | undefined
   >(undefined);
   let rocketElement = $state<
     SVGSVGElement | undefined
@@ -486,9 +555,21 @@
       return;
     }
 
-    const source =
+    const badgeSource =
       section.querySelector<HTMLElement>(
         `[data-event-start="${event.id}"]`
+      );
+
+    const source =
+      (badgeSource &&
+      badgeSource.getBoundingClientRect().width > 0
+        ? badgeSource
+        : null) ??
+      section.querySelector<HTMLElement>(
+        `[data-date="${event.startDate}"] [data-day-list]`
+      ) ??
+      section.querySelector<HTMLElement>(
+        `[data-date="${event.startDate}"]`
       ) ??
       section.querySelector<HTMLElement>(
         `[data-agenda-id="${event.id}"] button`
@@ -578,7 +659,7 @@
       const dayRect =
         dayCell.getBoundingClientRect();
 
-      points.push({
+      const nextPoint = {
         x:
           dayRect.left +
           dayRect.width / 2 -
@@ -587,7 +668,26 @@
           dayRect.top +
           dayRect.height / 2 -
           sectionRect.top
-      });
+      };
+
+      const previousPoint =
+        points[points.length - 1];
+
+      if (
+        points.length > 1 &&
+        nextPoint.y > previousPoint.y + 5 &&
+        nextPoint.x < previousPoint.x
+      ) {
+        const middleY =
+          (previousPoint.y + nextPoint.y) / 2;
+
+        points.push(
+          { x: previousPoint.x, y: middleY },
+          { x: nextPoint.x, y: middleY }
+        );
+      }
+
+      points.push(nextPoint);
     }
 
     if (points.length < 2) {
@@ -605,10 +705,11 @@
       width: startWidth,
       height: sourceRect.height,
       points,
+      path: buildRoundedPath(points),
       event
     };
 
-    const totalLength = points.reduce(
+    const pointsLength = points.reduce(
       (total, point, index) => {
         if (index === 0) {
           return total;
@@ -637,6 +738,16 @@
       return;
     }
 
+    const pathLength = bar.getTotalLength();
+    const totalLength =
+      pathLength > 0 ? pathLength : pointsLength;
+    const sparkle = sparkleElement;
+
+    if (sparkle) {
+      gsap.killTweensOf(sparkle);
+      gsap.set(sparkle, { opacity: 0 });
+    }
+
     bar.setAttribute(
       'stroke-dasharray',
       `${totalLength}`
@@ -657,16 +768,43 @@
         return;
       }
 
-      const point = pointAtProgress(
-        points,
-        totalLength,
-        progress
+      if (pathLength <= 0) {
+        const point = pointAtProgress(
+          points,
+          totalLength,
+          progress
+        );
+
+        gsap.set(rocket, {
+          left: point.x,
+          top: point.y,
+          rotation: point.angle
+        });
+
+        return;
+      }
+
+      const distance =
+        totalLength *
+        Math.min(Math.max(progress, 0), 1);
+      const point = bar.getPointAtLength(distance);
+      const behind = bar.getPointAtLength(
+        Math.max(distance - 2, 0)
+      );
+      const ahead = bar.getPointAtLength(
+        Math.min(distance + 2, totalLength)
       );
 
       gsap.set(rocket, {
         left: point.x,
         top: point.y,
-        rotation: point.angle
+        rotation:
+          (Math.atan2(
+            ahead.y - behind.y,
+            ahead.x - behind.x
+          ) *
+            180) /
+          Math.PI
       });
     };
 
@@ -725,40 +863,60 @@
     barTween = gsap
       .timeline({
         onComplete: () => {
-          if (rocket) {
-            gsap.to(rocket, {
-              autoAlpha: 0,
-              scale: 0.6,
-              duration: 0.25,
-              ease: 'power2.in'
-            });
-          }
-
-          playSmoke();
           flashDate = targetKey;
           targetEvent = event;
+
+          if (sparkle) {
+            gsap.to(sparkle, {
+              opacity: 0.9,
+              duration: 0.3,
+              ease: 'power1.out'
+            });
+          }
 
           flashTimer = setTimeout(() => {
             flashDate = null;
             targetEvent = null;
 
-            if (smoke) {
-              gsap.set(smoke, {
-                autoAlpha: 0
+            if (sparkle) {
+              gsap.to(sparkle, {
+                opacity: 0,
+                duration: 0.2
               });
             }
 
-            barTween = gsap.to(bar, {
-              attr: {
-                'stroke-dashoffset': totalLength
-              },
-              duration: 0.4,
-              ease: 'power2.in',
-              onComplete: () => {
-                barState = null;
-                animatingEventId = null;
-              }
-            });
+            barTween = gsap
+              .timeline({
+                onComplete: () => {
+                  if (smoke) {
+                    gsap.set(smoke, {
+                      autoAlpha: 0
+                    });
+                  }
+
+                  barState = null;
+                  animatingEventId = null;
+                }
+              })
+              .to(bar, {
+                attr: {
+                  'stroke-dashoffset': totalLength
+                },
+                duration: 0.4,
+                ease: 'power2.in'
+              })
+              .call(() => {
+                playSmoke();
+              })
+              .to(rocket ?? {}, {
+                autoAlpha: 0,
+                scale: 0.6,
+                duration: 0.25,
+                ease: 'power2.in'
+              })
+              .to({}, {
+                duration: 0.75
+              });
           }, 1400);
         }
       })
@@ -768,7 +926,7 @@
           attr: {
             'stroke-dashoffset': 0
           },
-          duration: 0.8,
+          duration: 1.1,
           ease: 'power2.inOut'
         },
         0
@@ -777,13 +935,67 @@
         flight,
         {
           progress: 1,
-          duration: 0.8,
+          duration: 1.1,
           ease: 'power2.inOut',
           onUpdate: () =>
             placeRocket(flight.progress)
         },
         0
       );
+  }
+
+  async function showEventGlowOnly(event: CalendarEvent): Promise<void> {
+    const targetKey = eventTargetKey(event);
+    const targetDate = parseDate(targetKey);
+
+    barTween?.kill();
+
+    if (barElement) {
+      gsap.killTweensOf(barElement);
+    }
+
+    if (rocketElement) {
+      gsap.killTweensOf(rocketElement);
+      gsap.set(rocketElement, { autoAlpha: 0 });
+    }
+
+    if (smokeElement) {
+      gsap.killTweensOf(smokeElement);
+      gsap.set(smokeElement, { autoAlpha: 0 });
+    }
+
+    clearTimeout(flashTimer);
+    flashDate = null;
+    targetEvent = null;
+    barState = null;
+    animatingEventId = event.id;
+
+    if (
+      dateKey(currentMonth).slice(0, 7) !==
+      targetKey.slice(0, 7)
+    ) {
+      currentMonth = startOfMonth(targetDate);
+    }
+
+    await tick();
+
+    const cell =
+      sectionElement?.querySelector<HTMLElement>(
+        `[data-date="${targetKey}"]`
+      );
+
+    cell?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+
+    flashTimer = setTimeout(() => {
+      flashDate = targetKey;
+      flashTimer = setTimeout(() => {
+        flashDate = null;
+        animatingEventId = null;
+      }, 1400);
+    }, cell ? 650 : 0);
   }
 
   onDestroy(() => {
@@ -1044,7 +1256,7 @@
 
                 <button
                   type="button"
-                  onclick={() => showEventOnCalendar(event)}
+                  onclick={() => showEventGlowOnly(event)}
                   disabled={animatingEventId === event.id}
                   class="
                     shrink-0 rounded-full
@@ -1078,44 +1290,60 @@
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 z-30 h-full w-full overflow-visible"
     >
-      <polyline
+      <defs>
+        <linearGradient
+          id="calendar-trail-gradient"
+          gradientUnits="userSpaceOnUse"
+          x1={barState.points[0].x}
+          y1={barState.points[0].y}
+          x2={barState.endX}
+          y2={barState.endY}
+        >
+          <stop
+            offset="0"
+            stop-color="#fed7aa"
+          />
+          <stop
+            offset="0.45"
+            stop-color="#fb923c"
+          />
+          <stop
+            offset="1"
+            stop-color="#ea580c"
+          />
+        </linearGradient>
+      </defs>
+
+      <path
         bind:this={barElement}
-        points={barState.points
-          .map((point) => `${point.x},${point.y}`)
-          .join(' ')}
+        d={barState.path}
         fill="none"
-        stroke="#f97316"
-        stroke-width={Math.min(
-          barState.height,
-          14
-        )}
+        stroke="url(#calendar-trail-gradient)"
+        class="
+          [stroke-width:4px]
+          drop-shadow-[0_0_6px_rgba(249,115,22,0.55)]
+          sm:[stroke-width:8px]
+        "
         stroke-linecap="round"
         stroke-linejoin="round"
         style:opacity="0"
       />
-    </svg>
 
-    <div
-      aria-hidden="true"
-      class="
-        pointer-events-none absolute z-40
-        flex items-center gap-2 rounded-full
-        bg-orange-500 px-3 py-1
-        text-white shadow-lg
-      "
-      style:left={`${barState.x}px`}
-      style:top={`${barState.y}px`}
-      style:max-width={`${barState.width}px`}
-    >
-      <img
-        src={barState.event.logo}
-        alt=""
-        class="size-4 shrink-0 rounded-full bg-white/90 p-0.5 object-contain"
+      <path
+        bind:this={sparkleElement}
+        d={barState.path}
+        fill="none"
+        stroke="#fff7ed"
+        class="
+          calendar-trail-sparkle
+          [stroke-width:1.5px]
+          sm:[stroke-width:2.5px]
+        "
+        stroke-linecap="round"
+        stroke-dasharray="1 12"
+        style:opacity="0"
       />
-      <span class="truncate text-xs font-black">
-        {barState.event.title}
-      </span>
-    </div>
+    </svg>
 
     <svg
       bind:this={rocketElement}
@@ -1124,9 +1352,9 @@
       style:opacity="0"
       class="
         pointer-events-none absolute z-50
-        size-14
-        drop-shadow-[0_10px_18px_rgba(14,165,233,0.45)]
-        sm:size-16
+        size-10
+        drop-shadow-[0_6px_14px_rgba(249,115,22,0.45)]
+        sm:size-14
       "
       style:translate="-50% -50%"
     >
@@ -1135,7 +1363,7 @@
           id="rocket-body-gradient"
           x1="0"
           y1="0"
-          x2="1"
+          x2="0"
           y2="1"
         >
           <stop
@@ -1144,7 +1372,7 @@
           />
           <stop
             offset="1"
-            stop-color="#dbeafe"
+            stop-color="#e0ecfb"
           />
         </linearGradient>
         <linearGradient
@@ -1156,11 +1384,11 @@
         >
           <stop
             offset="0"
-            stop-color="#fb7185"
+            stop-color="#fdba74"
           />
           <stop
             offset="1"
-            stop-color="#e11d48"
+            stop-color="#ea580c"
           />
         </linearGradient>
         <linearGradient
@@ -1172,74 +1400,93 @@
         >
           <stop
             offset="0"
-            stop-color="#38bdf8"
+            stop-color="#7dd3fc"
           />
           <stop
             offset="1"
-            stop-color="#1d4ed8"
+            stop-color="#164f88"
+          />
+        </linearGradient>
+        <linearGradient
+          id="rocket-flame-gradient"
+          x1="1"
+          y1="0"
+          x2="0"
+          y2="0"
+        >
+          <stop
+            offset="0"
+            stop-color="#fef3c7"
+          />
+          <stop
+            offset="0.45"
+            stop-color="#fb923c"
+          />
+          <stop
+            offset="1"
+            stop-color="#f97316"
+            stop-opacity="0"
           />
         </linearGradient>
       </defs>
 
       <g class="rocket-flame">
         <path
-          d="M22 33 C13 33 9 36 4 36 C9 36 13 39 22 39 Z"
-          fill="#7dd3fc"
-          opacity="0.75"
+          d="M20 28 C11 29 5 33 1 36 C5 39 11 43 20 44 Z"
+          fill="url(#rocket-flame-gradient)"
         />
         <path
-          d="M22 35 C16 35 12 36 8 36 C12 36 16 37 22 37 Z"
-          fill="#e0f2fe"
+          d="M20 32 C15 33 11 35 8 36 C11 37 15 39 20 40 Z"
+          fill="#fffbeb"
         />
       </g>
 
       <path
-        d="M25 29 L14 16 Q25 17 34 25 Z"
-        fill="#1e3a8a"
+        d="M27 26 L17 15 C24 14 31 17 36 23 Z"
+        fill="#c2410c"
       />
       <path
-        d="M25 43 L14 56 Q25 55 34 47 Z"
-        fill="#1e3a8a"
+        d="M27 46 L17 57 C24 58 31 55 36 49 Z"
+        fill="#c2410c"
       />
       <path
-        d="M23 28 C29 20 44 18 56 26 L67 36 L56 46 C44 54 29 52 23 44 Z"
+        d="M19 30 C19 27 21 25 24 25 L50 25 C59 25 66 30 69 36 C66 42 59 47 50 47 L24 47 C21 47 19 45 19 42 Z"
         fill="url(#rocket-body-gradient)"
-        stroke="#1e3a8a"
+        stroke="#164f88"
         stroke-width="2.5"
         stroke-linejoin="round"
       />
       <path
-        d="M56 26 L67 36 L56 46 C60 40 60 32 56 26 Z"
+        d="M54 25.6 C61 27 66 31 69 36 C66 41 61 45 54 46.4 C57 43 58 39.5 58 36 C58 32.5 57 29 54 25.6 Z"
         fill="url(#rocket-nose-gradient)"
       />
       <path
-        d="M28 29 C34 24 43 23 50 27"
-        fill="none"
+        d="M28 26.5 L28 45.5"
+        stroke="#fb923c"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+      <path
+        d="M33 29.5 L48 29.5"
         stroke="#ffffff"
         stroke-width="2"
         stroke-linecap="round"
         opacity="0.9"
       />
       <circle
-        cx="42"
+        cx="43"
         cy="36"
-        r="7"
+        r="6.5"
         fill="url(#rocket-window-gradient)"
-        stroke="#1e3a8a"
+        stroke="#164f88"
         stroke-width="2.5"
       />
       <circle
-        cx="40"
+        cx="41"
         cy="34"
-        r="2"
+        r="1.8"
         fill="#ffffff"
-        opacity="0.9"
-      />
-      <path
-        d="M27 29 L27 43"
-        stroke="#93c5fd"
-        stroke-width="2"
-        stroke-linecap="round"
+        opacity="0.95"
       />
     </svg>
 
@@ -1300,8 +1547,20 @@
     }
   }
 
+  .calendar-trail-sparkle {
+    animation: calendar-trail-sparkle 0.9s linear
+      infinite;
+  }
+
+  @keyframes calendar-trail-sparkle {
+    to {
+      stroke-dashoffset: -26;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .rocket-flame {
+    .rocket-flame,
+    .calendar-trail-sparkle {
       animation: none;
     }
   }

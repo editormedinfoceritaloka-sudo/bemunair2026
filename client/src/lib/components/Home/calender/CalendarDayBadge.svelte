@@ -5,29 +5,34 @@
 
   let {
     event,
+    large = false,
     onSelect
   }: {
     event: CalendarEvent;
+    large?: boolean;
     onSelect?: (event: CalendarEvent) => void;
   } = $props();
 
   const label = $derived(`Lihat program kerja ${event.title}, ${formatEventRange(event)}, dari ${event.ministryName}`);
   const title = $derived(`${event.title} — ${formatEventRange(event)} — ${event.ministryName}`);
-  const className = `
-    group flex min-h-7 min-w-7 max-w-full
+  const iconClass = $derived(`flex ${large ? 'size-8 sm:size-5' : 'size-6 sm:size-5'} shrink-0 items-center justify-center rounded-lg bg-orange-100 p-0.5 sm:bg-blue-50`);
+  const className = $derived(`
+    group relative z-10 flex min-h-7 min-w-7 max-w-full
     items-center justify-center gap-1.5 rounded-lg
-    border border-blue-900/10
-    bg-white p-0.5
-    shadow-sm
+    border-2 border-orange-500
+    bg-white p-1
+    shadow-[0_2px_8px_rgba(249,115,22,0.35)]
     transition duration-200
     hover:-translate-y-px
-    hover:border-orange-400
+    hover:border-orange-600
     hover:shadow-md
     focus-visible:outline-2
     focus-visible:outline-offset-1
     focus-visible:outline-orange-500
-    sm:min-w-0 sm:justify-start sm:px-1.5
-  `;
+    sm:border sm:border-blue-900/10 sm:bg-white sm:p-0.5
+    sm:shadow-sm sm:min-w-0 sm:justify-start sm:px-1.5
+    ${large ? 'min-h-9 min-w-9 p-1.5 sm:min-h-7 sm:min-w-7 sm:p-0.5' : ''}
+  `);
 </script>
 
 {#if onSelect}
@@ -39,7 +44,7 @@
     {title}
     class={className}
   >
-    <span class="flex size-5 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-0.5">
+    <span class={iconClass}>
       <img
         src={event.logo}
         alt={event.logoAlt}
@@ -59,7 +64,7 @@
     {title}
     class={className}
   >
-    <span class="flex size-5 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-0.5">
+    <span class={iconClass}>
       <img
         src={event.logo}
         alt={event.logoAlt}

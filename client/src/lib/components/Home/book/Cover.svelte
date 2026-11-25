@@ -22,7 +22,7 @@
       draggable="false"
       class="
         absolute top-0 right-0
-        w-20 object-contain
+        w-28 object-contain
         sm:w-28
         md:w-36
       "
@@ -34,7 +34,7 @@
       draggable="false"
       class="
         absolute bottom-0 left-0
-        w-24 rotate-180
+        w-32 rotate-180
         object-contain
         sm:w-32
         md:w-40
@@ -49,7 +49,7 @@
         twinkle
         absolute bottom-12
         left-[18%]
-        w-10 -rotate-12
+        w-14 -rotate-12
         object-contain
         sm:bottom-16
         sm:w-14
@@ -66,10 +66,52 @@
         twinkle twinkle-delay
         absolute top-[20%]
         right-[17%]
-        w-9 rotate-12
+        w-14 rotate-12
         object-contain
         sm:w-14
         md:w-20
+      "
+    />
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle
+        absolute top-[36%]
+        left-[6%]
+        w-6 rotate-[18deg]
+        object-contain opacity-60
+        sm:hidden
+      "
+    />
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle twinkle-delay
+        absolute top-[56%]
+        right-[8%]
+        w-9 -rotate-[10deg]
+        object-contain opacity-50
+        sm:hidden
+      "
+    />
+
+    <img
+      src="/landing/speech/star-4.webp"
+      alt=""
+      draggable="false"
+      class="
+        twinkle
+        absolute bottom-[24%]
+        left-[68%]
+        w-5 rotate-[24deg]
+        object-contain opacity-60
+        sm:hidden
       "
     />
   </div>
@@ -177,6 +219,7 @@
         absolute top-1/2
         left-1/2
         flex min-w-0
+        sm:top-[55%]
         -translate-x-1/2
         -translate-y-1/2
         flex-col items-center
@@ -187,16 +230,46 @@
         tracking-[-0.075em]
       "
     >
+      <div class="relative mb-5 sm:mb-4 md:mb-5">
+        <div
+          aria-hidden="true"
+          class="
+            absolute -inset-8
+            rounded-full
+            bg-[radial-gradient(circle,rgba(191,219,254,0.55)_0%,rgba(191,219,254,0)_70%)]
+          "
+        ></div>
+
+        <img
+          src="/logo/logo-kabinet.webp"
+          alt=""
+          draggable="false"
+          class="
+            relative size-24
+            object-contain
+            sm:size-20
+            md:size-24
+            drop-shadow-[0_6px_14px_rgba(0,0,0,0.3)]
+          "
+        />
+      </div>
+
       <p
         class="
           whitespace-nowrap
-          text-[clamp(1.5rem,5vw,4.5rem)]
-          text-blue-800
+          text-[2.25rem]
+          bg-linear-to-b
+          from-sky-300
+          to-blue-800
+          bg-clip-text
+          text-transparent
+          sm:text-[clamp(1.5rem,5vw,4.5rem)]
           [-webkit-text-stroke:1px_white]
           [paint-order:stroke_fill]
           drop-shadow-[0_3px_2px_rgba(0,0,0,0.28)]
           sm:[-webkit-text-stroke:1.5px_white]
           md:[-webkit-text-stroke:2.5px_white]
+          max-sm:text-[3.1rem]
         "
       >
         BEM UNAIR
@@ -206,17 +279,66 @@
         class="
           mt-2
           whitespace-nowrap
-          text-[clamp(1rem,4.2vw,3.8rem)]
-          text-blue-800
+          text-[1.4rem]
+          bg-linear-to-b
+          from-white
+          to-sky-200
+          bg-clip-text
+          text-transparent
+          sm:text-[clamp(1rem,4.2vw,3.8rem)]
           [-webkit-text-stroke:1px_white]
           [paint-order:stroke_fill]
           drop-shadow-[0_3px_2px_rgba(0,0,0,0.28)]
           sm:[-webkit-text-stroke:1.5px_white]
           md:[-webkit-text-stroke:2.5px_white]
+          max-sm:text-[1.55rem]
         "
       >
         Kabinet Cerita Loka
       </p>
+
+      <p
+        class="
+          mt-4
+          text-[10px]
+          leading-normal
+          font-bold
+          tracking-[0.22em]
+          text-blue-100/90
+          sm:mt-5
+          sm:text-xs
+          md:mt-6
+          md:text-sm
+        "
+      >
+        Merajut Cerita, Tumbuh Bersama
+      </p>
+    </div>
+
+    <div
+      aria-hidden="true"
+      class="
+        absolute inset-x-8 bottom-6
+        flex items-center gap-3
+        sm:inset-x-16
+        sm:bottom-8
+        md:inset-x-24
+        md:bottom-10
+      "
+    >
+      <span class="h-px flex-1 bg-white/40"></span>
+      <span
+        class="
+          text-[10px]
+          font-bold uppercase
+          tracking-[0.3em]
+          text-white/80
+          md:text-xs
+        "
+      >
+        Speech · 2026
+      </span>
+      <span class="h-px flex-1 bg-white/40"></span>
     </div>
   </div>
 </div>

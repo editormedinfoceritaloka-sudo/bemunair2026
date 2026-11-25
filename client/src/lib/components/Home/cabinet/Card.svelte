@@ -101,8 +101,43 @@
       });
   }
 
+  function isTouchOnly(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(hover: none)').matches
+    );
+  }
+
   function handleClick(event: MouseEvent): void {
-    if (!active) event.preventDefault();
+    if (!active) {
+      event.preventDefault();
+      return;
+    }
+
+    if (isTouchOnly() && !isFlipped) {
+      event.preventDefault();
+      showDetail();
+    }
+  }
+
+  function handleMouseEnter(): void {
+    if (isTouchOnly()) return;
+    showDetail();
+  }
+
+  function handleMouseLeave(): void {
+    if (isTouchOnly()) return;
+    hideDetail();
+  }
+
+  function handleFocusIn(): void {
+    if (isTouchOnly()) return;
+    showDetail();
+  }
+
+  function handleFocusOut(): void {
+    if (isTouchOnly()) return;
+    hideDetail();
   }
 
   $effect(() => {
@@ -163,10 +198,10 @@
   aria-disabled={!active}
   tabindex={active ? 0 : -1}
   onclick={handleClick}
-  onmouseenter={showDetail}
-  onmouseleave={hideDetail}
-  onfocusin={showDetail}
-  onfocusout={hideDetail}
+  onmouseenter={handleMouseEnter}
+  onmouseleave={handleMouseLeave}
+  onfocusin={handleFocusIn}
+  onfocusout={handleFocusOut}
   class={`
     block h-full w-full rounded-[20px] outline-none
     transition-[filter] duration-300
