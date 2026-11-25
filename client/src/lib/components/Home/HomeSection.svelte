@@ -25,7 +25,7 @@
   let introLogoGlow: HTMLDivElement;
   let introVideo: HTMLVideoElement;
 
-  const logoHold = 3.5;
+  const logoHold = 2.9;
   const shouldPlayIntro = !introPlayed;
 
   let useAlphaVideo = $state(true);
@@ -171,21 +171,21 @@
               autoAlpha: 1,
               scale: 1,
               filter: 'blur(0px)',
-              duration: 1.6,
+              duration: 1.2,
               ease: 'power2.out'
             },
-            1
+            0.8
           )
           .call(
             () => {
               introVideo.currentTime = 0;
-              introVideo.playbackRate = 1.25;
+              introVideo.playbackRate = 1.45;
               void introVideo
                 .play()
                 .catch(() => (videoFailed = true));
             },
             [],
-            1
+            0.8
           )
           .to(
             introLogoGlow,
@@ -195,7 +195,7 @@
               duration: 1.2,
               ease: 'sine.out'
             },
-            1.6 + logoHold
+            1.2 + logoHold
           )
           .to(
             introLogo,

@@ -56,6 +56,72 @@
     return keys;
   }
 
+  function pointAtProgress(
+    points: { x: number; y: number }[],
+    totalLength: number,
+    progress: number
+  ): { x: number; y: number; angle: number } {
+    let remaining =
+      totalLength *
+      Math.min(Math.max(progress, 0), 1);
+
+    for (
+      let index = 1;
+      index < points.length;
+      index += 1
+    ) {
+      const from = points[index - 1];
+      const to = points[index];
+      const segmentLength = Math.hypot(
+        to.x - from.x,
+        to.y - from.y
+      );
+
+      if (
+        remaining <= segmentLength ||
+        index === points.length - 1
+      ) {
+        const ratio =
+          segmentLength === 0
+            ? 0
+            : Math.min(
+                Math.max(
+                  remaining / segmentLength,
+                  0
+                ),
+                1
+              );
+
+        return {
+          x:
+            from.x +
+            (to.x - from.x) * ratio,
+          y:
+            from.y +
+            (to.y - from.y) * ratio,
+          angle:
+            (Math.atan2(
+              to.y - from.y,
+              to.x - from.x
+            ) *
+              180) /
+            Math.PI
+        };
+      }
+
+      remaining -= segmentLength;
+    }
+
+    const last =
+      points[points.length - 1];
+
+    return {
+      x: last.x,
+      y: last.y,
+      angle: 0
+    };
+  }
+
   function programToEvent(
     program: WorkProgram,
     unit: OrganizationUnit,
@@ -263,6 +329,8 @@
   let barState = $state<{
     x: number;
     y: number;
+    endX: number;
+    endY: number;
     width: number;
     height: number;
     points: { x: number; y: number }[];
@@ -270,6 +338,12 @@
   } | null>(null);
   let barElement = $state<
     SVGPolylineElement | undefined
+  >(undefined);
+  let rocketElement = $state<
+    SVGSVGElement | undefined
+  >(undefined);
+  let smokeElement = $state<
+    HTMLDivElement | undefined
   >(undefined);
 
   let barTween: gsap.core.Animation | undefined;
@@ -385,6 +459,19 @@
       ).matches;
 
     barTween?.kill();
+
+    if (barElement) {
+      gsap.killTweensOf(barElement);
+    }
+
+    if (rocketElement) {
+      gsap.killTweensOf(rocketElement);
+    }
+
+    if (smokeElement) {
+      gsap.killTweensOf(smokeElement);
+    }
+
     clearTimeout(flashTimer);
     flashDate = null;
     targetEvent = null;
@@ -507,9 +594,14 @@
       points.push({ x: x2, y: y2 });
     }
 
+    const endPoint =
+      points[points.length - 1];
+
     barState = {
       x: points[0].x,
       y: points[0].y - sourceRect.height / 2,
+      endX: endPoint.x,
+      endY: endPoint.y,
       width: startWidth,
       height: sourceRect.height,
       points,
@@ -555,36 +647,160 @@
     );
     gsap.set(bar, { opacity: 1 });
 
-    barTween = gsap.to(bar, {
-      attr: { 'stroke-dashoffset': 0 },
-      duration: 0.8,
-      ease: 'power2.inOut',
-      onComplete: () => {
-        flashDate = targetKey;
-        targetEvent = event;
+    const rocket = rocketElement;
+    const smoke = smokeElement;
 
-        flashTimer = setTimeout(() => {
-          flashDate = null;
-          targetEvent = null;
-
-          barTween = gsap.to(bar, {
-            attr: {
-              'stroke-dashoffset': totalLength
-            },
-            duration: 0.4,
-            ease: 'power2.in',
-            onComplete: () => {
-              barState = null;
-              animatingEventId = null;
-            }
-          });
-        }, 1400);
+    const placeRocket = (
+      progress: number
+    ) => {
+      if (!rocket) {
+        return;
       }
-    });
+
+      const point = pointAtProgress(
+        points,
+        totalLength,
+        progress
+      );
+
+      gsap.set(rocket, {
+        left: point.x,
+        top: point.y,
+        rotation: point.angle
+      });
+    };
+
+    const playSmoke = () => {
+      if (!smoke) {
+        return;
+      }
+
+      const puffs = Array.from(
+        smoke.querySelectorAll<HTMLElement>(
+          '[data-smoke-puff]'
+        )
+      );
+
+      gsap.set(smoke, { autoAlpha: 1 });
+      gsap.fromTo(
+        puffs,
+        {
+          x: 0,
+          y: 0,
+          scale: 0.35,
+          opacity: 0.9
+        },
+        {
+          x: (index: number) =>
+            [-18, 12, 26, -8, 4][
+              index % 5
+            ],
+          y: (index: number) =>
+            [-6, -18, 8, 14, -12][
+              index % 5
+            ],
+          scale: 2.4,
+          opacity: 0,
+          duration: 0.75,
+          stagger: 0.05,
+          ease: 'power2.out'
+        }
+      );
+    };
+
+    if (rocket) {
+      gsap.set(rocket, {
+        autoAlpha: 1,
+        scale: 1
+      });
+      placeRocket(0);
+    }
+
+    if (smoke) {
+      gsap.set(smoke, { autoAlpha: 0 });
+    }
+
+    const flight = { progress: 0 };
+
+    barTween = gsap
+      .timeline({
+        onComplete: () => {
+          if (rocket) {
+            gsap.to(rocket, {
+              autoAlpha: 0,
+              scale: 0.6,
+              duration: 0.25,
+              ease: 'power2.in'
+            });
+          }
+
+          playSmoke();
+          flashDate = targetKey;
+          targetEvent = event;
+
+          flashTimer = setTimeout(() => {
+            flashDate = null;
+            targetEvent = null;
+
+            if (smoke) {
+              gsap.set(smoke, {
+                autoAlpha: 0
+              });
+            }
+
+            barTween = gsap.to(bar, {
+              attr: {
+                'stroke-dashoffset': totalLength
+              },
+              duration: 0.4,
+              ease: 'power2.in',
+              onComplete: () => {
+                barState = null;
+                animatingEventId = null;
+              }
+            });
+          }, 1400);
+        }
+      })
+      .to(
+        bar,
+        {
+          attr: {
+            'stroke-dashoffset': 0
+          },
+          duration: 0.8,
+          ease: 'power2.inOut'
+        },
+        0
+      )
+      .to(
+        flight,
+        {
+          progress: 1,
+          duration: 0.8,
+          ease: 'power2.inOut',
+          onUpdate: () =>
+            placeRocket(flight.progress)
+        },
+        0
+      );
   }
 
   onDestroy(() => {
     barTween?.kill();
+
+    if (barElement) {
+      gsap.killTweensOf(barElement);
+    }
+
+    if (rocketElement) {
+      gsap.killTweensOf(rocketElement);
+    }
+
+    if (smokeElement) {
+      gsap.killTweensOf(smokeElement);
+    }
+
     clearTimeout(flashTimer);
   });
 
@@ -875,7 +1091,7 @@
         )}
         stroke-linecap="round"
         stroke-linejoin="round"
-        opacity="0"
+        style:opacity="0"
       />
     </svg>
 
@@ -900,5 +1116,193 @@
         {barState.event.title}
       </span>
     </div>
+
+    <svg
+      bind:this={rocketElement}
+      aria-hidden="true"
+      viewBox="0 0 72 72"
+      style:opacity="0"
+      class="
+        pointer-events-none absolute z-50
+        size-14
+        drop-shadow-[0_10px_18px_rgba(14,165,233,0.45)]
+        sm:size-16
+      "
+      style:translate="-50% -50%"
+    >
+      <defs>
+        <linearGradient
+          id="rocket-body-gradient"
+          x1="0"
+          y1="0"
+          x2="1"
+          y2="1"
+        >
+          <stop
+            offset="0"
+            stop-color="#ffffff"
+          />
+          <stop
+            offset="1"
+            stop-color="#dbeafe"
+          />
+        </linearGradient>
+        <linearGradient
+          id="rocket-nose-gradient"
+          x1="0"
+          y1="0"
+          x2="1"
+          y2="1"
+        >
+          <stop
+            offset="0"
+            stop-color="#fb7185"
+          />
+          <stop
+            offset="1"
+            stop-color="#e11d48"
+          />
+        </linearGradient>
+        <linearGradient
+          id="rocket-window-gradient"
+          x1="0"
+          y1="0"
+          x2="1"
+          y2="1"
+        >
+          <stop
+            offset="0"
+            stop-color="#38bdf8"
+          />
+          <stop
+            offset="1"
+            stop-color="#1d4ed8"
+          />
+        </linearGradient>
+      </defs>
+
+      <g class="rocket-flame">
+        <path
+          d="M22 33 C13 33 9 36 4 36 C9 36 13 39 22 39 Z"
+          fill="#7dd3fc"
+          opacity="0.75"
+        />
+        <path
+          d="M22 35 C16 35 12 36 8 36 C12 36 16 37 22 37 Z"
+          fill="#e0f2fe"
+        />
+      </g>
+
+      <path
+        d="M25 29 L14 16 Q25 17 34 25 Z"
+        fill="#1e3a8a"
+      />
+      <path
+        d="M25 43 L14 56 Q25 55 34 47 Z"
+        fill="#1e3a8a"
+      />
+      <path
+        d="M23 28 C29 20 44 18 56 26 L67 36 L56 46 C44 54 29 52 23 44 Z"
+        fill="url(#rocket-body-gradient)"
+        stroke="#1e3a8a"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M56 26 L67 36 L56 46 C60 40 60 32 56 26 Z"
+        fill="url(#rocket-nose-gradient)"
+      />
+      <path
+        d="M28 29 C34 24 43 23 50 27"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="2"
+        stroke-linecap="round"
+        opacity="0.9"
+      />
+      <circle
+        cx="42"
+        cy="36"
+        r="7"
+        fill="url(#rocket-window-gradient)"
+        stroke="#1e3a8a"
+        stroke-width="2.5"
+      />
+      <circle
+        cx="40"
+        cy="34"
+        r="2"
+        fill="#ffffff"
+        opacity="0.9"
+      />
+      <path
+        d="M27 29 L27 43"
+        stroke="#93c5fd"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
+
+    <div
+      bind:this={smokeElement}
+      aria-hidden="true"
+      style:opacity="0"
+      class="pointer-events-none absolute z-40 size-20"
+      style:left={`${barState.endX}px`}
+      style:top={`${barState.endY}px`}
+      style:translate="-50% -50%"
+    >
+      <span
+        data-smoke-puff
+        class="absolute left-1/2 top-1/2 size-3 rounded-full bg-white/85 blur-[2px]"
+        style:translate="-50% -50%"
+      ></span>
+      <span
+        data-smoke-puff
+        class="absolute left-1/2 top-1/2 size-4 rounded-full bg-sky-100/75 blur-[3px]"
+        style:translate="-50% -50%"
+      ></span>
+      <span
+        data-smoke-puff
+        class="absolute left-1/2 top-1/2 size-3 rounded-full bg-white/75 blur-[2px]"
+        style:translate="-50% -50%"
+      ></span>
+      <span
+        data-smoke-puff
+        class="absolute left-1/2 top-1/2 size-5 rounded-full bg-blue-50/70 blur-[4px]"
+        style:translate="-50% -50%"
+      ></span>
+      <span
+        data-smoke-puff
+        class="absolute left-1/2 top-1/2 size-3 rounded-full bg-white/80 blur-[2px]"
+        style:translate="-50% -50%"
+      ></span>
+    </div>
   {/if}
 </section>
+
+<style>
+  .rocket-flame {
+    transform-origin: right center;
+    animation: rocket-flame 0.16s ease-in-out
+      infinite alternate;
+  }
+
+  @keyframes rocket-flame {
+    from {
+      opacity: 0.75;
+      transform: scaleX(0.72) scaleY(0.85);
+    }
+
+    to {
+      opacity: 1;
+      transform: scaleX(1) scaleY(1.15);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rocket-flame {
+      animation: none;
+    }
+  }
+</style>
