@@ -45,7 +45,7 @@
     code: string;
     title: string;
     subtitle?: string;
-    image: string;
+    image: string | null;
     pathType: 'menko' | 'kementerian';
     backgroundImage: string;
   };
@@ -53,15 +53,6 @@
   const fullUnitNames: Record<string, string> = {
     SESKAB: 'Sekretaris Kabinet',
     BENKAB: 'Bendahara Kabinet'
-  };
-
-  const cabinetImages: Record<string, string> = {
-    'sekretaris-kabinet':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
-    'bendahara-kabinet':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
-    'pendayagunaan-aparatur-kabinet':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png'
   };
 
   let {
@@ -112,14 +103,7 @@
           pathType
         ),
       subtitle: leader?.name ?? item.name,
-      image: resolveOrganizationPortrait(
-        cabinetImages[item.slug] ??
-          leader?.photo?.url ??
-          leader?.photo?.thumbnail_url ??
-          item.logo?.url ??
-          item.logo?.thumbnail_url ??
-          '/landing/speech/p.webp'
-      ),
+      image: resolveOrganizationPortrait(leader),
       pathType,
       backgroundImage: '/landing/cabinet/bg-card.webp'
     };

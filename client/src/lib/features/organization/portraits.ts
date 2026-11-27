@@ -1,105 +1,126 @@
-const portraitBase = 'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/';
+const cabinetCloud = 'https://res.cloudinary.com/rvn0bdia/image/upload/';
+const portraitBase = cabinetCloud + 'e_background_removal,f_auto,q_auto/';
 
-const legacyPortraits: Partial<Record<string, string>> = {
-  "/images/ADKESMA/menteri_adkesma_elsa_putri_aprizalni":
-    "menteri_adkesma_elsa_ADKESMA",
-  "/images/PENGPROF/menteri_pengprof_m_rifqy_yusuf":
-    "Menteri_PENGPROFM._Rifqy_Yusuf",
-  "/images/PSDM/menteri_psdm_labib_azka_asysyafiq":
-    "MENTERIPSDM_LABIB",
-  "/images/Menkes/menteri_menkes_an_nadhofah_adlin":
-    "MENTERIKESEHATAN_AN_NADHOFAH",
-  "/images/Pengabdian_Masyarakat/menteri_pengmas_sahrul_efendi":
-    "MENTERI_OENGMAS_SAHRUL",
-  "/images/Hubungan_Luar/menteri_hublu_zalfaa_putri_arfiliesia":
-    "MENTERI_HUBUNGAN_LUAR_ZALFA",
-  "/images/Medinfo/menteri_medinfo_ganesya_intantalia":
-    "1",
-  "/images/Sinergitas_Mahasiswa/menteri_sinema_eugenius_nathaniel":
-    "menteri_sinema_nathan",
-  "/images/KKG/menteri_kkg_farrel_ardisto_samai":
-    "MENTERI_KEMENTERIAN_KEADILAN_DAN_KESTARAAN_GENDER_FARREL",
-  "/images/Sosial_dan_Politik/menteri_sospol_daniel_nikon_martua_situmorang":
-    "MENTERI_SOSPOL_DANIEL",
-  "/images/EDIGPRO/menteri_edigpro_farhan_kamil":
-    "MENTERI_EDIGPRO_FARHAN_KAMIL",
-  "/images/Riset_dan_Keilmuan/menteri_risel_farrel_bisma_abyakta":
-    "MENTERIRISKEL_BISMA",
-  "/images/Seni_dan_Olahraga/menteri_seniora_alaina_atwa_awali_harahap":
-    "MENTERISENIORA_ALAINA",
-  "/images/Menko/menko_kemahasiswaan_johanes_richard_darmawan":
-    "RICHIE_MENKO_KEMAHASISWAAN",
-  "/images/Menko/menko_kemasyarakatan_muhammad_ziyaad_difa_ul_haq":
-    "ZIYAAD_MENKO_KEMASYARAKATAN",
-  "/images/Menko/menko_kominfo_andrean_marcellino":
-    "MENKO_KOMINFO_ANDREAN",
-  "/images/Menko/menko_pergerakan_dewa_pranata_putra_pratama":
-    "DEWA_MENKO_PERGERAKAN",
-  "/images/Menko/menko_ppk_nasua_okta_kusuma_dewi_rofiq":
-    "NASUA_OKTA_MENKO_PPK",
-  "/images/ADKESMA/dirjen_adkesma_advokasi_yustia_khuspriyanti_feby":
-    "Direktur_JenderalYustia_Khuspriyanti_Feby_ADKESMA",
-  "/images/ADKESMA/dirjen_adkesma_kesejahteraan_nabila_afifah_abida":
-    "Direktur_JenderalNabila_Afifah_Abida_ADKESMA",
-  "/images/PENGPROF/dirjen_pengprof_keahlian_raizatya_qoriananda":
-    "DIRJEN_RAIS_PENGPROF",
-  "/images/PENGPROF/dirjen_pengprof_relasi_deva_zia_ul_haq":
-    "DIRJEN_PENGPROFDeva_Zia_Ul_Haq",
-  "/images/PSDM/dirjen_psdm_akselerasi_ferdian_amartha":
-    "DIRJEN_PSDM_FERDIAN",
-  "/images/PSDM/dirjen_psdm_kaderisasi_qheisya_luna_alifa":
-    "DIRJENPSDM_LUNA",
-  "/images/LH/menteri_lh_zaskia_darojah":
-    "MENTERI_LINGKUNGAN_HIDUP_ZASKIA",
-  "/images/LH/dirjen_lh_advokasi_kajian_strategis":
-    "DIRJEN_LINGKUNGAN_HIDUP_DAFFA",
-  "/images/LH/dirjen_lh_pencegahan_pengendalian":
-    "DIRJEN_LINGKUNGAN_HIDUP_FEBRIA",
-  "/images/LH/dirjen_lh_pengembangan_preservasi":
-    "DIRJEN_LINGKUNGANHIDUP_AZIZAH",
-  "/images/Menkes/dirjen_menkes_kesehatan_masyarakat":
-    "DIRJEN_KESEHATAN_ZEIN",
-  "/images/Menkes/dirjen_menkes_psikososial_inklusivitas":
-    "DIRJEN_KESEHATAN_CYINTIA",
-  "/images/Pengabdian_Masyarakat/dirjen_pengmas_fahrur_rosi":
-    "DIRJEN_PENGABDIAN_MASYARAKAT_ROSI",
-  "/images/Pengabdian_Masyarakat/dirjen_pengmas_m_wahyu":
-    "DIRJEN_PENGMAS_WAHYU",
-  "/images/Hubungan_Luar/dirjen_hublu_billal_syahdan_arrafah":
-    "DIRJEN_HUBLU_BILLAL",
-  "/images/Hubungan_Luar/dirjen_hublu_hafiz_naufal_utomo":
-    "DIRJEN_HUBLU_Hafiz_Naufal_Utomo",
-  "/images/Medinfo/dirjen_medinfo_publikasi_ocha_della_fitriani":
-    "2",
-  "/images/Medinfo/dirjen_medinfo_visual_febiola_al_jannah":
-    "FEBIOLA_DIRJEN_VIDKRE_MEDIA_DAN_INFORMASI",
-  "/images/Sinergitas_Mahasiswa/dirjen_sinema_bina_vicentius_nolan":
-    "DIRJEN_NOLAN_SINEMA",
-  "/images/Sinergitas_Mahasiswa/dirjen_sinema_korlaborasi_achmad_rafi_syahputra":
-    "DIRJEN_RAFI_SINEMA",
-  "/images/KKG/dirjen_kkg_edukasi_annisa_rahmawati":
-    "DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_ANNISA_RAHMA",
-  "/images/KKG/dirjen_kkg_pemberdayaan_titis_nastiti_dwi":
-    "DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_TITIS",
-  "/images/Sosial_dan_Politik/dirjen_sospol_aksi_moch_amir_nazaruddin":
-    "MENTERISOSPOL_AMIR",
-  "/images/Sosial_dan_Politik/dirjen_sospol_analisis_ahmad_raihan_fadhillah":
-    "MENTERISOSPOLRAIHAN",
-  "/images/EDIGPRO/dirjen_edigpro_argi":
-    "DIRJENEDIGPRO_ARGI_WICAKSANA",
-  "/images/EDIGPRO/dirjen_edigpro_yudhistira":
-    "DIRJEN_EDIGPRO_YUDHISTIRA",
-  "/images/Riset_dan_Keilmuan/dirjen_riset_ata":
-    "DIRJENRISKEL_ATA",
-  "/images/Riset_dan_Keilmuan/dirjen_riset_naswa":
-    "DIRJENNASYWA_RISKEL",
-  "/images/Seni_dan_Olahraga/dirjen_seniora_azzam":
-    "ABDULLAH_AZZAM_DIRJEN_SENIORA",
-  "/images/Seni_dan_Olahraga/dirjen_seniora_m_fadhil":
-    "PUPUT_DIRJEN_SENIORA"
-};
+// Names and Cloudinary public IDs from the Cerita Loka cabinet seed.
+const rosterPortraits = new Map<string, string>([
+  ['Johanes Richard Darmawan', 'RICHIE_MENKO_KEMAHASISWAAN'],
+  ['Muhammad Ziyaad Difaa’ul Haq', 'ZIYAAD_MENKO_KEMASYARAKATAN'],
+  ['Andrean Marcellino', 'MENKO_KOMINFO_ANDREAN'],
+  ['Dewa Pranata Putra Pratama', 'DEWA_MENKO_PERGERAKAN'],
+  ['Nasua Okta Kusuma Dewi Rofiq', 'NASUA_OKTA_MENKO_PPK'],
+  ['Elsa Putri Aprizalni', 'menteri_adkesma_elsa_ADKESMA'],
+  ['Yustia Khuspriyanti Feby Martha', 'Direktur_JenderalYustia_Khuspriyanti_Feby_ADKESMA'],
+  ['Nabila Afifah Abida', 'Direktur_JenderalNabila_Afifah_Abida_ADKESMA'],
+  ['Muhammad Rifqy Yusuf', 'Menteri_PENGPROFM._Rifqy_Yusuf'],
+  ['Raizsatya Qoriananda Hutama', 'DIRJEN_RAIS_PENGPROF'],
+  ['Deva Zia\'ul Haq Khoirudin', 'DIRJEN_PENGPROFDeva_Zia_Ul_Haq'],
+  ['Labib Azka Asysyafiq', 'MENTERIPSDM_LABIB'],
+  ['Ferdian Amartha', 'DIRJEN_PSDM_FERDIAN'],
+  ['Qheisya Luna Alifa', 'DIRJENPSDM_LUNA'],
+  ['Zaskia Darojah', 'MENTERI_LINGKUNGAN_HIDUP_ZASKIA'],
+  ['Dhafa Rofiq Firdaus', 'DIRJEN_LINGKUNGAN_HIDUP_DAFFA'],
+  ['Febria Rizqi Aulia Sandy', 'DIRJEN_LINGKUNGAN_HIDUP_FEBRIA'],
+  ['Rifqah Azizah', 'DIRJEN_LINGKUNGANHIDUP_AZIZAH'],
+  ['An Nadhofah Adlin', 'MENTERIKESEHATAN_AN_NADHOFAH'],
+  ['M. Zain Hisyam Al Fikri Zuhdi', 'DIRJEN_KESEHATAN_ZEIN'],
+  ['Cyintia Uzliva Salsabilla', 'DIRJEN_KESEHATAN_CYINTIA'],
+  ['Sahrul Efendi', 'MENTERI_OENGMAS_SAHRUL'],
+  ['Fahrur Rosi', 'DIRJEN_PENGABDIAN_MASYARAKAT_ROSI'],
+  ['Mohammad Wahyu Ramadani', 'DIRJEN_PENGMAS_WAHYU'],
+  ['Zalfaa’ Putri Arfiliesia', 'MENTERI_HUBUNGAN_LUAR_ZALFA'],
+  ['Billal Syahdan Arrafah', 'DIRJEN_HUBLU_BILLAL'],
+  ['Hafihz Naufal Utomo', 'DIRJEN_HUBLU_Hafiz_Naufal_Utomo'],
+  ['Ganesya Intantalia', '1'],
+  ['Ocha Della Fitriani', '2'],
+  ['Febiola Al Jannah', 'FEBIOLA_DIRJEN_VIDKRE_MEDIA_DAN_INFORMASI'],
+  ['Eugenius Nathaniel Christoffany', 'menteri_sinema_nathan'],
+  ['Vincentius Nolan Nathanael Selfianto', 'DIRJEN_NOLAN_SINEMA'],
+  ['Achmad Rafi Syahputra', 'DIRJEN_RAFI_SINEMA'],
+  ['Farrel Ardisto Sama\'i', 'MENTERI_KEMENTERIAN_KEADILAN_DAN_KESTARAAN_GENDER_FARREL'],
+  ['Annisa Rahmawati', 'DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_ANNISA_RAHMA'],
+  ['Titis Nastiti Dwi Lestari', 'DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_TITIS'],
+  ['Daniel Nikon Martua Situmorang', 'MENTERI_SOSPOL_DANIEL'],
+  ['Moch. Amir Nazaruddin', 'MENTERISOSPOL_AMIR'],
+  ['Ahmad Raihan Fadhillah Yasin', 'MENTERISOSPOLRAIHAN'],
+  ['Farhan Kamil', 'MENTERI_EDIGPRO_FARHAN_KAMIL'],
+  ['Argi Wicaksana', 'DIRJENEDIGPRO_ARGI_WICAKSANA'],
+  ['M. Yudhistira Setya Heri', 'DIRJEN_EDIGPRO_YUDHISTIRA'],
+  ['Farrel Bisma Abyakta', 'MENTERIRISKEL_BISMA'],
+  ['Abdul Wahid Tamimi', 'DIRJENRISKEL_ATA'],
+  ['Naswa Ayudya Sasta', 'DIRJENNASYWA_RISKEL'],
+  ['Alaina Atwa Awali Harahap', 'MENTERISENIORA_ALAINA'],
+  ['Abdullah Azzam', 'ABDULLAH_AZZAM_DIRJEN_SENIORA'],
+  ['Muhammad Fadhil Saputra', 'v1795411756/PUPUT_DIRJEN_SENIORA.png'],
+  ['Inez Faradina Kasih', 'v1795426454/BENKAN_INEZ.png'],
+  ['Ananda Magfira Nurochma', 'v1795426455/BIRO_ANANDA.png'],
+  ['M. Salman Al Farisi Al Ghofsah', 'v1795426456/BIRO_SALMAN.png'],
+  ['Deri Bayu Setiawan', 'v1795426456/KEPALA_PAK.png'],
+  ['Mevlana El Fithra Abdullah', 'v1795426456/DEPUTI_MEVLANA.png'],
+  ['Nayla Khansa Abbylia', 'v1795426456/DEPUTI_NAYLA.png'],
+  ['Gheahaq Danty El Zahra', 'v1795426456/SESKAB_GHEA.png'],
+  ['Fathimah Nuurun Najma As-Salman', 'v1795426455/BIRO_NUURUN.png'],
+  ['Najwa Nur Hafidza', 'v1795426456/BIRO_NAJWA.png']
+]);
 
-export function resolveOrganizationPortrait(url: string): string {
-  const portrait = legacyPortraits[url.replace(/\.(png|webp)$/, '')];
-  return portrait ? portraitBase + portrait : url;
+// Pre-migration names that identify the same person in older cabinet responses.
+const previousNames = new Map<string, string>([
+  ['Muhammad Ziyaad Difa Ul Haq', 'Muhammad Ziyaad Difaa’ul Haq'],
+  ['Yustia Khuspriyanti Feby', 'Yustia Khuspriyanti Feby Martha'],
+  ['M. Rifqy Yusuf', 'Muhammad Rifqy Yusuf'],
+  ['Raizatya Qoriananda', 'Raizsatya Qoriananda Hutama'],
+  ['Deva Zia Ul Haq', 'Deva Zia\'ul Haq Khoirudin'],
+  ['Dhafa Rhofiq Firdaus', 'Dhafa Rofiq Firdaus'],
+  ['Febria Rizqi Aulia S', 'Febria Rizqi Aulia Sandy'],
+  ['M. Zain Hisyam Al F. Z', 'M. Zain Hisyam Al Fikri Zuhdi'],
+  ['M. Wahyu', 'Mohammad Wahyu Ramadani'],
+  ['Zalfaa Putri Arfiliesia', 'Zalfaa’ Putri Arfiliesia'],
+  ['Hafiz Naufal Utomo', 'Hafihz Naufal Utomo'],
+  ['Eugenius Nathaniel', 'Eugenius Nathaniel Christoffany'],
+  ['Vicentius Nolan', 'Vincentius Nolan Nathanael Selfianto'],
+  ['Farrel Ardisto Samai', 'Farrel Ardisto Sama\'i'],
+  ['Titis Nastiti Dwi', 'Titis Nastiti Dwi Lestari'],
+  ['Ahmad Raihan Fadhillah', 'Ahmad Raihan Fadhillah Yasin'],
+  ['Argi', 'Argi Wicaksana'],
+  ['Yudhistira', 'M. Yudhistira Setya Heri'],
+  ['Ata', 'Abdul Wahid Tamimi'],
+  ['Nasywa Ayudya S', 'Naswa Ayudya Sasta'],
+  ['Naswa', 'Naswa Ayudya Sasta'],
+  ['Azzam', 'Abdullah Azzam'],
+  ['M. Salman Al Farisi', 'M. Salman Al Farisi Al Ghofsah'],
+  ['Mevlana El Fithra', 'Mevlana El Fithra Abdullah'],
+  ['Fathimah Nuurun', 'Fathimah Nuurun Najma As-Salman']
+]);
+
+const seededIDs = new Set(
+  [...rosterPortraits.values(), 'PUPUT_DIRJEN_SENIORA'].map((asset) =>
+    asset.replace(/^v\d+\//, '').replace(/\.png$/i, '')
+  )
+);
+
+interface PortraitMember {
+  name: string;
+  photo?: { url?: string | null; thumbnail_url?: string | null } | null;
+}
+
+export function resolveOrganizationPortrait(member?: PortraitMember | null): string | null {
+  if (!member) return null;
+
+  const name = member.name.trim();
+  const asset = rosterPortraits.get(previousNames.get(name) ?? name);
+  for (const candidate of [member.photo?.url, member.photo?.thumbnail_url]) {
+    const url = candidate?.trim();
+    if (!url || !/^https:\/\/res\.cloudinary\.com\/[\w-]+\/image\/upload\/[^\s?#]+(?:[?#].*)?$/.test(url)) continue;
+
+    if (url.startsWith(cabinetCloud)) {
+      const path = url.slice(cabinetCloud.length).split(/[?#]/)[0];
+      const match = /^(?:[a-z]+_[^/]+\/)*(?:v\d+\/)?([^/]+)$/.exec(path);
+      const id = match?.[1].replace(/\.(png|jpe?g|webp|avif)$/i, '');
+      if (id && seededIDs.has(id)) continue;
+    }
+
+    // A separate Cloudinary upload belongs to the profile that selected it.
+    return url;
+  }
+
+  return asset ? portraitBase + asset : null;
 }

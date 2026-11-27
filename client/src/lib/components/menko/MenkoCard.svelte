@@ -1,12 +1,12 @@
 <script lang="ts">
   let {
-    name = 'Teddy Indra Wijaya',
+    name = '',
     position = 'Menteri Koordinator',
-    image = '/menko/test.webp'
+    image = null
   }: {
     name?: string;
     position?: string;
-    image?: string;
+    image?: string | null;
   } = $props();
 </script>
 
@@ -40,18 +40,22 @@
       "
     ></div>
 
-    <img
-      src={image}
-      alt={name}
-      class="
-        absolute bottom-0 left-1/2
-        h-[94%] w-auto max-w-none
-        -translate-x-1/2
-        object-contain object-bottom
-        transition-transform duration-500
-        group-hover:scale-[1.035]
-      "
-    />
+    {#if image}
+      <img
+        src={image}
+        alt={name}
+        class="
+          absolute bottom-0 left-1/2
+          h-[94%] w-auto max-w-none
+          -translate-x-1/2
+          object-contain object-bottom
+          transition-transform duration-500
+          group-hover:scale-[1.035]
+        "
+      />
+    {:else}
+      <span aria-hidden="true" class="absolute inset-0 grid place-items-center text-6xl font-bold text-blue-700">{name.slice(0, 1)}</span>
+    {/if}
   </div>
 
   <div

@@ -48,15 +48,7 @@
     leader?.position ?? unit.name
   );
 
-  const leaderImage = $derived(
-    resolveOrganizationPortrait(
-      leader?.photo?.url ??
-        leader?.photo?.thumbnail_url ??
-        unit.logo?.url ??
-        unit.logo?.thumbnail_url ??
-        '/menko/test.webp'
-    )
-  );
+  const leaderImage = $derived(resolveOrganizationPortrait(leader));
 
   const kementrian = $derived.by(() => {
     return [...(unit.children ?? [])]

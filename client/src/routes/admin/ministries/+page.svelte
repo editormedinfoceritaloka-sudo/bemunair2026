@@ -4,6 +4,7 @@
   import PageHeader from '$lib/admin/PageHeader.svelte';
   import EmptyState from '$lib/admin/EmptyState.svelte';
   import { uploadImageFile, type UploadedImage } from '$lib/admin/upload-image';
+  import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
   import { Alert, AlertDescription } from '$lib/components/ui/alert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
@@ -132,7 +133,7 @@
 
   function resetMemberMedia(member: OrganizationMember | null) {
     photoUpload = null;
-    photoPreview = member?.photo?.url ?? '';
+    photoPreview = resolveOrganizationPortrait(member) ?? '';
     photoMediaID = member?.photo?.id ? String(member.photo.id) : '';
   }
 
@@ -142,7 +143,8 @@
     if (!file) return;
     uploading = kind;
     try {
-      const value = await uploadImageFile(file, kind === 'cover' ? 'cover' : 'profile');
+      const purposes = { photo: 'cabinet_portrait', cover: 'cover', logo: 'profile' } as const;
+      const value = await uploadImageFile(file, purposes[kind]);
       if (kind === 'logo') {
         logoUpload = value;
         logoPreview = value.thumbnail_url || value.url;
@@ -522,10 +524,11 @@
             <Button type="button" size="sm" variant="outline" onclick={() => editMember(null)}><Plus /> Tambah</Button>
           </div>
           {#each memberUnit.members || [] as member (member.id)}
+            {@const portrait = resolveOrganizationPortrait(member)}
             <button type="button" class="flex w-full items-center gap-3 rounded-xl border p-3 text-left hover:border-blue-300 hover:bg-blue-50/40" onclick={() => editMember(member)}>
               <div class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full border bg-muted">
-                {#if member.photo?.url}
-                  <img src={member.photo.url} alt={member.photo.alt_text || `Foto ${member.name}`} width="44" height="44" class="size-full object-cover" loading="lazy" />
+                {#if portrait}
+                  <img src={portrait} alt={member.photo?.alt_text || `Foto ${member.name}`} width="44" height="44" class="size-full object-cover" loading="lazy" />
                 {:else}
                   <Users class="size-4 text-muted-foreground" aria-hidden="true" />
                 {/if}

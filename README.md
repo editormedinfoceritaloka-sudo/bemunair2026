@@ -243,7 +243,37 @@ Migration manager mencatat migrasi pada tabel `schema_migrations`. File migrasi 
 
 Seeder hanya untuk development atau bootstrap yang disetujui. Deployment production menjalankan `./server migrate` dan tidak pernah menjalankan seeder otomatis.
 
-Semua akun seed berbagi satu password dev yang sama, diambil dari env `SEED_USER_PASSWORD` (lihat `server/.env.example`) dan di-hash saat seeder dijalankan — tidak ada password, plaintext maupun hash, yang ditulis ke file seeder itu sendiri. Isi `SEED_USER_PASSWORD` di `server/.env` sebelum menjalankan seeder; nilai ini dev-only dan tidak pernah dipakai di production.
+### Kredensial akun kementerian
+
+Di development, `setup` dan `seed` membuat akun roster dengan password acak tersendiri sebelum mengisi antrean PJ. Setiap file kredensial bernama sama dengan email akun dan berizin `0600`. Compose menyimpannya pada volume `seed_credentials` di direktori `/var/lib/seed-credentials/private`. Contoh menyalin satu kredensial ke direktori privat di host Linux:
+
+```bash
+install -d -m 700 "$HOME/.local/share/bemunair-dev"
+(umask 077
+ docker compose -f infra/docker-compose.dev.yml run --rm --no-deps -T migrate \
+   cat /var/lib/seed-credentials/private/menteri.adkesma@bem.unair.ac.id \
+   > "$HOME/.local/share/bemunair-dev/menteri.adkesma@bem.unair.ac.id")
+```
+
+Dengan `./scripts/seed.sh --local`, file ada di `~/.local/share/bemunair-dev/seed-credentials/`. Jika menjalankan binary langsung, set `SEED_CREDENTIAL_DIR` ke direktori privat di filesystem Linux yang mendukung izin POSIX. Default binary adalah `seed-credentials/` relatif ke direktori kerja. Untuk memigrasikan akun lama, isi `SEED_USER_PASSWORD` dengan password bersama sebelumnya. Hanya akun yang masih cocok dengan password tersebut yang mendapat pengganti.
+
+Di production, jalankan perintah berikut secara manual dari direktori deployment setelah migrasi dan data unit kabinet tersedia. Perintah memproses roster 17 pimpinan kementerian/unit termasuk Medinfo dan unit di bawah BPII. Akun pimpinan yang belum ada dibuat untuk unit yang sudah terdaftar. Akun dengan password khusus tetap dapat menggunakan password tersebut. Perintah mewajibkan password bersama sebelumnya dan melaporkan hasil per email, termasuk unit yang belum terdaftar. Akun Menko, admin utama, dan staf Medinfo berada di luar cakupan perintah production.
+
+```bash
+cd /opt/bemunair2026/infra
+install -d -m 700 "$HOME/.local/share/bemunair-production/seed-credentials"
+read -rsp 'Password bersama sebelumnya: ' SEED_USER_PASSWORD
+echo
+export SEED_USER_PASSWORD
+docker compose --env-file .env.production --env-file .release.env -f docker-compose.yml \
+  run --rm --no-deps -T --user "$(id -u):$(id -g)" \
+  -e SEED_USER_PASSWORD -e SEED_CREDENTIAL_DIR=/credentials \
+  -v "$HOME/.local/share/bemunair-production/seed-credentials:/credentials" \
+  migrate ./server provision-ministry-accounts
+unset SEED_USER_PASSWORD
+```
+
+Bagikan file tiap akun langsung kepada pemiliknya melalui pengelola password. Simpan cadangan terenkripsi direktori kredensial bersama cadangan database. Pengulangan perintah menggunakan kembali file untuk akun yang belum berhasil diproses. File berisi password awal dan dapat menjadi kedaluwarsa setelah pemilik mengubah password.
 
 ## API dan Contoh Curl
 

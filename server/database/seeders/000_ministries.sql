@@ -739,7 +739,7 @@ CREATE TEMPORARY TABLE seed_organization_members (
     photo_path        VARCHAR(1000) NULL,
     display_order     INT UNSIGNED NOT NULL DEFAULT 0,
     is_leader         BOOLEAN NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (unit_code, position)
+    PRIMARY KEY (unit_code, name)
 )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET utf8mb4
@@ -818,7 +818,7 @@ INSERT INTO seed_organization_members (
 (
     'ADKESMA',
     'Elsa Putri Aprizalni',
-    'MENTERI',
+    'Menteri Advokasi dan Kesejahteraan Mahasiswa',
     'MENTERI',
     'local-member-adkesma-elsa-putri-aprizalni',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/menteri_adkesma_elsa_ADKESMA',
@@ -828,7 +828,7 @@ INSERT INTO seed_organization_members (
 (
     'ADKESMA',
     'Yustia Khuspriyanti Feby Martha',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Advokasi Kebijakan Kampus',
     'DIRJEN',
     'local-member-adkesma-yustia-khuspriyanti-feby',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Direktur_JenderalYustia_Khuspriyanti_Feby_ADKESMA',
@@ -838,7 +838,7 @@ INSERT INTO seed_organization_members (
 (
     'ADKESMA',
     'Nabila Afifah Abida',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Kesejahteraan Mahasiswa',
     'DIRJEN',
     'local-member-adkesma-nabila-afifah-abida',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Direktur_JenderalNabila_Afifah_Abida_ADKESMA',
@@ -853,7 +853,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGPROF',
     'Muhammad Rifqy Yusuf',
-    'MENTERI',
+    'Menteri Pengembangan Profesi',
     'MENTERI',
     'local-member-pengprof-m-rifqy-yusuf',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/Menteri_PENGPROFM._Rifqy_Yusuf',
@@ -863,7 +863,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGPROF',
     'Raizsatya Qoriananda Hutama',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Relasi Korporasi dan Jaringan Alumni',
     'DIRJEN',
     'local-member-pengprof-raizatya-qoriananda',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_RAIS_PENGPROF',
@@ -873,7 +873,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGPROF',
     'Deva Zia''ul Haq Khoirudin',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pengembangan Keahlian',
     'DIRJEN',
     'local-member-pengprof-deva-zia-ul-haq',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGPROFDeva_Zia_Ul_Haq',
@@ -888,7 +888,7 @@ INSERT INTO seed_organization_members (
 (
     'PSDM',
     'Labib Azka Asysyafiq',
-    'MENTERI',
+    'Menteri Pengembangan Sumber Daya Mahasiswa',
     'MENTERI',
     'local-member-psdm-labib-azka-asysyafiq',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIPSDM_LABIB',
@@ -898,7 +898,7 @@ INSERT INTO seed_organization_members (
 (
     'PSDM',
     'Ferdian Amartha',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Akselerasi Potensi Mahasiswa',
     'DIRJEN',
     'local-member-psdm-ferdian-amartha',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PSDM_FERDIAN',
@@ -908,7 +908,7 @@ INSERT INTO seed_organization_members (
 (
     'PSDM',
     'Qheisya Luna Alifa',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Kaderisasi',
     'DIRJEN',
     'local-member-psdm-qheisya-luna-alifa',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENPSDM_LUNA',
@@ -925,7 +925,7 @@ INSERT INTO seed_organization_members (
 (
     'LH',
     'Zaskia Darojah',
-    'MENTERI',
+    'Menteri Lingkungan Hidup',
     'MENTERI',
     'local-member-lh-zaskia-darojah',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_LINGKUNGAN_HIDUP_ZASKIA',
@@ -935,7 +935,7 @@ INSERT INTO seed_organization_members (
 (
     'LH',
     'Dhafa Rofiq Firdaus',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pencegahan dan Pengendalian Kerusakan Lingkungan',
     'DIRJEN',
     'local-member-lh-advokasi-kajian-strategis',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGAN_HIDUP_DAFFA',
@@ -945,7 +945,7 @@ INSERT INTO seed_organization_members (
 (
     'LH',
     'Febria Rizqi Aulia Sandy',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pengembangan dan Preservasi Sumber Daya Alam',
     'DIRJEN',
     'local-member-lh-pencegahan-pengendalian',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGAN_HIDUP_FEBRIA',
@@ -955,7 +955,7 @@ INSERT INTO seed_organization_members (
 (
     'LH',
     'Rifqah Azizah',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Advokasi Kajian Strategis Lingkungan',
     'DIRJEN',
     'local-member-lh-pengembangan-preservasi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_LINGKUNGANHIDUP_AZIZAH',
@@ -972,7 +972,7 @@ INSERT INTO seed_organization_members (
 (
     'KEMENKES',
     'An Nadhofah Adlin',
-    'MENTERI',
+    'Menteri Kesehatan',
     'MENTERI',
     'local-member-kemenkes-an-nadhofah-adlin',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIKESEHATAN_AN_NADHOFAH',
@@ -982,7 +982,7 @@ INSERT INTO seed_organization_members (
 (
     'KEMENKES',
     'M. Zain Hisyam Al Fikri Zuhdi',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Kesejahteraan Psikososial, Inklusivitas, dan Penguatan Kesehatan Mahasiswa',
     'DIRJEN',
     'local-member-kemenkes-kesehatan-masyarakat',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KESEHATAN_ZEIN',
@@ -992,7 +992,7 @@ INSERT INTO seed_organization_members (
 (
     'KEMENKES',
     'Cyintia Uzliva Salsabilla',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Kesehatan Masyarakat dan Pengendalian Penyakit',
     'DIRJEN',
     'local-member-kemenkes-psikososial-inklusivitas',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KESEHATAN_CYINTIA',
@@ -1007,7 +1007,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGMAS',
     'Sahrul Efendi',
-    'MENTERI',
+    'Menteri Pengabdian Masyarakat',
     'MENTERI',
     'local-member-pengmas-sahrul-efendi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_OENGMAS_SAHRUL',
@@ -1017,7 +1017,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGMAS',
     'Fahrur Rosi',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pengembangan Desa Mitra',
     'DIRJEN',
     'local-member-pengmas-fahrur-rosi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGABDIAN_MASYARAKAT_ROSI',
@@ -1027,7 +1027,7 @@ INSERT INTO seed_organization_members (
 (
     'PENGMAS',
     'Mohammad Wahyu Ramadani',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Sosial Masyarakat',
     'DIRJEN',
     'local-member-pengmas-m-wahyu',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_PENGMAS_WAHYU',
@@ -1042,7 +1042,7 @@ INSERT INTO seed_organization_members (
 (
     'HUBLU',
     'Zalfaa’ Putri Arfiliesia',
-    'MENTERI',
+    'Menteri Hubungan Luar',
     'MENTERI',
     'local-member-hublu-zalfaa-putri-arfiliesia',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_HUBUNGAN_LUAR_ZALFA',
@@ -1052,7 +1052,7 @@ INSERT INTO seed_organization_members (
 (
     'HUBLU',
     'Billal Syahdan Arrafah',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Mitra Nasional',
     'DIRJEN',
     'local-member-hublu-billal-syahdan-arrafah',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_HUBLU_BILLAL',
@@ -1062,7 +1062,7 @@ INSERT INTO seed_organization_members (
 (
     'HUBLU',
     'Hafihz Naufal Utomo',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Mitra Internasional',
     'DIRJEN',
     'local-member-hublu-hafiz-naufal-utomo',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_HUBLU_Hafiz_Naufal_Utomo',
@@ -1077,7 +1077,7 @@ INSERT INTO seed_organization_members (
 (
     'MEDINFO',
     'Ganesya Intantalia',
-    'MENTERI',
+    'Menteri Media dan Informasi',
     'MENTERI',
     'local-member-medinfo-ganesya-intantalia',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/1',
@@ -1087,7 +1087,7 @@ INSERT INTO seed_organization_members (
 (
     'MEDINFO',
     'Ocha Della Fitriani',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Publikasi dan Pengembangan Media Digital',
     'DIRJEN',
     'local-member-medinfo-ocha-della-fitriani',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/2',
@@ -1097,7 +1097,7 @@ INSERT INTO seed_organization_members (
 (
     'MEDINFO',
     'Febiola Al Jannah',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Visual Kreatif',
     'DIRJEN',
     'local-member-medinfo-febiola-al-jannah',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/FEBIOLA_DIRJEN_VIDKRE_MEDIA_DAN_INFORMASI',
@@ -1112,7 +1112,7 @@ INSERT INTO seed_organization_members (
 (
     'SINEMA',
     'Eugenius Nathaniel Christoffany',
-    'MENTERI',
+    'Menteri Sinergitas Mahasiswa',
     'MENTERI',
     'local-member-sinema-eugenius-nathaniel',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/menteri_sinema_nathan',
@@ -1122,7 +1122,7 @@ INSERT INTO seed_organization_members (
 (
     'SINEMA',
     'Vincentius Nolan Nathanael Selfianto',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Bina Organisasi',
     'DIRJEN',
     'local-member-sinema-vicentius-nolan',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_NOLAN_SINEMA',
@@ -1132,7 +1132,7 @@ INSERT INTO seed_organization_members (
 (
     'SINEMA',
     'Achmad Rafi Syahputra',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Kolaborasi Mahasiswa',
     'DIRJEN',
     'local-member-sinema-achmad-rafi-syahputra',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_RAFI_SINEMA',
@@ -1147,7 +1147,7 @@ INSERT INTO seed_organization_members (
 (
     'KKG',
     'Farrel Ardisto Sama''i',
-    'MENTERI',
+    'Menteri Keadilan dan Kesetaraan Gender',
     'MENTERI',
     'local-member-kkg-farrel-ardisto-samai',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_KEMENTERIAN_KEADILAN_DAN_KESTARAAN_GENDER_FARREL',
@@ -1157,7 +1157,7 @@ INSERT INTO seed_organization_members (
 (
     'KKG',
     'Annisa Rahmawati',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Edukasi Kritis Gender',
     'DIRJEN',
     'local-member-kkg-annisa-rahmawati',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_ANNISA_RAHMA',
@@ -1167,7 +1167,7 @@ INSERT INTO seed_organization_members (
 (
     'KKG',
     'Titis Nastiti Dwi Lestari',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pemberdayaan Perempuan Progresif',
     'DIRJEN',
     'local-member-kkg-titis-nastiti-dwi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_KEMENTERIAN_KESTARAAN_GENDER_TITIS',
@@ -1182,7 +1182,7 @@ INSERT INTO seed_organization_members (
 (
     'SOSPOL',
     'Daniel Nikon Martua Situmorang',
-    'MENTERI',
+    'Menteri Sosial dan Politik',
     'MENTERI',
     'local-member-sospol-daniel-nikon-martua-situmorang',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_SOSPOL_DANIEL',
@@ -1192,7 +1192,7 @@ INSERT INTO seed_organization_members (
 (
     'SOSPOL',
     'Moch. Amir Nazaruddin',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Aksi dan Propaganda',
     'DIRJEN',
     'local-member-sospol-moch-amir-nazaruddin',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISOSPOL_AMIR',
@@ -1202,7 +1202,7 @@ INSERT INTO seed_organization_members (
 (
     'SOSPOL',
     'Ahmad Raihan Fadhillah Yasin',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Analisis Isu Strategis',
     'DIRJEN',
     'local-member-sospol-ahmad-raihan-fadhillah',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISOSPOLRAIHAN',
@@ -1217,7 +1217,7 @@ INSERT INTO seed_organization_members (
 (
     'EDIGPRO',
     'Farhan Kamil',
-    'MENTERI',
+    'Menteri Ekonomi Digital dan Produk Kreatif',
     'MENTERI',
     'local-member-edigpro-farhan-kamil',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERI_EDIGPRO_FARHAN_KAMIL',
@@ -1227,7 +1227,7 @@ INSERT INTO seed_organization_members (
 (
     'EDIGPRO',
     'Argi Wicaksana',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Produk Kreatif dan Investasi',
     'DIRJEN',
     'local-member-edigpro-argi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENEDIGPRO_ARGI_WICAKSANA',
@@ -1237,7 +1237,7 @@ INSERT INTO seed_organization_members (
 (
     'EDIGPRO',
     'M. Yudhistira Setya Heri',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal UMKM dan Kewirausahaan',
     'DIRJEN',
     'local-member-edigpro-yudhistira',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJEN_EDIGPRO_YUDHISTIRA',
@@ -1252,7 +1252,7 @@ INSERT INTO seed_organization_members (
 (
     'RISKEL',
     'Farrel Bisma Abyakta',
-    'MENTERI',
+    'Menteri Riset dan Keilmuan',
     'MENTERI',
     'local-member-riskel-farrel-bisma-abyakta',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERIRISKEL_BISMA',
@@ -1262,7 +1262,7 @@ INSERT INTO seed_organization_members (
 (
     'RISKEL',
     'Abdul Wahid Tamimi',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Riset dan Inovasi',
     'DIRJEN',
     'local-member-riskel-ata',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENRISKEL_ATA',
@@ -1272,7 +1272,7 @@ INSERT INTO seed_organization_members (
 (
     'RISKEL',
     'Naswa Ayudya Sasta',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Akademik dan Prestasi',
     'DIRJEN',
     'local-member-riskel-naswa',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/DIRJENNASYWA_RISKEL',
@@ -1287,7 +1287,7 @@ INSERT INTO seed_organization_members (
 (
     'SENIIORA',
     'Alaina Atwa Awali Harahap',
-    'MENTERI',
+    'Menteri Seni dan Olahraga',
     'MENTERI',
     'local-member-seniiora-alaina-atwa-awali-harahap',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/MENTERISENIORA_ALAINA',
@@ -1297,7 +1297,7 @@ INSERT INTO seed_organization_members (
 (
     'SENIIORA',
     'Abdullah Azzam',
-    'DIREKTUR JENDRAL',
+    'Direktur Jenderal Pemuda dan Olahraga',
     'DIRJEN',
     'local-member-seniiora-azzam',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/ABDULLAH_AZZAM_DIRJEN_SENIORA',
@@ -1306,11 +1306,11 @@ INSERT INTO seed_organization_members (
 ),
 (
     'SENIIORA',
-    'Nurnajmi Dwihesti',
-    'DIREKTUR JENDRAL',
+    'Muhammad Fadhil Saputra',
+    'Direktur Jenderal Seni dan Olahraga',
     'DIRJEN',
     'local-member-seniiora-puput',
-    'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/PUPUT_DIRJEN_SENIORA',
+    'https://res.cloudinary.com/rvn0bdia/image/upload/v1795411756/PUPUT_DIRJEN_SENIORA.png',
     2,
     FALSE
 ),
@@ -1322,7 +1322,7 @@ INSERT INTO seed_organization_members (
 (
     'BENKAB',
     'Inez Faradina Kasih',
-    'MENTERI',
+    'Menteri Bendahara Kabinet',
     'MENTERI',
     'local-member-benkab-inez-faradina-kasih',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
@@ -1332,7 +1332,7 @@ INSERT INTO seed_organization_members (
 (
     'BENKAB',
     'Ananda Magfira Nurochma',
-    'KEPALA BIRO',
+    'Kepala Biro Administrasi dan Keuangan',
     'KABIRO',
     'local-member-benkab-ananda-magfira-nurochma',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_ANANDA.png',
@@ -1342,7 +1342,7 @@ INSERT INTO seed_organization_members (
 (
     'BENKAB',
     'M. Salman Al Farisi Al Ghofsah',
-    'KEPALA BIRO',
+    'Kepala Biro Kebendaharaan',
     'KABIRO',
     'local-member-benkab-m-salman-al-farisi',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_SALMAN.png',
@@ -1357,7 +1357,7 @@ INSERT INTO seed_organization_members (
 (
     'PAK',
     'Deri Bayu Setiawan',
-    'KEPALA PAK',
+    'Kepala Pendayagunaan Aparatur Kabinet',
     'KEPALA',
     'local-member-pak-deri-bayu-setiawan',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png',
@@ -1367,7 +1367,7 @@ INSERT INTO seed_organization_members (
 (
     'PAK',
     'Mevlana El Fithra Abdullah',
-    'DEPUTI',
+    'Deputi Tata Laksana Kerja',
     'DEPUTI',
     'local-member-pak-mevlana-el-fithra',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_MEVLANA.png',
@@ -1377,7 +1377,7 @@ INSERT INTO seed_organization_members (
 (
     'PAK',
     'Nayla Khansa Abbylia',
-    'DEPUTI',
+    'Deputi Audit dan Penjaminan Mutu',
     'DEPUTI',
     'local-member-pak-nayla-khansa-abbylia',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_NAYLA.png',
@@ -1392,7 +1392,7 @@ INSERT INTO seed_organization_members (
 (
     'SESKAB',
     'Gheahaq Danty El Zahra',
-    'MENTERI',
+    'Menteri Sekretaris Kabinet',
     'MENTERI',
     'local-member-seskab-gheahaq-danty-el-zahra',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
@@ -1402,7 +1402,7 @@ INSERT INTO seed_organization_members (
 (
     'SESKAB',
     'Fathimah Nuurun Najma As-Salman',
-    'KEPALA BIRO',
+    'Kepala Biro Administrasi Persuratan',
     'KABIRO',
     'local-member-seskab-fathimah-nuurun',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_NUURUN.png',
@@ -1412,7 +1412,7 @@ INSERT INTO seed_organization_members (
 (
     'SESKAB',
     'Najwa Nur Hafidza',
-    'KEPALA BIRO',
+    'Kepala Biro Arsip dan Kesekretariatan',
     'KABIRO',
     'local-member-seskab-najwa-nur-hafidza',
     'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_NAJWA.png',
@@ -1487,7 +1487,7 @@ ON DUPLICATE KEY UPDATE
 -- ============================================================
 -- 8. UPDATE MEMBER YANG SUDAH ADA
 --
--- Pencocokan menggunakan ministry_id + position supaya seeder
+-- Pencocokan menggunakan ministry_id + name supaya seeder
 -- dapat dijalankan ulang tanpa membuat duplikasi.
 -- ============================================================
 
@@ -1497,15 +1497,15 @@ INNER JOIN ministries AS ministry
 INNER JOIN seed_organization_members AS seed_member
     ON seed_member.unit_code COLLATE utf8mb4_unicode_ci
      = ministry.code COLLATE utf8mb4_unicode_ci
-    AND seed_member.position COLLATE utf8mb4_unicode_ci
-     = organization_member.position COLLATE utf8mb4_unicode_ci
+    AND seed_member.name COLLATE utf8mb4_unicode_ci
+     = organization_member.name COLLATE utf8mb4_unicode_ci
 LEFT JOIN media_assets AS photo
     ON photo.imagekit_file_id COLLATE utf8mb4_unicode_ci
      = seed_member.photo_asset_key COLLATE utf8mb4_unicode_ci
 SET
-    organization_member.name = seed_member.name,
+    organization_member.position = seed_member.position,
     organization_member.position_type = seed_member.position_type,
-    organization_member.photo_media_id = photo.id,
+    organization_member.photo_media_id = COALESCE(organization_member.photo_media_id, photo.id),
     organization_member.display_order = seed_member.display_order,
     organization_member.is_leader = seed_member.is_leader,
     organization_member.is_active = TRUE,
@@ -1566,8 +1566,8 @@ WHERE NOT EXISTS (
     FROM organization_members AS existing_member
     WHERE
         existing_member.ministry_id = ministry.id
-        AND existing_member.position COLLATE utf8mb4_unicode_ci
-         = seed_member.position COLLATE utf8mb4_unicode_ci
+        AND existing_member.name COLLATE utf8mb4_unicode_ci
+         = seed_member.name COLLATE utf8mb4_unicode_ci
 );
 
 -- ============================================================

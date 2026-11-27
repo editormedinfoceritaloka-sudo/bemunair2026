@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { env } from '$env/dynamic/private';
@@ -15,6 +15,7 @@ const PURPOSE_FOLDERS = {
   article: 'articles',
   cover: 'article-covers',
   profile: 'profiles',
+  cabinet_portrait: 'cabinet-portraits',
   submission_media: 'submissions/media',
   submission_brief: 'submissions/briefs',
   documentation: 'program-documentations',
@@ -92,7 +93,7 @@ export async function validateImage(file: File) {
 
 export function parsePurpose(value: FormDataEntryValue | null): ImagePurpose {
   const purpose = String(value || 'article') as ImagePurpose;
-  if (!(purpose in PURPOSE_FOLDERS)) throw new ImageUploadError('Tujuan upload tidak valid.', 400, 'INVALID_UPLOAD_PURPOSE');
+  if (!Object.hasOwn(PURPOSE_FOLDERS, purpose)) throw new ImageUploadError('Tujuan upload tidak valid.', 400, 'INVALID_UPLOAD_PURPOSE');
   return purpose;
 }
 
@@ -101,6 +102,7 @@ export function parsePurpose(value: FormDataEntryValue | null): ImagePurpose {
 const UPLOAD_ROOT = (env.UPLOAD_DIR || '/app/uploads').replace(/\/+$/, '');
 
 export async function uploadImage(file: File, purpose: ImagePurpose) {
+  if (purpose === 'cabinet_portrait') return uploadCabinetPortrait(file);
   const folder = PURPOSE_FOLDERS[purpose];
   const fileId = randomUUID();
   const name = `${fileId}-${safeFileName(file.name)}`;
@@ -119,5 +121,33 @@ export async function uploadImage(file: File, purpose: ImagePurpose) {
     height: null,
     size: file.size,
     fileType: file.type
+  };
+}
+
+async function uploadCabinetPortrait(file: File) {
+  const { CLOUDINARY_CLOUD_NAME: cloud, CLOUDINARY_API_KEY: key, CLOUDINARY_API_SECRET: secret } = env;
+  if (!cloud || !key || !secret) {
+    throw new ImageUploadError('Kredensial Cloudinary untuk foto kabinet belum dikonfigurasi.', 503, 'PORTRAIT_UPLOAD_UNAVAILABLE');
+  }
+
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const signature = createHash('sha256').update(`timestamp=${timestamp}${secret}`).digest('hex');
+  const body = new FormData();
+  body.set('timestamp', timestamp);
+  body.set('signature', signature);
+  body.set('api_key', key);
+  body.set('file', file);
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud)}/image/upload`, {
+    method: 'POST', body, signal: AbortSignal.timeout(60000)
+  });
+  if (!response.ok) throw new ImageUploadError('Cloudinary gagal menyimpan foto kabinet.', 502, 'PORTRAIT_UPLOAD_FAILED');
+  const asset = await response.json();
+  if (!asset.asset_id || !asset.secure_url?.startsWith(`https://res.cloudinary.com/${cloud}/image/upload/`)) {
+    throw new ImageUploadError('Cloudinary mengembalikan data foto yang tidak lengkap.', 502, 'INVALID_PORTRAIT_RESPONSE');
+  }
+  return {
+    fileId: asset.asset_id, filePath: asset.public_id, name: safeFileName(file.name),
+    url: asset.secure_url, thumbnailUrl: asset.secure_url,
+    width: asset.width, height: asset.height, size: asset.bytes, fileType: file.type
   };
 }

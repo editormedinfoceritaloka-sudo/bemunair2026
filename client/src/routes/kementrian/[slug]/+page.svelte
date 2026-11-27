@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { memberCardRole } from '$lib/features/organization/member-card-role';
   import { resolveOrganizationPortrait } from '$lib/features/organization/portraits';
   import { onMount,  } from 'svelte';
   import { gsap } from 'gsap';
@@ -9,7 +10,6 @@
   import { playFlipSound } from '$lib/sound';
 
   import type {
-    OrganizationMember,
     WorkProgram
   } from '$lib/types';
   import type { PageData } from './$types';
@@ -31,7 +31,7 @@
     id: number;
     role: string;
     title: string;
-    image: string;
+    image: string | null;
     featured: boolean;
   };
 
@@ -78,59 +78,6 @@
     singleLineTitle ? 'Struktur' : 'Struktur Kementerian'
   );
 
-  const memberImages: Record<string, string> = {
-    'Gheahaq Danty El Zahra':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/SESKAB_GHEA.png',
-    'Fathimah Nuurun Najma As-Salman':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_NUURUN.png',
-    'Najwa Nur Hafidza':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_NAJWA.png',
-    'Inez Faradina Kasih':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426454/BENKAN_INEZ.png',
-    'Ananda Magfira Nurochma':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426455/BIRO_ANANDA.png',
-    'M. Salman Al Farisi Al Ghofsah':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/BIRO_SALMAN.png',
-    'Deri Bayu Setiawan':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/KEPALA_PAK.png',
-    'Mevlana El Fithra Abdullah':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_MEVLANA.png',
-    'Nayla Khansa Abbylia':
-      'https://res.cloudinary.com/rvn0bdia/image/upload/e_background_removal,f_auto,q_auto/v1795426456/DEPUTI_NAYLA.png'
-  };
-
-  function getMemberImage(
-    member: OrganizationMember
-  ): string {
-    return resolveOrganizationPortrait(
-      memberImages[member.name] ??
-      member.photo?.url ??
-      member.photo?.thumbnail_url ??
-      '/kementrian/test.webp'
-    );
-  }
-
-  function getMemberRole(
-    member: OrganizationMember
-  ): string {
-    const roles: Record<string, string> = {
-      MENKO: 'Menteri Koordinator',
-      MENTERI: 'MENTERI',
-      MINISTER: 'MENTERI',
-      DIRJEN: 'DIREKTUR JENDRAL',
-      DIRECTOR_GENERAL: 'DIREKTUR JENDRAL',
-      DEPUTI: 'DEPUTI',
-      KEPALA: 'KEPALA PAK',
-      KABIRO: 'KEPALA BIRO'
-    };
-
-    return (
-      member.position?.trim() ||
-      roles[member.position_type] ||
-      member.position_type
-    );
-  }
-
   const members = $derived.by<Member[]>(() => {
     return [...(unit.members ?? [])]
       .filter(
@@ -152,9 +99,9 @@
       })
       .map((member) => ({
         id: member.id,
-        role: getMemberRole(member),
+        role: memberCardRole(member),
         title: member.name,
-        image: getMemberImage(member),
+        image: resolveOrganizationPortrait(member),
         featured: member.is_leader
       }));
   });

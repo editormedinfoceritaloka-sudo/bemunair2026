@@ -50,6 +50,7 @@ services:
     environment:
       APP_ENV: development
       DB_HOST: db
+      SEED_CREDENTIAL_DIR: /var/lib/seed-credentials/private
 
     depends_on:
       db:
@@ -63,6 +64,7 @@ services:
 
     volumes:
       - ../server:/app
+      - seed_credentials:/var/lib/seed-credentials
       - server_go_modules:/go/pkg/mod
       - server_go_build_cache:/root/.cache/go-build
 
@@ -216,6 +218,7 @@ networks:
     driver: bridge
 
 volumes:
+  seed_credentials:
   bemunair_mysql_data:
   client_uploads:
   client_node_modules:

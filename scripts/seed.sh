@@ -31,8 +31,7 @@ Usage: ./scripts/seed.sh [seed|setup] [--local]
 
 Dev-only. Production tidak pernah menjalankan seeder (lihat server/cmd/main.go
 dan infra/docker-compose.yml — service 'migrate' di sana cuma `./server migrate`).
-Semua akun seed berbagi satu password dari SEED_USER_PASSWORD di server/.env;
-tidak ada password yang pernah ditulis ke file seeder itu sendiri.
+Password awal per akun tersimpan di direktori privat (lihat README).
 EOF
 }
 
@@ -57,12 +56,7 @@ done
 
 if [[ ! -f "$server_env" ]]; then
   error "Tidak ada $server_env."
-  error "Jalankan: cp server/.env.example server/.env, lalu isi SEED_USER_PASSWORD (dan secret lain)."
-  exit 66
-fi
-
-if ! grep -qE '^SEED_USER_PASSWORD=.+' "$server_env"; then
-  error "SEED_USER_PASSWORD belum diisi di $server_env — seeder akan gagal tanpa ini."
+  error "Jalankan: cp server/.env.example server/.env, lalu isi konfigurasi lokal."
   exit 66
 fi
 
@@ -78,6 +72,7 @@ if [[ "$mode" == "local" ]]; then
     # hanya reachable lewat port yang dipublikasikan di docker-compose.dev.yml.
     export DB_HOST=127.0.0.1
     export DB_PORT=3308
+    export SEED_CREDENTIAL_DIR="${SEED_CREDENTIAL_DIR:-$HOME/.local/share/bemunair-dev/seed-credentials}"
     go run ./cmd "$command"
   )
   info "Selesai."
@@ -91,4 +86,4 @@ fi
 
 info "Menjalankan '$command' lewat container dev (service 'migrate', compose override command)..."
 docker compose -f "$compose_file" run --rm migrate go run ./cmd "$command"
-info "Selesai. Login pakai email akun seed + SEED_USER_PASSWORD dari server/.env."
+info "Selesai. Lihat README untuk lokasi password awal setiap akun."

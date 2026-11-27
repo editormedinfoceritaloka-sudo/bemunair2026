@@ -254,3 +254,28 @@ func TestProgramStatusDerivedFromDates(t *testing.T) {
 		t.Fatalf("status=%q", completed.Status)
 	}
 }
+
+func TestMemberPortraitSource(t *testing.T) {
+	db := newTestDB(t, "member_portrait_source")
+	s := cabinetService{repo: repository.New(db)}
+	if err := s.validatePortrait(nil); err != nil {
+		t.Fatal(err)
+	}
+	for i, tc := range []struct {
+		url   string
+		valid bool
+	}{
+		{"https://res.cloudinary.com/cloud/image/upload/v1/person.jpg", true},
+		{"/uploads/profiles/person.jpg", false},
+		{"https://res.cloudinary.com.example/cloud/image/upload/person.jpg", false},
+		{"https://res.cloudinary.com/cloud/video/upload/person.mp4", false},
+	} {
+		photo := entities.MediaAsset{ImageKitFileID: fmt.Sprint(i), URL: tc.url, Name: "portrait", AltText: "portrait", MimeType: "image/jpeg", Purpose: "ORGANIZATION_MEMBER"}
+		if err := db.Create(&photo).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := s.validatePortrait(&photo.ID); (err == nil) != tc.valid {
+			t.Errorf("validatePortrait(%q) = %v", tc.url, err)
+		}
+	}
+}

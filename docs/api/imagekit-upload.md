@@ -1,6 +1,6 @@
 # Upload media
 
-Endpoint SvelteKit ini menyimpan file di direktori upload server dan mengembalikan URL di bawah `/uploads/`.
+Endpoint SvelteKit ini mengunggah foto pengurus kabinet ke Cloudinary saat `purpose=cabinet_portrait`. Unggahan lain disimpan di direktori upload server dan mendapatkan URL di bawah `/uploads/`.
 
 ## `POST /api/uploads/imagekit`
 
@@ -11,11 +11,13 @@ Request menggunakan `multipart/form-data`:
 | Field | Wajib | Nilai |
 | --- | --- | --- |
 | `file` | Ya | JPEG, PNG, WebP, GIF, atau AVIF |
-| `purpose` | Tidak | `article`, `cover`, `profile`, `documentation`, `submission_media`, `submission_brief`, atau `letter_template`. Default `article`. |
+| `purpose` | Tidak | `article`, `cover`, `profile`, `cabinet_portrait`, `documentation`, `submission_media`, `submission_brief`, atau `letter_template`. Default `article`. |
 
 PDF diterima untuk `letter_template`. PDF, DOC, dan DOCX diterima untuk `submission_brief`.
 
 Batas ukuran default adalah 10 MB dan dapat diubah melalui `UPLOAD_MAX_BYTES`.
+
+Foto kabinet memerlukan `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, dan `CLOUDINARY_API_SECRET` pada service client. Isi di `client/.env` untuk development atau di env production yang dipakai Compose, lalu buat ulang container client. Jika konfigurasi belum lengkap, unggahan foto mengembalikan HTTP 503.
 
 Contoh:
 

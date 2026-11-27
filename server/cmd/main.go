@@ -34,6 +34,8 @@ func runDatabaseCommand(command string) (bool, error) {
 	switch command {
 	case "migrate":
 		return true, database.Migrate()
+	case "provision-ministry-accounts":
+		return true, database.ProvisionMinistryAccounts()
 	case "seed":
 		return true, database.Seed()
 	case "setup":

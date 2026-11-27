@@ -1,4 +1,4 @@
-export type UploadPurpose = 'article' | 'cover' | 'profile' | 'submission' | 'documentation' | 'letter_template';
+export type UploadPurpose = 'article' | 'cover' | 'profile' | 'cabinet_portrait' | 'submission' | 'documentation' | 'letter_template';
 
 export interface UploadedImage {
   file_id: string;

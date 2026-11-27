@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -377,6 +378,9 @@ func (s *cabinetService) CreateMember(req dto.MemberRequest, actor *middlewares.
 	if err := validateMember(req); err != nil {
 		return nil, err
 	}
+	if err := s.validatePortrait(req.PhotoMediaID); err != nil {
+		return nil, err
+	}
 	value := &entities.OrganizationMember{MinistryID: req.MinistryID, Name: strings.TrimSpace(req.Name), Position: strings.TrimSpace(req.Position), PositionType: strings.ToUpper(strings.TrimSpace(req.PositionType)), Biography: req.Biography, Quote: req.Quote, PhotoMediaID: req.PhotoMediaID, DisplayOrder: req.DisplayOrder, IsLeader: req.IsLeader, IsActive: req.IsActive}
 	if err := s.repo.CreateMember(value); err != nil {
 		return nil, err
@@ -398,6 +402,11 @@ func (s *cabinetService) UpdateMember(id uint64, req dto.MemberRequest, actor *m
 	}
 	if err := validateMember(req); err != nil {
 		return nil, err
+	}
+	if req.PhotoMediaID != nil && (value.PhotoMediaID == nil || *value.PhotoMediaID != *req.PhotoMediaID) {
+		if err := s.validatePortrait(req.PhotoMediaID); err != nil {
+			return nil, err
+		}
 	}
 	value.MinistryID = req.MinistryID
 	value.Name = strings.TrimSpace(req.Name)
@@ -788,6 +797,26 @@ func validateUnit(req dto.UnitRequest) error {
 
 func isParentUnitType(unitType string) bool {
 	return unitType == "MENKO" || unitType == "BPII" || unitType == "KEMENKOAN"
+}
+
+func (s *cabinetService) validatePortrait(id *uint64) error {
+	if id == nil {
+		return nil
+	}
+	asset, err := s.repo.MediaByID(*id)
+	if err != nil {
+		return err
+	}
+	if asset != nil {
+		parsed, err := url.Parse(asset.URL)
+		if err == nil && parsed.Scheme == "https" && parsed.Host == "res.cloudinary.com" && parsed.User == nil {
+			parts := strings.SplitN(strings.TrimPrefix(parsed.Path, "/"), "/", 4)
+			if len(parts) == 4 && parts[0] != "" && parts[1] == "image" && parts[2] == "upload" && parts[3] != "" {
+				return nil
+			}
+		}
+	}
+	return errors.New("foto anggota harus menggunakan gambar Cloudinary")
 }
 
 func validateMember(req dto.MemberRequest) error {

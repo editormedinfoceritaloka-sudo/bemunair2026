@@ -119,3 +119,5 @@ Status program kerja yang didukung: `DRAFT`, `PLANNED`, `ONGOING`, dan `COMPLETE
 - Penghapusan unit ditolak dengan status `409` bila unit masih memiliki anak, pengguna, pimpinan, role organisasi, program kerja, pengajuan konten, atau pengajuan surat. Nonaktifkan unit bila riwayatnya perlu dipertahankan.
 - Menghapus media yang masih direferensikan perlu dilakukan dengan menghapus relasi terlebih dahulu.
 
+
+Untuk memasang atau mengganti foto anggota, unggah dengan `purpose=cabinet_portrait`, daftarkan metadata hasil unggahan, lalu kirim ID aset di `photo_media_id`. API memeriksa URL gambar Cloudinary saat ID foto baru dipasang.

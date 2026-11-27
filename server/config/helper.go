@@ -22,10 +22,7 @@ type Config struct {
 	DBMaxOpen  int
 	DBMaxIdle  int
 	JWTSecret  string
-	// SeedUserPassword is the single shared dev-login password for every row
-	// seeded by database/seeders/001_users.sql. Real plaintext passwords never
-	// live in that committed SQL file (or in git at all) — only this env var,
-	// which stays in the gitignored .env. The seeder hashes it at run time.
+	// SeedUserPassword optionally identifies accounts still using the old shared password.
 	SeedUserPassword string
 	WAURL            string
 	WAAPIKey         string

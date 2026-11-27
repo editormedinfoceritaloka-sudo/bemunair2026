@@ -16,7 +16,7 @@
     id: string;
     title: string;
     subtitle?: string;
-    image: string;
+    image: string | null;
     pathType?: 'menko' | 'kementerian';
     active?: boolean;
     backgroundImage?: string;
@@ -371,15 +371,19 @@
             h-[66%]
           `}
         >
-          <img
-            src={image}
-            alt={title}
-            draggable="false"
-            class="
-              block h-full w-full
-              object-contain object-bottom
-            "
-          />
+          {#if image}
+            <img
+              src={image}
+              alt={title}
+              draggable="false"
+              class="
+                block h-full w-full
+                object-contain object-bottom
+              "
+            />
+          {:else}
+            <span aria-hidden="true" class="absolute inset-0 grid place-items-center text-6xl font-bold text-blue-700">{(subtitle ?? title).slice(0, 1)}</span>
+          {/if}
         </div>
       </div>
     </div>
